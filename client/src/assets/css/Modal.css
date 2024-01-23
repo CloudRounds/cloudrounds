@@ -1,0 +1,79 @@
+.modal {
+  width: 100%;
+  display: block;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.modal-content {
+  max-width: 400px; /* Set a fixed width for the modal content */
+  height: 100%;
+  padding: 10px;
+  background-color: #fff;
+  overflow: auto;
+  font-style: normal;
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.modal-title {
+  max-width: 400px; /* Set a fixed width for the modal content */
+
+  color: black;
+  font-weight: bold;
+    font-size: 16px;
+}
+
+.modal-purpose {
+  display: flex; /* Use flexbox for alignment */
+  align-items: center; /* Center items vertically */
+    font-style: normal;
+    font-size: 14px;
+}
+
+
+.modal-info {
+  width: 100%;
+  min-width: 370px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+    padding: 10px;
+  
+}
+
+.modal-event-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+.modal-time {
+    font-size: 16px;
+}
+
+.copied-message {
+   position: absolute;
+  z-index: 999;
+  color: black;
+  background-color: #F4FFF8; /* Dark gray background color */
+  padding: 8px 12px; /* Adjust padding as needed */
+  border: 0px solid black; /* Black border */
+  border-radius: 10px; /* Add a bit of border radius for rounded corners */
+  /* Add other relevant styles as needed */
+margin-left: 60px;
+    margin-top: 80px;
+    font-size: 12px;
+font-weight: 900;
+}
+
+
+
+ 

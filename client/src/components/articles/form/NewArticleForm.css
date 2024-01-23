@@ -1,0 +1,51 @@
+.compact-form {
+  margin-top: 10px;
+}
+
+.compact-form .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.compact-form .ant-form-item-label > label {
+  display: block;
+}
+
+.newArticleForm > div > div > label {
+  font-family: 'Inter', Lato, Roboto;
+  color: #333333d1 !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+}
+
+.compact-form .ant-select-selector span.disabled-option {
+  color: gray !important;
+}
+
+.compact-form .ant-form-item-label {
+  padding-bottom: 0; /* Adjust this value as needed */
+  margin-bottom: -10px;
+}
+
+.compact-form .ant-form-item-control {
+  margin-bottom: 0px;
+}
+
+.compact-form .ant-form-item-control {
+  line-height: 32px; /* Adjust this value as needed */
+}
+
+.compact-form .ant-input,
+.compact-form .ant-select-selector {
+  /* border: none; */
+  /* border-bottom: 1px solid #d9d9d9; */
+  border-radius: 6px;
+}
+
+li.ant-picker-ok button {
+  border-radius: 4px;
+  background-color: #1890ff;
+}
+
+.delete-button:hover .anticon-delete {
+  color: red;
+}

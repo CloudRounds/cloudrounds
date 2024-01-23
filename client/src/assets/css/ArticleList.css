@@ -1,0 +1,220 @@
+body {
+  background-color: #c8d3fb;
+}
+
+.content-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.card-margin {
+  margin-bottom: 20px;
+}
+
+.box-background {
+  background-color: #f1f8ff;
+  padding: 0.5rem;
+}
+
+.button-spacing {
+  margin-right: 1px;
+  margin-top: 0.5px;
+  margin-bottom: 0.5px;
+  padding: 0.5px;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
+.button-outline {
+  margin-top: 0.5px;
+  margin-bottom: 0.5px;
+  padding: 0.5px;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
+.button-additional-details {
+  margin-top: 0.5px;
+  margin-bottom: 0.5px;
+  padding: 0.5px;
+  padding-left: 1px;
+  padding-right: 1px;
+  color: gray;
+  border-color: gray;
+}
+
+.button-additional-details:hover {
+  background-color: #ececec;
+  border-color: gray;
+}
+
+.details-box {
+  display: block;
+  margin-inline: 2;
+}
+
+.details-box-hidden {
+  display: none;
+  margin-inline: 2;
+}
+
+.float-right {
+  float: right;
+}
+
+.span-margin {
+  margin-right: 12px;
+}
+
+/* Add this CSS rule to control the visibility of the button */
+.details-button {
+  display: none; /* Initially hide the button */
+}
+
+/* Show the button when the parent container (the grid) is being hovered */
+.Card:hover .details-button {
+  display: block;
+}
+
+.basic-btn {
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  box-sizing: border-box;
+  margin-right: 8px;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  font-size: 14px;
+  padding: 4px 15px;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
+  background-image: none;
+}
+
+.join-meeting-btn {
+  background-color: #4caf50;
+  padding: 6px 15px;
+}
+
+.join-meeting-btn:hover,
+.join-meeting-btn:active {
+  color: #fff;
+  background-color: #45a049;
+}
+
+.purple-outline {
+  color: rgba(0, 0, 0, 0.88);
+  border-color: #6c7ce7;
+}
+
+.gray-outline {
+  color: rgba(0, 0, 0, 0.88);
+  border-color: rgb(229, 231, 235);
+}
+
+.gray-outline:hover {
+  color: #5161ce;
+  border-color: #6c7ce7;
+}
+
+.gray-disabled {
+  padding: 3.5px 10px;
+  cursor: not-allowed;
+  color: darkgray;
+  background-color: #808080;
+}
+
+.purple-full {
+  background-color: #5161ce;
+}
+
+.red-full {
+  border-color: #f47d7f;
+  color: #fff;
+}
+
+.red-full:hover {
+  background-color: #f47d7f;
+}
+
+.red-full:hover p,
+.red-full:hover svg {
+  color: #fff;
+}
+
+.purple-full-link {
+  padding: 6px 12px;
+  background-color: #5161ce;
+}
+
+.purple-full-link:hover {
+  color: #fff;
+  background-color: #6576e8;
+}
+
+.purple-full:hover {
+  color: #fff;
+  background-color: #6576e8;
+}
+
+.purple-light-full {
+  background-color: #6576e8;
+}
+
+.purple-light-full.disabled:hover {
+  background-color: #6576e8;
+}
+
+.purple-light-full:hover {
+  background-color: #5161ce;
+}
+
+.purple-full:hover {
+  background-color: #5d6fe6;
+}
+
+.purple-full-dark {
+  background-color: #221c69;
+}
+
+.purple-full-dark:hover {
+  background-color: #080942;
+}
+
+.article-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.article-card-title-container {
+  display: flex;
+  align-items: center;
+}
+
+.article-card-title {
+  margin-left: 10px;
+  flex-grow: 1; /* Allow title to take available space */
+  overflow: hidden; /* Prevent overflow */
+}
+
+.article-card-title-text {
+  white-space: nowrap; /* Prevent line breaks */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add ellipsis for overflow */
+  max-width: 90%; /* Limit width to prevent overlap */
+}
+
+.article-card-actions {
+  display: flex;
+  align-items: center;
+}
+
+.custom-checkbox .ant-checkbox-inner {
+  border-color: #808080 !important;
+  border-width: 1px !important;
+}
+
+.custom-checkbox .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #808080 !important;
+}
