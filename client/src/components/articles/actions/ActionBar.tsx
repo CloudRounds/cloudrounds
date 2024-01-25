@@ -1,20 +1,32 @@
-import { CaretDownFilled, DownCircleFilled, DownOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Divider, Drawer, Dropdown, Input, Space, Typography, Popover } from 'antd';
+import { Calendar } from '@/types';
+import { CaretDownFilled, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { EventAvailable, History, Key, ManageSearch, PeopleAlt } from '@mui/icons-material';
+import { Button, Checkbox, Divider, Drawer, Dropdown, Input, Popover, Space, Typography } from 'antd';
 import { useEffect, useState } from 'react';
-import { FcCalendar } from 'react-icons/fc';
 import { FaCloud } from 'react-icons/fa';
-import { EventAvailable, History, Key, ManageSearch, PeopleAlt, Settings } from '@mui/icons-material';
+import { FcCalendar } from 'react-icons/fc';
+
+interface ActionBarProps {
+  selectedCalendars: string[];
+  setSelectedCalendars: React.Dispatch<React.SetStateAction<string[]>>;
+  toggleNewArticleModal: () => void;
+  selectedOrganizers: string[];
+  organizerFilter: string[];
+  setOrganizerFilter: React.Dispatch<React.SetStateAction<string[]>>;
+  userCalendars: Calendar[];
+  emptyCalendars: string[];
+}
 
 const ActionBar = ({
-  selectedPurposes,
-  setSelectedPurposes,
+  selectedCalendars,
+  setSelectedCalendars,
   toggleNewArticleModal,
   selectedOrganizers,
   organizerFilter,
   setOrganizerFilter,
-  userPurposes,
-  emptyPurposes
-}) => {
+  userCalendars,
+  emptyCalendars
+}: ActionBarProps) => {
   const now = new Date();
 
   const App = () => {
@@ -22,7 +34,7 @@ const ActionBar = ({
     const hide = () => {
       setOpen(false);
     };
-    const handleOpenChange = newOpen => {
+    const handleOpenChange = (newOpen: boolean) => {
       setOpen(newOpen);
     };
 
@@ -69,7 +81,8 @@ const ActionBar = ({
           type='primary'
           className='custom-help-button'
           style={{ backgroundColor: '#6576e8', border: 'none', display: 'flex', alignItems: 'center' }}>
-          <FaCloud style={{ marginRight: '4px' }} />Help
+          <FaCloud style={{ marginRight: '4px' }} />
+          Help
         </Button>
       </Popover>
     );
@@ -85,9 +98,9 @@ const ActionBar = ({
   const [showSidebar, setShowSidebar] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const allowedPurposes = userPurposes.map(purpose => purpose.name);
+  const allowedCalendars = userCalendars.map(calendar => calendar.name);
 
-  const filteredPurposes = allowedPurposes.filter(p => p && p.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredCalendars = allowedCalendars.filter(p => p && p.toLowerCase().includes(searchTerm.toLowerCase()));
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -103,17 +116,17 @@ const ActionBar = ({
     return () => clearInterval(interval);
   }, []);
 
-  const handlePurposeToggle = purpose => {
-    let newPurposes = [...selectedPurposes];
-    if (newPurposes.includes(purpose)) {
-      newPurposes = newPurposes.filter(p => p !== purpose);
+  const handleCalendarToggle = (calendar: string) => {
+    let newCalendars = [...selectedCalendars];
+    if (newCalendars.includes(calendar)) {
+      newCalendars = newCalendars.filter(p => p !== calendar);
     } else {
-      newPurposes.push(purpose);
+      newCalendars.push(calendar);
     }
-    setSelectedPurposes(newPurposes);
+    setSelectedCalendars(newCalendars);
   };
 
-  const handleOrganizerToggle = organizer => {
+  const handleOrganizerToggle = (organizer: string) => {
     let newOrganizers = [...organizerFilter];
     if (newOrganizers.includes(organizer)) {
       newOrganizers = newOrganizers.filter(o => o !== organizer);
@@ -124,12 +137,12 @@ const ActionBar = ({
     console.log(newOrganizers, organizer);
   };
 
-  const selectAllPurposes = () => {
-    setSelectedPurposes(filteredPurposes);
+  const selectAllCalendars = () => {
+    setSelectedCalendars(filteredCalendars);
   };
 
-  const deselectAllPurposes = () => {
-    setSelectedPurposes([]);
+  const deselectAllCalendars = () => {
+    setSelectedCalendars([]);
   };
 
   const selectAllOrganizers = () => {
@@ -144,17 +157,17 @@ const ActionBar = ({
     {
       key: '1',
       label: 'All',
-      onClick: () => selectAllPurposes()
+      onClick: () => selectAllCalendars()
     },
     {
       key: '2',
       label: 'None',
-      onClick: () => deselectAllPurposes()
+      onClick: () => deselectAllCalendars()
     },
-    ...userPurposes.map((purpose, index) => ({
+    ...userCalendars.map((calendar, index) => ({
       key: index + 3,
-      label: purpose.name,
-      onClick: () => setSelectedPurposes(purpose.name)
+      label: calendar.name,
+      onClick: () => setSelectedCalendars([calendar.name])
     }))
   ];
 
@@ -164,8 +177,7 @@ const ActionBar = ({
         onClick={() => setShowSidebar(!showSidebar)}
         icon={showSidebar ? <LeftOutlined /> : <RightOutlined />}
         className='absolute top-3.5 left-1.5'
-        style={{ backgroundColor: '#ffffff'}}
-
+        style={{ backgroundColor: '#ffffff' }}
       />
 
       {/* LEFT SIDEBAR: Article Filters */}
@@ -177,18 +189,22 @@ const ActionBar = ({
         open={showSidebar}
         width={250}
         closeIcon={<RightOutlined />}>
-        <Input placeholder='Search...' value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+        <Input
+          placeholder='Search...'
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+        />
 
         <Divider>Calendars</Divider>
         <div className='flex items-center mb-2'>
           <Checkbox
             key='all-or-none'
             className='mr-1 custom-checkbox'
-            checked={selectedPurposes.length === filteredPurposes.length}
+            checked={selectedCalendars.length === filteredCalendars.length}
             onChange={() =>
-              selectedPurposes.length === filteredPurposes.length
-                ? setSelectedPurposes([])
-                : setSelectedPurposes(filteredPurposes)
+              selectedCalendars.length === filteredCalendars.length
+                ? setSelectedCalendars([])
+                : setSelectedCalendars(filteredCalendars)
             }
           />
           <Dropdown
@@ -205,27 +221,35 @@ const ActionBar = ({
             </Typography.Link>
           </Dropdown>
         </div>
-        <Space direction='vertical' className='w-full'>
-          {filteredPurposes.map(purpose => (
+        <Space
+          direction='vertical'
+          className='w-full'>
+          {filteredCalendars.map(calendar => (
             <Checkbox
-              disabled={emptyPurposes.includes(purpose)}
-              key={purpose}
-              checked={selectedPurposes.includes(purpose)}
-              onChange={() => handlePurposeToggle(purpose)}>
-              {purpose}
+              disabled={emptyCalendars.includes(calendar)}
+              key={calendar}
+              checked={selectedCalendars.includes(calendar)}
+              onChange={() => handleCalendarToggle(calendar)}>
+              {calendar}
             </Checkbox>
           ))}
         </Space>
         <Divider>Organizers</Divider>
         <div className='flex justify-between'>
-          <Button size='small' onClick={selectAllOrganizers}>
+          <Button
+            size='small'
+            onClick={selectAllOrganizers}>
             Select All
           </Button>
-          <Button size='small' onClick={deselectAllOrganizers}>
+          <Button
+            size='small'
+            onClick={deselectAllOrganizers}>
             Deselect All
           </Button>
         </div>
-        <Space direction='vertical' className='w-full mt-4'>
+        <Space
+          direction='vertical'
+          className='w-full mt-4'>
           {selectedOrganizers.map(organizer => (
             <Checkbox
               key={organizer}
@@ -244,7 +268,9 @@ const ActionBar = ({
         className='flex justify-end items-center w-full px-4 py-3.5 mb-5 purple-light-full'
         style={{ background: '#c7d2fe' }}>
         <App />
-        <button className='flex items-center basic-btn purple-light-full' onClick={toggleNewArticleModal}>
+        <button
+          className='flex items-center basic-btn purple-light-full'
+          onClick={toggleNewArticleModal}>
           <span style={{ marginRight: '8px' }}>
             <FcCalendar />
           </span>

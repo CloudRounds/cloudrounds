@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Modal, Input, Button, Spin } from 'antd';
-import { createPurpose } from '@/services/purposes';
+import { createPurpose } from '@/services/calendars/CalendarService';
 import { useMutation } from 'react-query';
 import userStore from '@/stores/userStore';
 
@@ -52,7 +52,9 @@ const NewPurpose = ({ open, handleClose, userId, setPurposes, refetchPurposes })
       open={open}
       onCancel={handleClose}
       footer={[
-        <Button key='back' onClick={handleClose}>
+        <Button
+          key='back'
+          onClick={handleClose}>
           Cancel
         </Button>,
         <Button

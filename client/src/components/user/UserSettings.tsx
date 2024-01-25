@@ -3,7 +3,7 @@ import { Avatar, List, Card, Button, Input, Typography, Spin, Layout } from 'ant
 import { Modal, Space, Divider, Select } from 'antd';
 import { CheckOutlined, CloseOutlined, EditOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
-import { updateUser, deleteUser } from '@/services/users';
+import { updateUser, deleteUser } from '@/services/users/UserService';
 import { toast } from 'react-toastify';
 import PasswordChange from './PasswordChange';
 import { UNIVERSITY_CHOICES } from '@/utils/constants';
@@ -114,9 +114,14 @@ const UserSettings = observer(() => {
         {editingField === field ? (
           <>
             {choices ? (
-              <Select autoFocus value={tempValues[field]} onChange={value => handleChange(field, value)}>
+              <Select
+                autoFocus
+                value={tempValues[field]}
+                onChange={value => handleChange(field, value)}>
                 {choices.map((choice, index) => (
-                  <Select.Option key={index} value={choice.label}>
+                  <Select.Option
+                    key={index}
+                    value={choice.label}>
                     {choice.label}
                   </Select.Option>
                 ))}
@@ -131,12 +136,22 @@ const UserSettings = observer(() => {
                 onCancel={handleCancel}
               />
             ) : (
-              <Input autoFocus value={tempValues[field]} onChange={e => handleChange(field, e.target.value)} />
+              <Input
+                autoFocus
+                value={tempValues[field]}
+                onChange={e => handleChange(field, e.target.value)}
+              />
             )}
             {field !== 'password' && (
               <Space>
-                <Button icon={<CheckOutlined />} onClick={() => handleSaveAll(field)} />
-                <Button icon={<CloseOutlined />} onClick={handleCancel} />
+                <Button
+                  icon={<CheckOutlined />}
+                  onClick={() => handleSaveAll(field)}
+                />
+                <Button
+                  icon={<CloseOutlined />}
+                  onClick={handleCancel}
+                />
               </Space>
             )}
           </>
@@ -166,23 +181,31 @@ const UserSettings = observer(() => {
   const initials = user ? user.firstName[0].toUpperCase() + user.lastName[0].toUpperCase() : '';
 
   return (
-        <Layout className='p-4 bg-indigo-100	 rounded-lg text-left mb-4'>
-                  <div className='p-4 bg-gray-100 rounded-lg text-left mb-4'>
+    <Layout className='p-4 bg-indigo-100	 rounded-lg text-left mb-4'>
+      <div className='p-4 bg-gray-100 rounded-lg text-left mb-4'>
         <div
           className='flex items-center justify-center'
           style={{ paddingInline: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-          <Typography.Title level={2} className='mt-3'>
+          <Typography.Title
+            level={2}
+            className='mt-3'>
             Account Settings
           </Typography.Title>
         </div>
         <div>
-          <Space direction='vertical' style={{ width: '100%' }}>
+          <Space
+            direction='vertical'
+            style={{ width: '100%' }}>
             <div className='mx-auto max-w-[600px] p-6'>
               <Divider className='text-lg font-semibold'>LOGIN INFORMATION</Divider>
               <div className='mt-4'>
                 <div className='mb-3'>
                   <Typography.Text>Username</Typography.Text>
-                  <Input disabled value={tempValues['username']} style={{ cursor: 'default' }} />
+                  <Input
+                    disabled
+                    value={tempValues['username']}
+                    style={{ cursor: 'default' }}
+                  />
                 </div>
                 {renderField('Password', 'password')}
               </div>
@@ -209,7 +232,10 @@ const UserSettings = observer(() => {
                         View Details
                       </button>
                     </div>
-                    <AttendedArticles isOpen={isAttendedModalOpen} onClose={() => setIsAttendedModalOpen(false)} />
+                    <AttendedArticles
+                      isOpen={isAttendedModalOpen}
+                      onClose={() => setIsAttendedModalOpen(false)}
+                    />
                   </div>
                 ) : (
                   <List.Item>No articles attended.</List.Item>
@@ -217,8 +243,7 @@ const UserSettings = observer(() => {
               </List>
 
               <div className='p-4 bg-gray-100 rounded-lg text-left mb-4'>
-                  
-                                <Divider>PERMISSIONS </Divider>
+                <Divider>PERMISSIONS </Divider>
 
                 {user && (
                   <div className='mt-2'>
@@ -252,7 +277,9 @@ const UserSettings = observer(() => {
                 open={open}
                 onCancel={handleClose}
                 footer={[
-                  <Button key='back' onClick={handleClose}>
+                  <Button
+                    key='back'
+                    onClick={handleClose}>
                     Cancel
                   </Button>,
                   <Button

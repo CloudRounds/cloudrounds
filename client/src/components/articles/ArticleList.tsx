@@ -1,12 +1,12 @@
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import useArticlePermissions from '@/hooks/useArticlePermissions';
-import { deleteArticle, sortArticles } from '@/services/articles';
-import { toggleFavorite, getFavorites } from '@/services/users';
+import { deleteArticle, sortArticles } from '@/services/articles/ArticleService';
+import { toggleFavorite, getFavorites } from '@/services/users/UserService';
 import {
-  getEmptyPurposes,
-  getPurposesAfterCreate,
-  getPurposesAfterDelete,
-  getPurposesAfterUpdate,
+  getEmptyCalendars,
+  getCalendarsAfterCreate,
+  getCalendarsAfterDelete,
+  getCalendarsAfterUpdate,
   filterArticlesForList,
   getArticlesForPage
 } from '@/utils/articleHelpers';
@@ -19,30 +19,31 @@ import ArticleCalendar from './calendar/ArticleCalendar';
 import NewArticleForm from './form/NewArticleForm';
 import ArticleCard from './ArticleCard';
 import { Badge } from 'antd';
+import { Article, User } from '@/types';
 
 const ArticleList = observer(() => {
   const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = JSON.parse(localUser);
+  const user = JSON.parse(localUser || '{}') as User;
 
-  const [selectedArticle, setSelectedArticle] = useState(null);
-  const [selectedPurposes, setSelectedPurposes] = useState([]);
-  const [selectedOrganizers, setSelectedOrganizers] = useState([]);
-  const [organizerFilter, setOrganizerFilter] = useState([]);
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
+  const [selectedOrganizers, setSelectedOrganizers] = useState<string[]>([]);
+  const [organizerFilter, setOrganizerFilter] = useState<string[]>([]);
 
   const [openNewArticleModal, setOpenNewArticleModal] = useState(false);
-  const [localArticles, setLocalArticles] = useState([]);
+  const [localArticles, setLocalArticles] = useState<Article[]>([]);
   const [isUpdateLoading, setIsUpdateLoading] = useState(false);
-  const [favorites, setFavorites] = useState(null);
+  const [favorites, setFavorites] = useState<string[] | null>(null);
 
-  const { userPurposes, allowedArticles, canReadPurposes, isLoading } = useArticlePermissions();
+  const { userCalendars, allowedArticles, canReadCalendars, isLoading } = useArticlePermissions();
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 5;
 
-  const { data: favoritesData, isLoading: isFavoritesLoading } = useQuery(['favorites', user._id], () =>
-    getFavorites(user._id)
+  const { data: favoritesData, isLoading: isFavoritesLoading } = useQuery(['favorites', user.id], () =>
+    getFavorites(user.id)
   );
 
-  const handlePageChange = page => {
+  const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
@@ -52,15 +53,25 @@ const ArticleList = observer(() => {
     const sortedArticles = sortArticles(allowedArticles);
     setLocalArticles(sortedArticles);
 
-    const organizers = [...new Set(sortedArticles.map(article => article.organizer.username))];
+    const organizers: string[] = [
+      ...new Set(
+        sortedArticles.map((article: Article) => {
+          if (typeof article.organizer === 'object' && article.organizer !== null) {
+            return article.organizer.username;
+          }
+          return typeof article.organizer === 'string' ? article.organizer : null;
+        })
+      )
+    ].filter((organizer): organizer is string => organizer !== null);
+
     setSelectedOrganizers(organizers);
   }, [isLoading, allowedArticles]);
 
   useEffect(() => {
-    if (canReadPurposes.length > 0 && selectedPurposes.length === 0) {
-      setSelectedPurposes(canReadPurposes.map(p => p.name));
+    if (canReadCalendars.length > 0 && selectedCalendars.length === 0) {
+      setSelectedCalendars(canReadCalendars.map(p => p.name));
     }
-  }, [canReadPurposes]);
+  }, [canReadCalendars]);
 
   useEffect(() => {
     if (isFavoritesLoading) return;
@@ -69,16 +80,18 @@ const ArticleList = observer(() => {
 
   const deleteMutation = useMutation(deleteArticle, {
     onSuccess: (data, variables) => {
-      const updatedArticles = localArticles.filter(article => article._id !== variables);
+      const updatedArticles = localArticles.filter(article => article.id !== variables);
       setLocalArticles(updatedArticles);
 
-      const newSelectedPurposes = getPurposesAfterDelete(updatedArticles, selectedArticle, selectedPurposes);
-      setSelectedPurposes(newSelectedPurposes);
+      if (!selectedArticle) return;
+
+      const newSelectedCalendars = getCalendarsAfterDelete(updatedArticles, selectedArticle, selectedCalendars);
+      setSelectedCalendars(newSelectedCalendars);
       setSelectedArticle(null);
     }
   });
 
-  const handleDelete = async articleId => {
+  const handleDelete = async (articleId: string) => {
     Modal.confirm({
       title: 'Are you sure you want to delete this article?',
       content: 'This action cannot be undone.',
@@ -102,48 +115,46 @@ const ArticleList = observer(() => {
     }
   };
 
-  const handleArticleUpdate = async updatedArticle => {
+  const handleArticleUpdate = async (updatedArticle: Article) => {
     setIsUpdateLoading(true);
 
-    const updatedArticles = localArticles.map(article =>
-      article._id === updatedArticle._id ? updatedArticle : article
-    );
+    const updatedArticles = localArticles.map(article => (article.id === updatedArticle.id ? updatedArticle : article));
     setLocalArticles(sortArticles(updatedArticles));
 
-    const newSelectedPurposes = getPurposesAfterUpdate(
+    const newSelectedCalendars = getCalendarsAfterUpdate(
       localArticles,
-      userPurposes,
+      userCalendars || [],
       updatedArticle,
       updatedArticles,
-      selectedPurposes
+      selectedCalendars
     );
 
-    setSelectedPurposes(newSelectedPurposes);
+    setSelectedCalendars(newSelectedCalendars);
     setIsUpdateLoading(false);
   };
 
-  const handleCreateArticle = async newArticle => {
+  const handleCreateArticle = async (newArticle: Article) => {
     setIsUpdateLoading(true);
 
     const allArticles = [...localArticles, newArticle];
     setLocalArticles(sortArticles(allArticles));
 
-    const newSelectedPurposes = getPurposesAfterCreate(userPurposes, newArticle, selectedPurposes);
+    const newSelectedCalendars = getCalendarsAfterCreate(userCalendars || [], newArticle, selectedCalendars);
 
-    setSelectedPurposes(newSelectedPurposes);
+    setSelectedCalendars(newSelectedCalendars);
     setIsUpdateLoading(false);
   };
 
-  const handleEdit = articleId => {
-    setSelectedArticle(localArticles.find(article => article._id === articleId));
+  const handleEdit = (articleId: string) => {
+    setSelectedArticle(localArticles.find(article => article.id === articleId) || null);
   };
 
-  const handleFavorite = async articleId => {
+  const handleFavorite = async (articleId: string) => {
     try {
-      const isCurrentlyFavorite = favorites.includes(articleId);
+      const isCurrentlyFavorite = favorites ? favorites.includes(articleId) : false;
       const isFavorite = !isCurrentlyFavorite;
 
-      const data = await toggleFavorite(user._id, articleId, isFavorite);
+      const data = await toggleFavorite(user.id, articleId, isFavorite);
 
       setFavorites(data);
     } catch (error) {
@@ -159,27 +170,32 @@ const ArticleList = observer(() => {
     );
   }
 
-  const filteredArticles = filterArticlesForList(localArticles, organizerFilter, selectedPurposes);
+  const filteredArticles = filterArticlesForList(localArticles, organizerFilter, selectedCalendars);
   const currentArticles = getArticlesForPage(currentPage, articlesPerPage, filteredArticles);
-  const purposesWithoutArticles = getEmptyPurposes(localArticles, userPurposes);
+  const calendarsWithoutArticles = userCalendars ? getEmptyCalendars(localArticles, userCalendars) : [];
 
   return (
     <div style={{ background: '#e0e7ff' }}>
       <ActionBar
-        user={user}
-        mostRecentArticle={currentArticles[0]}
-        selectedPurposes={selectedPurposes}
-        setSelectedPurposes={setSelectedPurposes}
+        selectedCalendars={selectedCalendars}
+        setSelectedCalendars={setSelectedCalendars}
         toggleNewArticleModal={toggleNewArticleModal}
         selectedOrganizers={selectedOrganizers}
         organizerFilter={organizerFilter}
         setOrganizerFilter={setOrganizerFilter}
-        userPurposes={userPurposes}
-        emptyPurposes={purposesWithoutArticles}
+        userCalendars={userCalendars || []}
+        emptyCalendars={calendarsWithoutArticles}
       />
-      <div style={{ padding: '0 16px' }} className='content-container'>
-        <Row gutter={16} className='custom-flex'>
-          <Col xs={24} lg={12} className='calendar-col'>
+      <div
+        style={{ padding: '0 16px' }}
+        className='content-container'>
+        <Row
+          gutter={16}
+          className='custom-flex'>
+          <Col
+            xs={24}
+            lg={12}
+            className='calendar-col'>
             <div className='max-w-full overflow-x-auto'>
               <ArticleCalendar articles={filteredArticles} />
             </div>
@@ -201,8 +217,8 @@ const ArticleList = observer(() => {
                 color: 'white',
                 background: '#5161CE',
                 fontWeight: '900em',
-                width: '100%', // Set the width to 100% to make it span the entire column
-                display: 'block' // Ensure it behaves as a block element
+                width: '100%',
+                display: 'block'
               }}
             />
 
@@ -211,28 +227,25 @@ const ArticleList = observer(() => {
                 key={index}
                 article={article}
                 isOrganizer={article.organizer.username === user.username}
-                onFavorite={() => handleFavorite(article._id)}
-                onEdit={() => handleEdit(article._id)}
-                isFavorite={favorites && favorites.includes(article._id)}
+                onFavorite={() => handleFavorite(article.id)}
+                onEdit={() => handleEdit(article.id)}
+                isFavorite={favorites && favorites.includes(article.id)}
               />
             ))}
-                    {filteredArticles.length > 4 && (
-
-            <Pagination
-              current={currentPage}
-              total={filteredArticles.length}
-              pageSize={articlesPerPage}
-              onChange={handlePageChange}
-            />
-                    )}
-              
+            {filteredArticles.length > 4 && (
+              <Pagination
+                current={currentPage}
+                total={filteredArticles.length}
+                pageSize={articlesPerPage}
+                onChange={handlePageChange}
+              />
+            )}
           </Col>
         </Row>
       </div>
       <NewArticleForm
         open={openNewArticleModal || !!selectedArticle}
         onClose={toggleNewArticleModal}
-        localArticles={localArticles}
         selectedArticle={selectedArticle}
         setSelectedArticle={setSelectedArticle}
         onDelete={handleDelete}

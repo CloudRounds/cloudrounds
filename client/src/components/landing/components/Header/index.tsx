@@ -27,9 +27,9 @@ const Header = () => {
   };
 
   const MenuItem = () => {
-    const scrollTo = id => {
+    const scrollTo = (id: string) => {
       const element = document.getElementById(id);
-      element.scrollIntoView({
+      element?.scrollIntoView({
         behavior: 'smooth'
       });
       setVisibility(false);
@@ -45,9 +45,15 @@ const Header = () => {
         <CustomNavLinkSmall onClick={() => scrollTo('product')}>
           <Span>Product</Span>
         </CustomNavLinkSmall> */}
-        <CustomNavLinkSmall style={{ width: '180px' }} onClick={() => navigate(token ? '/calendar' : '/login')}>
+        <CustomNavLinkSmall
+          style={{ width: '180px' }}
+          onClick={() => navigate(token ? '/calendar' : '/login')}>
           <Span>
-            <Button>{token ? `Dashboard` : 'Sign Up/Log In'}</Button>
+            <Button
+              color='primary'
+              onClick={() => {}}>
+              {token ? `Dashboard` : 'Sign Up/Log In'}
+            </Button>
           </Span>
         </CustomNavLinkSmall>
       </>

@@ -8,10 +8,19 @@ import Input from '../../common/Input';
 import TextArea from '../../common/TextArea';
 import { ContactContainer, FormGroup, Span, ButtonContainer } from './styles';
 
-const Contact = ({ title, content, id }) => {
+interface FormErrors {
+  [key: string]: string | undefined;
+}
+
+interface ValidationTypeProps {
+  type: string;
+  errors: FormErrors;
+}
+
+const Contact = ({ title, content, id }: { title: string; content: string; id: string }) => {
   const { values, errors, handleChange, handleSubmit } = useForm(validate);
 
-  const ValidationType = ({ type }) => {
+  const ValidationType: React.FC<ValidationTypeProps> = ({ type }) => {
     const ErrorMessage = errors[type];
     return (
       <Zoom direction='left'>
@@ -22,15 +31,34 @@ const Contact = ({ title, content, id }) => {
 
   return (
     <ContactContainer id={id}>
-      <Row justify='space-between' align='middle'>
-        <Col lg={12} md={11} sm={24} xs={24}>
-          <Slide direction='left' triggerOnce>
-            <Block title={title} content={content} />
+      <Row
+        justify='space-between'
+        align='middle'>
+        <Col
+          lg={12}
+          md={11}
+          sm={24}
+          xs={24}>
+          <Slide
+            direction='left'
+            triggerOnce>
+            <Block
+              title={title}
+              content={content}
+            />
           </Slide>
         </Col>
-        <Col lg={12} md={12} sm={24} xs={24}>
-          <Slide direction='right' triggerOnce>
-            <FormGroup autoComplete='off' onSubmit={handleSubmit}>
+        <Col
+          lg={12}
+          md={12}
+          sm={24}
+          xs={24}>
+          <Slide
+            direction='right'
+            triggerOnce>
+            <FormGroup
+              autoComplete='off'
+              onSubmit={handleSubmit}>
               <Col span={24}>
                 <Input
                   type='text'
@@ -39,7 +67,10 @@ const Contact = ({ title, content, id }) => {
                   value={values.name || ''}
                   onChange={handleChange}
                 />
-                <ValidationType type='name' />
+                <ValidationType
+                  type='name'
+                  errors={errors}
+                />
               </Col>
               <Col span={24}>
                 <Input
@@ -49,7 +80,10 @@ const Contact = ({ title, content, id }) => {
                   value={values.email || ''}
                   onChange={handleChange}
                 />
-                <ValidationType type='email' />
+                <ValidationType
+                  type='email'
+                  errors={errors}
+                />
               </Col>
               <Col span={24}>
                 <TextArea
@@ -58,10 +92,18 @@ const Contact = ({ title, content, id }) => {
                   name='message'
                   onChange={handleChange}
                 />
-                <ValidationType type='message' />
+                <ValidationType
+                  type='message'
+                  errors={errors}
+                />
               </Col>
               <ButtonContainer>
-                <Button name='submit'>{'Submit'}</Button>
+                <Button
+                  name='submit'
+                  color='primary'
+                  onClick={handleSubmit}>
+                  Submit
+                </Button>
               </ButtonContainer>
             </FormGroup>
           </Slide>

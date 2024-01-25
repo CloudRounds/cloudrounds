@@ -4,7 +4,7 @@ import { Suspense, lazy, useEffect, useState } from 'react';
 import { Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { Spin } from 'antd';
-import { fetchCurrentUser } from './services/users';
+import { fetchCurrentUser } from './services/users/UserService';
 import AuthPage from './components/auth/AuthPage';
 import { useQuery } from 'react-query';
 import Home from './components/landing/pages/Home';

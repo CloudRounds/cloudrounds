@@ -1,5 +1,5 @@
 import { useQuery } from 'react-query';
-import { fetchCurrentUser } from '@/services/users';
+import { fetchCurrentUser } from '@/services/users/UserService';
 
 const useSuperAdmin = () => {
   const localUser = localStorage.getItem('CloudRoundsUser');

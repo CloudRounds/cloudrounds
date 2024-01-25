@@ -1,7 +1,12 @@
 import useArticlePermissions from '@/hooks/useArticlePermissions';
-import { sortArticlesDescending } from '@/services/articles';
-import { createFeedback, fetchUserFeedbacks, updateFeedback, deleteFeedback } from '@/services/feedbacks';
-import { toggleAttending } from '@/services/users';
+import { sortArticlesDescending } from '@/services/articles/ArticleService';
+import {
+  createFeedback,
+  fetchUserFeedbacks,
+  updateFeedback,
+  deleteFeedback
+} from '@/services/feedbacks/FeedbackService';
+import { toggleAttending } from '@/services/users/UserService';
 import { formatDate } from '@/utils/dates';
 import { EditOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { Button, Card, Checkbox, Input, Layout, Modal, Pagination, Spin, Table, Typography } from 'antd';
@@ -10,7 +15,6 @@ import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import PurposeAvatar from '../ui/PurposeAvatar';
 import purposeIcons from '../ui/PurposeIcons';
-
 
 const { TextArea } = Input;
 
@@ -149,8 +153,12 @@ const OlderArticles = observer(() => {
 
   return (
     <Layout>
-      <Card bordered={false} className='w-full text-center'>
-        <Typography.Title level={2} className='mt-4'>
+      <Card
+        bordered={false}
+        className='w-full text-center'>
+        <Typography.Title
+          level={2}
+          className='mt-4'>
           Previous Events
         </Typography.Title>
         <Table
@@ -159,9 +167,8 @@ const OlderArticles = observer(() => {
           pagination={false}
           rowKey={record => record._id}
           scroll={{ x: 'max-content' }}
-          style={{ overflowX: 'auto' }}> 
-    
-         <Table.Column
+          style={{ overflowX: 'auto' }}>
+          <Table.Column
             title='Purpose'
             dataIndex='purpose'
             key='purpose'

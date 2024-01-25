@@ -2,21 +2,38 @@ import { useState, useEffect } from 'react';
 import { Form, Input, Button, Spin, Typography } from 'antd';
 import { observer } from 'mobx-react-lite';
 import userStore from '@/stores/userStore';
-import { fetchUserFeedbacks } from '@/services/feedbacks';
+import { fetchUserFeedbacks } from '@/services/feedbacks/FeedbackService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
-import { loginUser } from '@/services/users';
+import { loginUser } from '@/services/users/UserService';
 import { MailOutlined } from '@ant-design/icons';
-import axios from 'axios';
 import { useLocation } from 'react-router-dom';
+import { AuthField } from '../fields/authFields';
+import { forgotPassword } from '@/services/auth/AuthService';
 
-const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPassword }) => {
+interface LoginFormProps {
+  fields: AuthField[];
+  appName: string;
+  isForgotPassword: boolean;
+  setIsForgotPassword: (isForgotPassword: boolean) => void;
+}
+
+interface Credentials {
+  username: string;
+  password: string;
+}
+
+const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPassword }: LoginFormProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-
   const [isLoading, setIsLoading] = useState(false);
-  const initialCredentials = fields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {});
-  const [credentials, setCredentials] = useState(initialCredentials);
+
+  const initialCredentials: Credentials = {
+    username: '',
+    password: ''
+  };
+
+  const [credentials, setCredentials] = useState<Credentials>(initialCredentials);
   const [fieldErrors, setFieldErrors] = useState(initialCredentials);
   const [emailResetField, setEmailResetField] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
@@ -67,7 +84,6 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
   };
 
   const handleForgotPassword = async () => {
-    const API_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:3003/auth' : '/auth';
     const emailToReset = emailResetField;
 
     if (!emailToReset) {
@@ -78,8 +94,7 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
     setIsSendingEmail(true);
 
     try {
-      const response = await axios.post(`${API_URL}/forgot-password`, { email: emailToReset });
-      console.log(response.data);
+      await forgotPassword(emailToReset);
       toast.success('Password reset email sent. Please check your inbox.', {
         autoClose: 1500,
         pauseOnFocusLoss: false
@@ -95,10 +110,16 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
     }
   };
 
+  function isCredentialKey(key: string): key is keyof Credentials {
+    return key === 'username' || key === 'password';
+  }
+
   return (
     <>
       {isForgotPassword ? (
-        <Form layout='vertical' onFinish={handleForgotPassword}>
+        <Form
+          layout='vertical'
+          onFinish={handleForgotPassword}>
           <div className={isSendingEmail || isLoading ? '' : `scrollable-area`}>
             <div className='px-8 w-full mx-auto'>
               <Form.Item>
@@ -119,11 +140,16 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
                 ) : (
                   <>
                     <div className='flex justify-center mt-8'>
-                      <Button type='primary' htmlType='submit' className='login-button'>
+                      <Button
+                        type='primary'
+                        htmlType='submit'
+                        className='login-button'>
                         Send Password Reset Email
                       </Button>
                     </div>
-                    <div className='flex justify-center mt-5 cursor-pointer' onClick={() => setIsForgotPassword(false)}>
+                    <div
+                      className='flex justify-center mt-5 cursor-pointer'
+                      onClick={() => setIsForgotPassword(false)}>
                       <Typography.Text className='text-gray-500 underline hover:text-blue-500'>
                         Back to login
                       </Typography.Text>
@@ -138,7 +164,9 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
         <Form onFinish={handleSubmit}>
           <div className={isSendingEmail || isLoading ? 'overflow-hidden' : `scrollable-area`}>
             <div className='px-8 w-full mx-auto'>
-              <div id='login-form' style={{ marginBottom: '30px' }}>
+              <div
+                id='login-form'
+                style={{ marginBottom: '30px' }}>
                 {fields.map((field, index) => (
                   <div key={index}>
                     {field.name === 'password' ? (
@@ -147,8 +175,7 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
                           <p className='requiredLabel'>{field.label}</p>
                           <Typography.Text
                             className='text-gray-500 underline hover:text-blue-500 cursor-pointer'
-                            onClick={() => setIsForgotPassword(true)}
-                          >
+                            onClick={() => setIsForgotPassword(true)}>
                             Forgot?
                           </Typography.Text>
                         </div>
@@ -156,8 +183,7 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
                           name={field.name}
                           rules={[{ required: field.required, message: fieldErrors[field.name] }]}
                           labelCol={{ span: 24 }}
-                          wrapperCol={{ span: 24 }}
-                        >
+                          wrapperCol={{ span: 24 }}>
                           <Input
                             disabled={isLoading}
                             type={field.type}
@@ -168,17 +194,22 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
                       </>
                     ) : (
                       <>
+                        {/* ERROR HERE */}
                         <p className='requiredLabel'>{field.label}</p>
                         <Form.Item
                           name={field.name}
-                          rules={[{ required: field.required, message: fieldErrors[field.name] }]}
+                          rules={[
+                            {
+                              required: field.required,
+                              message: (isCredentialKey(field.name) && fieldErrors[field.name]) || ''
+                            }
+                          ]}
                           labelCol={{ span: 24 }}
-                          wrapperCol={{ span: 24 }}
-                        >
+                          wrapperCol={{ span: 24 }}>
                           <Input
                             disabled={isLoading}
                             type={field.type}
-                            value={credentials[field.name]}
+                            value={isCredentialKey(field.name) ? credentials[field.name] : ''}
                             onChange={e => setCredentials({ ...credentials, [field.name]: e.target.value })}
                           />
                         </Form.Item>
@@ -194,12 +225,17 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
               ) : (
                 <div className='pb-4 sm:pb-8 w-full text-center'>
                   <div className='flex justify-center mt-8'>
-                    <Button type='primary' htmlType='submit' className='login-button'>
+                    <Button
+                      type='primary'
+                      htmlType='submit'
+                      className='login-button'>
                       Login
                     </Button>
                   </div>
 
-                  <div className='flex justify-center mt-5 cursor-pointer ' onClick={() => navigate('/register')}>
+                  <div
+                    className='flex justify-center mt-5 cursor-pointer '
+                    onClick={() => navigate('/register')}>
                     <Typography.Text className='text-gray-500 underline hover:text-blue-500'>
                       New to {appName}? Create account
                     </Typography.Text>

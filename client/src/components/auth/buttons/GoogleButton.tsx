@@ -1,4 +1,4 @@
-const GoogleButton = ({ isSignup }) => {
+const GoogleButton = ({ isSignup }: { isSignup: boolean }) => {
   return (
     <div className='px-6 sm:px-8 max-w flex justify-center items-center google-button'>
       <button

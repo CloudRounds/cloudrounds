@@ -4,15 +4,17 @@ import { navlinks as links, sideMenuLinks } from '@/utils/constants';
 import { LogoutOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
 import { Avatar, Drawer, Dropdown, List, Typography } from 'antd';
 import { observer } from 'mobx-react';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Navbar.css';
+import { User } from '@/types';
+import { SvgIconProps } from '@mui/material';
 
 const { Text } = Typography;
 
 const Navbar = observer(() => {
   const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = JSON.parse(localUser);
+  const user = localUser ? (JSON.parse(localUser) as User) : null;
 
   const navbarRef = useRef(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -41,7 +43,7 @@ const Navbar = observer(() => {
     userStore.setArticles([]);
     userStore.setSubmittedRequests([]);
     userStore.setFeedbacks([]);
-    userStore.setPurposes([]);
+    userStore.setCalendars([]);
     userStore.setCanRead([]);
     userStore.setCanWrite([]);
     localStorage.removeItem('CloudRoundsToken');
@@ -58,14 +60,14 @@ const Navbar = observer(() => {
     return null;
   }
 
-  const getInitials = user => {
+  const getInitials = (user: User) => {
     if (user && user.firstName && user.lastName) {
       return user.firstName[0].toUpperCase() + user.lastName[0].toUpperCase();
     }
     return '';
   };
 
-  const isActive = path => location.pathname === path;
+  const isActive = (path: string) => location.pathname === path;
 
   const drawerItems = [
     ...sideMenuLinks.map(link => ({
@@ -86,7 +88,10 @@ const Navbar = observer(() => {
     {
       key: 'logout',
       content: (
-        <button type='button' className={`drawer-item`} onClick={handleLogout}>
+        <button
+          type='button'
+          className={`drawer-item`}
+          onClick={handleLogout}>
           <LogoutOutlined className='text-lg' />
           <span className='mt-1'>Log Out</span>
         </button>
@@ -94,7 +99,7 @@ const Navbar = observer(() => {
     }
   ];
 
-  const drawerItemStyle = {
+  const drawerItemStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'flex-start',
     flexDirection: 'column',
@@ -102,9 +107,16 @@ const Navbar = observer(() => {
     width: '100%'
   };
 
-  const navlinkItems = links.map((link, index) => ({
+  type NavbarDesktopItem = {
+    key: string;
+    icon?: React.ElementType<SvgIconProps>;
+    label?: React.ReactNode;
+    onClick?: () => void;
+  };
+
+  const navlinkItems: NavbarDesktopItem[] = links.map((link, index) => ({
     key: link.endpoint,
-    icon: link.Icon || null,
+    icon: link.Icon as React.ElementType<SvgIconProps>,
     onClick: () => {
       setActiveIndex(index);
       navigate(link.endpoint);
@@ -130,20 +142,30 @@ const Navbar = observer(() => {
     key: 'userDropdown',
     label: (
       <div className='avatarDropdown'>
-        <Dropdown menu={{ items }} overlayStyle={{ top: '52px' }}>
+        <Dropdown
+          menu={{ items }}
+          overlayStyle={{ top: '52px' }}>
           <Avatar className='cursor-pointer'>{getInitials(user)}</Avatar>
         </Dropdown>
       </div>
     )
   };
 
-  const navbarDesktopItems = [...navlinkItems, avatarMenuItem];
+  const navbarDesktopItems: NavbarDesktopItem[] = [...navlinkItems, avatarMenuItem];
 
   return (
-    <nav ref={navbarRef} className='navbar-mainbg flex justify-between items-center h-[64px]'>
+    <nav
+      ref={navbarRef}
+      className='navbar-mainbg flex justify-between items-center h-[64px]'>
       <div className={`navbar-logo min-w-[200px]`}>
-        <Link to='/' className='flex items-center space-x-2 text-white text-lg pl-2'>
-          <img src={CloudLogo} width='40px' alt='CloudRounds Logo' />
+        <Link
+          to='/'
+          className='flex items-center space-x-2 text-white text-lg pl-2'>
+          <img
+            src={CloudLogo}
+            width='40px'
+            alt='CloudRounds Logo'
+          />
           <span className='text-white text-lg ml-2'>CloudRounds</span>
         </Link>
       </div>
@@ -151,7 +173,9 @@ const Navbar = observer(() => {
       <Drawer
         title={
           <div className='flex items-center text-gray-700 justify-center'>
-            <Text code className='text-lg'>
+            <Text
+              code
+              className='text-lg'>
               Menu
             </Text>
           </div>
@@ -177,8 +201,10 @@ const Navbar = observer(() => {
               {item.label ? (
                 item.label
               ) : (
-                <Link className='flex items-center justify-center'>
-                  <item.icon />
+                <Link
+                  to={item.key}
+                  className='flex items-center justify-center'>
+                  {item.icon ? <item.icon /> : null}
                 </Link>
               )}
               <div
@@ -199,7 +225,9 @@ const Navbar = observer(() => {
         </ul>
       </div>
       <div id='navbar-mobile'>
-        <button className='p-3 text-white' onClick={handleNavCollapse}>
+        <button
+          className='p-3 text-white'
+          onClick={handleNavCollapse}>
           <MenuOutlined />
         </button>
       </div>

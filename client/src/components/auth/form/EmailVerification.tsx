@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Spin, Alert } from 'antd';
-import axios from 'axios';
-
-const isDevelopment = process.env.NODE_ENV === 'development';
-const baseUrl = isDevelopment ? 'http://localhost:3003' : '';
+import { verifyEmail } from '@/services/auth/AuthService';
 
 const EmailVerification = () => {
   const { token } = useParams();
@@ -14,11 +11,10 @@ const EmailVerification = () => {
 
   async function validateRegisterToken() {
     try {
-      const response = await axios.get(`${baseUrl}/auth/verify-email/${token}`);
-      console.log(response.data.message);
+      await verifyEmail(token as string);
       setLoading(false);
       navigate('/login?emailValidated=true');
-    } catch (error) {
+    } catch (error: any) {
       setLoading(false);
       setError(error.message || 'Failed to verify email.');
     }
@@ -35,7 +31,12 @@ const EmailVerification = () => {
   }
 
   if (error) {
-    return <Alert message={error} type='error' />;
+    return (
+      <Alert
+        message={error}
+        type='error'
+      />
+    );
   }
 
   return null;

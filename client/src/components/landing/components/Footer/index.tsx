@@ -6,10 +6,19 @@ import { FooterSection, Title, NavLink, Extra, LogoContainer, Para, Large, Chat,
 import Logo from '../Logo';
 
 const Footer = () => {
-  const SocialLink = ({ href, src }) => {
+  const SocialLink = ({ href, src }: { href: string; src: string }) => {
     return (
-      <a href={href} target='_blank' rel='noopener noreferrer' key={src} aria-label={src}>
-        <SvgIcon src={src} width='25px' height='25px' />
+      <a
+        href={href}
+        target='_blank'
+        rel='noopener noreferrer'
+        key={src}
+        aria-label={src}>
+        <SvgIcon
+          src={src}
+          width='25px'
+          height='25px'
+        />
       </a>
     );
   };
@@ -18,14 +27,21 @@ const Footer = () => {
     <>
       <FooterSection>
         <Container>
+          <Row justify='space-between'></Row>
           <Row justify='space-between'>
-          </Row>
-          <Row justify='space-between'>
-            <Col lg={8} md={8} sm={12} xs={12}>
+            <Col
+              lg={8}
+              md={8}
+              sm={12}
+              xs={12}>
               <Title>Company</Title>
               <Large to=''>About</Large>
             </Col>
-            <Col lg={10} md={10} sm={12} xs={12}>
+            <Col
+              lg={10}
+              md={10}
+              sm={12}
+              xs={12}>
               <Title>Contact</Title>
               <a href='mailto:outreach@cloudrounds.com'>
                 <Chat>Let's Chat</Chat>
@@ -37,13 +53,19 @@ const Footer = () => {
       <hr style={{ width: '100%', border: '0', borderTop: '1px solid #CDD1D4' }} />
       <Extra>
         <Container border={true}>
-          <Row justify='space-between' align='middle' style={{ paddingTop: '3rem' }}>
+          <Row
+            justify='space-between'
+            align='middle'
+            style={{ paddingTop: '3rem' }}>
             <Logo />
             <FooterContainer>
               {/*  <SocialLink href='https://github.com/sharefd/CRnode' src='github.svg' /> */}
-             <SocialLink href='https://twitter.com/cloudrounds' src='twitter.svg' />
-               {/*  <SocialLink href='https://www.linkedin.com/in/sharefdanho/' src='linkedin.svg' /> */}
-                {/*   <a href='https://ko-fi.com' target='_blank' rel='noopener noreferrer'>
+              <SocialLink
+                href='https://twitter.com/cloudrounds'
+                src='twitter.svg'
+              />
+              {/*  <SocialLink href='https://www.linkedin.com/in/sharefdanho/' src='linkedin.svg' /> */}
+              {/*   <a href='https://ko-fi.com' target='_blank' rel='noopener noreferrer'>
                 <img
                   height='36'
                   style={{ border: 0, height: 36 }}

@@ -1,4 +1,10 @@
-const ContinueWithEmail = ({ showForm, setShowForm }) => {
+const ContinueWithEmail = ({
+  showForm,
+  setShowForm
+}: {
+  showForm: boolean;
+  setShowForm: (showForm: boolean) => void;
+}) => {
   return (
     <div className='px-6 sm:px-8 max-w flex justify-center items-center dark:bg-gray-800 py-2'>
       <button

@@ -1,7 +1,14 @@
-import { EventAvailable, History, Key, ManageSearch, PeopleAlt, Settings } from '@mui/icons-material';
-import { SettingOutlined } from '@ant-design/icons';
+import { Article, ArticleCreateInput } from '@/types';
+import { EventAvailable, History, Key, PeopleAlt, Settings } from '@mui/icons-material';
+import { SvgIconTypeMap } from '@mui/material';
+import { OverridableComponent } from '@mui/material/OverridableComponent';
 
-export const UNIVERSITY_CHOICES = [
+export interface UniversityChoice {
+  value: string;
+  label: string;
+}
+
+export const UNIVERSITY_CHOICES: UniversityChoice[] = [
   { value: '', label: 'Select University' },
 
   { value: 'McMaster University', label: 'McMaster University' },
@@ -25,7 +32,7 @@ export const UNIVERSITY_CHOICES = [
   { value: 'Other', label: 'Other' }
 ];
 
-export const domainSuggestions = [
+export const domainSuggestions: string[] = [
   'mail.utoronto.ca',
   'utoronto.ca',
   'medportal.ca',
@@ -51,14 +58,13 @@ export const domainSuggestions = [
   'umontreal.ca'
 ];
 
-export const universityDomainMap = {
+export const universityDomainMap: Record<string, string[]> = {
   'Dalhousie University': ['dal.ca'],
   'Ottawa University': ['uottawa.ca'],
   'McGill University': ['mcgill.ca'],
   'McMaster University': ['mcmaster.ca', 'medportal.ca'],
   'University of Toronto': ['mail.utoronto.ca', 'utoronto.ca'],
   'University of Western Ontario': ['uwo.ca', 'meds.uwo.ca'],
-  'University of Manitoba': ['umanitoba.ca'],
   'University of British Columbia': ['ubc.ca', 'mail.ubc.ca'],
   'Queens University': ['queensu.ca'],
   'University of Calgary': ['ahs.ca', 'albertahealthservices.ca'],
@@ -71,9 +77,9 @@ export const universityDomainMap = {
   Other: []
 };
 
-export const genericDomains = ['gmail.com'];
+export const genericDomains: string[] = ['gmail.com'];
 
-export const YEAR_OF_STUDY_CHOICES = [
+export const YEAR_OF_STUDY_CHOICES: string[] = [
   'PGY1',
   'PGY2',
   'PGY3',
@@ -90,7 +96,7 @@ export const YEAR_OF_STUDY_CHOICES = [
   'Other'
 ];
 
-export const monthNames = [
+export const monthNames: string[] = [
   'January',
   'February',
   'March',
@@ -105,9 +111,16 @@ export const monthNames = [
   'December'
 ];
 
-export const eventColors = ['#0056b3', '#2673FF', '#4D9BFF', '#80C7FF', '#B3E0FF'];
+export const eventColors: string[] = ['#0056b3', '#2673FF', '#4D9BFF', '#80C7FF', '#B3E0FF'];
 
-export const navlinks = [
+export interface NavLink {
+  label: string;
+  Icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; };
+  endpoint: string;
+  description: string;
+}
+
+export const navlinks: NavLink[] = [
   {
     label: 'Manage',
     Icon: PeopleAlt,
@@ -135,7 +148,7 @@ export const navlinks = [
   }
 ];
 
-export const sideMenuLinks = [
+export const sideMenuLinks: NavLink[] = [
   ...navlinks,
   {
     label: 'Settings',
@@ -145,7 +158,17 @@ export const sideMenuLinks = [
   }
 ];
 
-export const homeLinks = [
+interface HomeLink {
+  label: string;
+  Icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; };
+  endpoint: string;
+  description: string;
+  containerStyle?: React.CSSProperties;
+  labelStyle?: React.CSSProperties;
+  descriptionStyle?: React.CSSProperties;
+}
+
+export const homeLinks: HomeLink[] = [
   {
     label: 'Step 1: Manage',
     Icon: PeopleAlt,
@@ -158,33 +181,9 @@ export const homeLinks = [
     endpoint: '/calendar',
     description: 'Create events in the Calendar tab. See your calendar in action.'
   },
-//  {
-//    label: 'Step 3: Requests',
-//    Icon: Key,
-//    endpoint: '/requests',
-//    description: 'View and manage incoming calendar requests.'
-//  }
-  //     {
-  //     label: 'Past Events',
-  //     Icon: History,
-  //     endpoint: '/past-events',
-  //     description: 'Review past articles and provide optional feedback.'
-  //   },
-  // {
-  //   label: 'Rounds Catalog',
-  //   Icon: ManageSearch,
-  //   endpoint: '',
-  //   description: 'Coming soon.'
-  // },
-  // {
-  //   label: 'Account Settings',
-  //   Icon: Settings,
-  //   endpoint: '/settings',
-  //   description: 'Manage your account settings.'
-  // }
 ];
 
-// Apply CSS styles to achieve a vertical layout
+// CSS styles for Vertical layout
 homeLinks.forEach(link => {
   link.containerStyle = {
     display: 'flex',
@@ -201,17 +200,20 @@ homeLinks.forEach(link => {
   };
 });
 
-export const initialArticleData = {
+export const initialArticleData: ArticleCreateInput | Article = {
   title: '',
-  event_link: '',
+  eventLink: '',
   date: new Date(),
   duration: '',
-  purpose: '',
-  meeting_id: '',
+  meetingId: '',
   passcode: '',
   speaker: '',
-  additional_details: '',
+  additionalDetails: '',
   location: '',
   meetingType: 'Virtual',
-  organizer: ''
+  calendarId: '',
+  organizerId: '',
+  attendees: [],
+  favorites: [],
+  feedbacks: [],
 };

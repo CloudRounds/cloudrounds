@@ -1,4 +1,4 @@
-const ChevronLeft = ({ setShowForm }) => {
+const ChevronLeft = ({ setShowForm }: { setShowForm: (showForm: boolean) => void }) => {
   return (
     <div>
       <button
@@ -15,7 +15,9 @@ const ChevronLeft = ({ setShowForm }) => {
           role='img'
           aria-labelledby='a680s2vtw5rf8sl0j7d71dbv3ggknc2g'>
           <title id='a680s2vtw5rf8sl0j7d71dbv3ggknc2g'>Icons/chevron left</title>
-          <path d='M6 1.175L4.8583 0L0 5L4.8583 10L6 8.825L2.2915 5L6 1.175Z' fill='#0d0c22'></path>
+          <path
+            d='M6 1.175L4.8583 0L0 5L4.8583 10L6 8.825L2.2915 5L6 1.175Z'
+            fill='#0d0c22'></path>
         </svg>
       </button>
     </div>

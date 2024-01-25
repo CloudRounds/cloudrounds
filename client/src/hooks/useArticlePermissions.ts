@@ -1,79 +1,78 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
-import { fetchArticles } from '@/services/articles';
-import { fetchPurposes } from '@/services/purposes';
+import { fetchArticles } from '@/services/articles/ArticleService';
+import { fetchCalendars } from '@/services/calendars/CalendarService';
+import { User, Article, Calendar } from '@/types';
 
 const useArticlePermissions = () => {
-  const [allowedArticles, setAllowedArticles] = useState([]);
-  const [allowedPurposes, setAllowedPurposes] = useState([]);
-  const [canReadPurposes, setCanReadPurposes] = useState([]);
-  const [canWritePurposes, setCanWritePurposes] = useState([]);
+  const [allowedArticles, setAllowedArticles] = useState<Article[]>([]);
+  const [allowedCalendars, setAllowedCalendars] = useState<string[]>([]);
+  const [canReadCalendars, setCanReadCalendars] = useState<Calendar[]>([]);
+  const [canWriteCalendars, setCanWriteCalendars] = useState<Calendar[]>([]);
 
   const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = JSON.parse(localUser);
+  const user = localUser ? JSON.parse(localUser) as User : null;
 
   const {
     data: articles,
-    isLoading: isArticlesLoading,
-    refetch: refetchArticles
-  } = useQuery('articles', fetchArticles);
+    isLoading: isArticlesLoading
+  } = useQuery<Article[], Error>('articles', fetchArticles);
 
   const {
-    data: purposes,
-    isLoading: isPurposesLoading,
-    refetch: refetchPurposes
-  } = useQuery(['userPurposes', user?._id], () => fetchPurposes(user?._id), {
+    data: calendars,
+    isLoading: isCalendarsLoading
+  } = useQuery<Calendar[], Error>(['usercalendars', user?.id], () => fetchCalendars(user?.id || ''), {
     enabled: !!user
   });
 
   useEffect(() => {
-    if (isArticlesLoading || isPurposesLoading) {
+    if (isArticlesLoading || isCalendarsLoading || !articles || !calendars || !user) {
       return;
     }
 
-    const purposeIds = purposes.map(p => ({
-      _id: p._id,
-      canReadMembers: p.canReadMembers.map(m => m._id),
-      canWriteMembers: p.canWriteMembers.map(m => m._id)
+    const calendarIds = calendars.map(p => ({
+      id: p.id,
+      canReadMembers: p.canReadMembers.map(m => m.id),
+      canWriteMembers: p.canWriteMembers.map(m => m.id)
     }));
 
-    const canReadArticles = articles
-      ? articles.filter(
-          article =>
-            article.purpose &&
-            purposeIds.some(p => p._id === article.purpose._id && p.canReadMembers.includes(user._id))
-        )
-      : [];
+    const canReadArticles = articles.filter(article => {
+      const calendarId = article.calendar.id;
+      return calendarId && calendarIds.some(p => p.id === calendarId && p.canReadMembers.includes(user.id));
+    });
 
-    const canWriteArticles = articles
-      ? articles.filter(
-          article =>
-            article.purpose &&
-            purposeIds.some(p => p._id === article.purpose._id && p.canWriteMembers.includes(user._id))
-        )
-      : [];
+    const canWriteArticles = articles.filter(article => {
+      const calendarId = typeof article.calendar === 'string' ? article.calendar : article.calendar.id;
+      return calendarId && calendarIds.some(p => p.id === calendarId && p.canWriteMembers.includes(user.id));
+    });
 
-    setCanReadPurposes(
-      purposes.filter(p => canReadArticles.some(article => article.purpose && article.purpose._id === p._id))
-    );
-    setCanWritePurposes(
-      purposes.filter(p => canWriteArticles.some(article => article.purpose && article.purpose._id === p._id))
+    setCanReadCalendars(
+      calendars.filter(p => canReadArticles.some(article => {
+        const calendarId = article.calendar.id;
+        return calendarId && calendarId === p.id;
+      }))
     );
 
-    const purposeNames = purposes.map(p => p.name);
-    setAllowedPurposes(purposeNames);
+    setCanWriteCalendars(
+      calendars.filter(p => canWriteArticles.some(article => {
+        const calendarId = article.calendar.id;
+        return calendarId && calendarId === p.id;
+      }))
+    );
+
+    const calendarNames = calendars.map(p => p.name);
+    setAllowedCalendars(calendarNames);
     setAllowedArticles(canReadArticles);
-  }, [isArticlesLoading, isPurposesLoading]);
+  }, [isArticlesLoading, isCalendarsLoading, articles, calendars, user]);
+
 
   return {
     allowedArticles,
-    allowedPurposes,
-    userPurposes: purposes,
-    canReadPurposes,
-    canWritePurposes,
-    isLoading: isArticlesLoading || isPurposesLoading,
-    refetchArticles,
-    refetchPurposes
+    allowedCalendars,
+    userCalendars: calendars,
+    canReadCalendars,
+    canWriteCalendars,
+    isLoading: isArticlesLoading || isCalendarsLoading
   };
 };
 

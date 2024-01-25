@@ -1,48 +1,50 @@
+import { Article, Calendar, User, Request, Feedback } from '@/types';
 import { makeAutoObservable } from 'mobx';
 
 class UserStore {
-  user = null;
-  articles = [];
-  submittedRequests = [];
-  feedbacks = [];
-  purposes = [];
-  canRead = [];
-  canWrite = [];
-  attended = [];
+  user: User | null = null;
+  articles: Article[] = [];
+  submittedRequests: Request[] = [];
+  feedbacks: Feedback[] = [];
+  calendars: Calendar[] = [];
+  canRead: Article[] = [];
+  canWrite: Article[] = [];
+  attended: Article[] = [];
+
 
   constructor() {
     makeAutoObservable(this);
   }
 
-  setUser(user) {
+  setUser(user: User | null) {
     this.user = user;
   }
 
-  setAttended(attended) {
+  setAttended(attended: Article[]) {
     this.attended = attended;
   }
 
-  setPurposes(purposes) {
-    this.purposes = purposes;
+  setCalendars(calendars: Calendar[]) {
+    this.calendars = calendars;
   }
 
-  setArticles(articles) {
+  setArticles(articles: Article[]) {
     this.articles = articles;
   }
 
-  setSubmittedRequests(submittedRequests) {
+  setSubmittedRequests(submittedRequests: Request[]) {
     this.submittedRequests = submittedRequests;
   }
 
-  setFeedbacks(feedbacks) {
+  setFeedbacks(feedbacks: Feedback[]) {
     this.feedbacks = feedbacks;
   }
 
-  setCanRead(canRead) {
+  setCanRead(canRead: Article[]) {
     this.canRead = canRead;
   }
 
-  setCanWrite(canWrite) {
+  setCanWrite(canWrite: Article[]) {
     this.canWrite = canWrite;
   }
 }

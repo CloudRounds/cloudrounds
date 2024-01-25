@@ -1,43 +1,46 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
-import { fetchRequests } from '@/services/requests';
+import { fetchRequests } from '@/services/requests/RequestService';
+import { Calendar, Request, User } from '@/types';
 
 const useRequestPermissions = () => {
-  const [canWritePurposes, setCanWritePurposes] = useState([]);
-  const [canReadPurposes, setCanReadPurposes] = useState([]);
-  const [allowedPurposes, setAllowedPurposes] = useState([]);
-  const [allowedRequests, setAllowedRequests] = useState([]);
+  const [canWriteCalendars, setCanWriteCalendars] = useState<Calendar[]>([]);
+  const [canReadCalendars, setCanReadCalendars] = useState<Calendar[]>([]);
+  const [allowedCalendars, setAllowedCalendars] = useState<string[]>([]);
+  const [allowedRequests, setAllowedRequests] = useState<Request[]>([]);
 
   const localUser = localStorage.getItem('CloudRoundsUser');
-  const userId = JSON.parse(localUser)._id;
+  const user = localUser ? JSON.parse(localUser) as User : null;
 
   const { data: requests, isLoading, refetch } = useQuery('requests', fetchRequests);
 
   useEffect(() => {
-    if (isLoading) {
+    if (isLoading || !requests) {
       return;
     }
 
-    const canWriteRequests =
-      requests?.filter(request => request.purpose && request.purpose.canWriteMembers.includes(userId)) || [];
-    const canReadRequests =
-      requests?.filter(request => request.purpose && request.purpose.canReadMembers.includes(userId)) || [];
+    // Assuming requests.calendar is an array of calendars in each request
+    const canWriteMemberIds = requests.flatMap((request: Request) => request.calendar.canWriteMembers.map(member => member.id));
+    const canReadMemberIds = requests.flatMap((request: Request) => request.calendar.canReadMembers.map(member => member.id));
 
-    const uniqueCanWritePurposes = [...new Set(canWriteRequests.map(request => request.purpose))];
-    const uniqueCanReadPurposes = [...new Set(canReadRequests.map(request => request.purpose))];
-    const uniqueAllowedPurposes = [...new Set(canReadRequests.map(request => request.purpose.name))];
+    const canWriteRequests = requests.filter((request: Request) => canWriteMemberIds.includes(user?.id));
+    const canReadRequests = requests.filter((request: Request) => canReadMemberIds.includes(user?.id));
 
-    setCanWritePurposes(uniqueCanWritePurposes);
-    setCanReadPurposes(uniqueCanReadPurposes);
-    setAllowedPurposes(uniqueAllowedPurposes);
+    const uniqueCanWriteCalendars: Calendar[] = [...new Set(canWriteRequests.map((request: Request) => request.calendar))] as Calendar[];
+    const uniqueCanReadCalendars: Calendar[] = [...new Set(canReadRequests.map((request: Request) => request.calendar))] as Calendar[];
+    const uniqueAllowedCalendars: string[] = [...new Set(canReadRequests.map((request: Request) => request.calendar.name))] as string[];
+
+    setCanWriteCalendars(uniqueCanWriteCalendars);
+    setCanReadCalendars(uniqueCanReadCalendars);
+    setAllowedCalendars(uniqueAllowedCalendars);
     setAllowedRequests(canWriteRequests);
-  }, [isLoading, requests]);
+  }, [isLoading, requests, user]);
 
   return {
     requests,
-    canWritePurposes,
-    canReadPurposes,
-    allowedPurposes,
+    canWriteCalendars,
+    canReadCalendars,
+    allowedCalendars,
     allowedRequests,
     isLoading,
     refetch

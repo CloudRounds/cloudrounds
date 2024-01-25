@@ -1,0 +1,17 @@
+type Mutation {
+  forgotPassword(email: String!): ForgotPasswordResponse!
+  resetPassword(resetToken: String!, newPassword: String!): ResetPasswordResponse!
+  verifyEmail(token: String!): VerifyEmailResponse!
+}
+
+type ForgotPasswordResponse {
+  message: String!
+}
+
+type ResetPasswordResponse {
+  message: String!
+}
+
+type VerifyEmailResponse {
+  message: String!
+}

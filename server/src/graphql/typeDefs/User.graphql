@@ -1,0 +1,87 @@
+type User {
+  id: ID!
+  username: String!
+  firstName: String!
+  lastName: String!
+  password: String!
+  email: String!
+  university: String!
+  isAdmin: Boolean!
+  createdCalendars: [Calendar!]!
+  canReadCalendars: [Calendar!]!
+  canWriteCalendars: [Calendar!]!
+  organizedArticles: [Article!]!
+  favorites: [Favorite!]!
+  resetToken: String
+  resetTokenExpiry: Int
+  registerToken: String
+  registerTokenExpiry: Int
+  emailValidated: Boolean!
+  feedbacks: [Feedback!]!
+  requests: [Request!]!
+  attended: [Article!]!
+}
+
+type Query {
+  users: [User]
+  userById(userId: ID!): User
+  userByUsername(username: String!): User
+  userByToken(token: String!): User
+  favorites(userId: ID!): [Favorite]
+}
+
+type Mutation {
+  loginUser(credential: String!, password: String!): LoginResponse
+  registerUser(userData: UserData!): User
+  updateUser(id: ID!, updates: UserUpdateInput!): User
+  changePassword(userId: ID!, currentPassword: String!, newPassword: String!): ChangePasswordResponse
+  toggleAttendance(userId: ID!, articleId: ID!, isAttending: Boolean!): ToggleAttendanceResponse
+  toggleFavorite(userId: ID!, articleId: ID!, isFavorite: Boolean!): ToggleFavoriteResponse
+  deleteUser(id: ID!): DeleteUserResponse
+}
+
+type LoginResponse {
+  message: String!
+  token: String!
+  user: User!
+}
+
+input UserData {
+  username: String!
+  email: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  university: String!
+  isAdmin: Boolean
+  registerToken: String
+  registerTokenExpiry: Int
+  emailValidated: Boolean
+}
+
+input UserUpdateInput {
+  username: String!
+  email: String!
+  firstName: String!
+  lastName: String!
+  university: String!
+  isAdmin: Boolean
+}
+
+type ChangePasswordResponse {
+  message: String!
+}
+
+type ToggleAttendanceResponse {
+  message: String!
+  attended: [Article!]!
+}
+
+type ToggleFavoriteResponse {
+  message: String!
+  favorites: [Favorite!]!
+}
+
+type DeleteUserResponse {
+  message: String!
+}

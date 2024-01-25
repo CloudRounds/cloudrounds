@@ -3,6 +3,7 @@
 @import url('./assets/css/Modal.css');
 @import url('./assets/css/ArticleList.css');
 @import url('./assets/css/Calendar.css');
+@import url('./assets/css/LoadingSpinner.css');
 
 @tailwind base;
 @tailwind components;
@@ -338,5 +339,3 @@ select::placeholder {
 .custom-help-button:hover {
   background-color: #5161ce !important; /* Use !important to override Ant Design styles */
 }
-
-

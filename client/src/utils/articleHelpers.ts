@@ -1,61 +1,87 @@
-export const getEmptyPurposes = (localArticles, userPurposeObjects) => {
-  const articlePurposes = localArticles.map(a => a.purpose.name);
-  const userPurposeNames = userPurposeObjects.map(p => p.name);
-  const emptyPurposes = userPurposeNames.filter(p => !articlePurposes.includes(p));
-  return emptyPurposes;
+import { Article, Calendar } from '@/types';
+
+export const getEmptyCalendars = (localArticles: Article[], userCalendarObjects: Calendar[]) => {
+  const articleCalendars = localArticles.map(a => a.calendar.name);
+  const userCalendarNames = userCalendarObjects.map(p => p.name);
+  const emptyCalendars = userCalendarNames.filter(p => !articleCalendars.includes(p));
+  return emptyCalendars;
 };
 
-export const getPurposesAfterUpdate = (articles, purposes, updatedArticle, updatedArticles, selectedPurposes) => {
-  const oldPurposeName = articles.find(a => a._id === updatedArticle._id).purpose.name;
-  const newPurposeName = purposes.find(p => updatedArticle.purpose._id === p._id).name;
-  const oldPurposeStillInUse = updatedArticles.some(article => article.purpose.name === oldPurposeName);
-  let newSelectedPurposes = selectedPurposes.slice();
+export const getCalendarsAfterUpdate = (
+  articles: Article[] | Article[],
+  calendars: Calendar[],
+  updatedArticle: Article | Article,
+  updatedArticles: Article[] | Article[],
+  selectedCalendars: string[]
+): string[] => {
 
-  if (!oldPurposeStillInUse && newSelectedPurposes.includes(oldPurposeName)) {
-    newSelectedPurposes = newSelectedPurposes.filter(purpose => purpose !== oldPurposeName);
+  const getArticleCalendarName = (article: Article) => {
+    return typeof article.calendar === 'string' ? article.calendar : article.calendar.name;
+  };
+
+  const oldCalendarName = articles.find(a => a.id === updatedArticle.id)?.calendar.name;
+  const newCalendarName = calendars.find(c => updatedArticle.calendar.id === c.id)?.name;
+
+
+  const oldCalendarStillInUse = updatedArticles.some(article => getArticleCalendarName(article) === oldCalendarName);
+  let newSelectedCalendars = selectedCalendars.slice();
+
+  if (oldCalendarName && !oldCalendarStillInUse && newSelectedCalendars.includes(oldCalendarName)) {
+    newSelectedCalendars = newSelectedCalendars.filter(calendar => calendar !== oldCalendarName);
   }
 
-  if (!newSelectedPurposes.includes(newPurposeName)) {
-    newSelectedPurposes.push(newPurposeName);
+  if (newCalendarName && !newSelectedCalendars.includes(newCalendarName)) {
+    newSelectedCalendars.push(newCalendarName);
   }
 
-  return newSelectedPurposes;
+  return newSelectedCalendars;
 };
 
-export const getPurposesAfterCreate = (purposes, newArticle, selectedPurposes) => {
-  let newSelectedPurposes = selectedPurposes.slice();
-  const newPurposeName = purposes.find(p => newArticle.purpose._id === p._id).name;
-  if (!newSelectedPurposes.includes(newPurposeName)) {
-    newSelectedPurposes.push(newPurposeName);
+
+export const getCalendarsAfterCreate = (
+  calendars: Calendar[],
+  newArticle: Article,
+  selectedCalendars: string[]
+): string[] => {
+  let newSelectedCalendars = selectedCalendars.slice();
+  const newCalendarId = typeof newArticle.calendar === 'string' ? newArticle.calendar : newArticle.calendar.id;
+  const newCalendarName = calendars.find(p => p.id === newCalendarId)?.name;
+
+  if (newCalendarName && !newSelectedCalendars.includes(newCalendarName)) {
+    newSelectedCalendars.push(newCalendarName);
   }
 
-  return newSelectedPurposes;
+  return newSelectedCalendars;
 };
 
-export const getPurposesAfterDelete = (articles, deletedArticle, selectedPurposes) => {
-  const deletedArticlePurpose = deletedArticle.purpose;
+export const getCalendarsAfterDelete = (
+  articles: Article[],
+  deletedArticle: Article,
+  selectedCalendars: string[]
+): string[] => {
+  const deletedArticleCalendarId = typeof deletedArticle.calendar === 'string'
+    ? deletedArticle.calendar
+    : deletedArticle.calendar.id;
 
-  const isPurposeStillUsed = articles.some(
-    article => article.purpose._id === deletedArticlePurpose._id && article._id !== deletedArticle._id
-  );
+  const isCalendarStillUsed = articles.some(article => {
+    const articleCalendarId = typeof article.calendar === 'string' ? article.calendar : article.calendar.id;
+    return articleCalendarId === deletedArticleCalendarId && article.id !== deletedArticle.id;
+  });
 
-  if (!isPurposeStillUsed) {
-    return selectedPurposes.filter(purpose => purpose !== deletedArticlePurpose.name);
+  if (!isCalendarStillUsed) {
+    const deletedArticleCalendarName = typeof deletedArticle.calendar === 'string'
+      ? deletedArticle.calendar
+      : deletedArticle.calendar.name;
+
+    return selectedCalendars.filter(calendarName => calendarName !== deletedArticleCalendarName);
   }
 
-  return selectedPurposes;
+  return selectedCalendars;
 };
 
-//export const isArticleAfterCurrentDate = article => {
-//  const currentDate = new Date();
-//  const eightHoursAgo = new Date(currentDate);
-//  eightHoursAgo.setHours(eightHoursAgo.getHours() - 24);
-//  const articleDate = new Date(article ? article.date : '');
-//  return articleDate >= eightHoursAgo;
-//};
 
-export const isArticleAfterCurrentDate = article => {
- const currentDate = new Date();
+export const isArticleAfterCurrentDate = (article: Article) => {
+  const currentDate = new Date();
   const startOfCurrentDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
 
   const articleDate = new Date(article ? article.date : '');
@@ -64,18 +90,33 @@ export const isArticleAfterCurrentDate = article => {
   return articleDate >= startOfCurrentDay;
 };
 
-export const filterArticlesForList = (localArticles, organizerFilter, selectedPurposes) => {
+export const filterArticlesForList = (
+  localArticles: Article[],
+  organizerFilter: string[],
+  selectedCalendars: string[]
+): Article[] => {
   return localArticles
     .filter(article => {
-      return organizerFilter.length === 0 || organizerFilter.includes(article.organizer.username);
+      const organizerUsername = typeof article.organizer === 'string' ? article.organizer : article.organizer?.username;
+      if (organizerUsername) {
+        return organizerFilter.includes(organizerUsername)
+      } else {
+        return organizerFilter.length === 0;
+      }
     })
     .filter(article => {
-      return selectedPurposes.includes('Show All') || selectedPurposes.includes(article.purpose.name);
+      const calendarName = typeof article.calendar === 'string' ? article.calendar : article.calendar.name;
+      return selectedCalendars.includes('Show All') || selectedCalendars.includes(calendarName);
     })
     .filter(isArticleAfterCurrentDate);
 };
 
-export const getArticlesForPage = (currentPage, articlesPerPage, filteredArticles) => {
+
+export const getArticlesForPage = (
+  currentPage: number,
+  articlesPerPage: number,
+  filteredArticles: Article[]
+): Article[] => {
   const indexOfLastArticle = currentPage * articlesPerPage;
   const indexOfFirstArticle = indexOfLastArticle - articlesPerPage;
   return filteredArticles.slice(indexOfFirstArticle, indexOfLastArticle);

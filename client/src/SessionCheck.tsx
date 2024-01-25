@@ -1,25 +1,26 @@
-import axios from 'axios';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { sessionCheck } from './services/auth/AuthService';
 
-const isDevelopment = process.env.NODE_ENV === 'development';
-const baseUrl = isDevelopment ? 'http://localhost:3003' : '';
+interface SessionCheckProps {
+  setLoggedInUser: (user: any) => void;
+}
 
-const SessionCheck = ({ setLoggedInUser }) => {
+const SessionCheck = ({ setLoggedInUser }: SessionCheckProps) => {
   const navigate = useNavigate();
 
-  const isNonAuthPath = () => {
-    const nonAuthPatterns = [/^\/login$/, /^\/register$/, /^\/forgot-password$/, /^\/reset-password\/.+$/];
+  // const isNonAuthPath = () => {
+  //   const nonAuthPatterns = [/^\/login$/, /^\/register$/, /^\/forgot-password$/, /^\/reset-password\/.+$/];
 
-    return nonAuthPatterns.some(pattern => pattern.test(window.location.pathname));
-  };
+  //   return nonAuthPatterns.some(pattern => pattern.test(window.location.pathname));
+  // };
 
   useEffect(() => {
-    const checkSession = async () => {
+    const verifySession = async () => {
       try {
-        const response = await axios.get(`${baseUrl}/auth/session-check`);
-        if (response.data.valid) {
-          setLoggedInUser(response.data.user);
+        const response = await sessionCheck();
+        if (response.valid) {
+          setLoggedInUser(response.user);
         } else {
           throw new Error('Session invalid');
         }
@@ -28,7 +29,7 @@ const SessionCheck = ({ setLoggedInUser }) => {
       }
     };
 
-    checkSession();
+    verifySession();
   }, [navigate, setLoggedInUser]);
 
   return null;

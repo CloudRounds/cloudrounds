@@ -1,0 +1,48 @@
+scalar DateTime
+scalar String
+scalar Boolean
+scalar Int
+scalar ID
+
+type Calendar {
+  id: ID!
+  name: String!
+  description: String
+  creatorId: String!
+  creator: User!
+  canReadMembers: [User!]!
+  canWriteMembers: [User!]!
+  articles: [Article!]!
+  invites: [Invite!]!
+  requests: [Request!]!
+  emailMembers: [EmailMember!]!
+}
+
+type Query {
+  calendars: [Calendar!]!
+  calendarsByUser(userId: String!): [Calendar!]!
+  calendar(calendarId: String!): Calendar!
+}
+
+type Mutation {
+  createCalendar(calendarInput: CalendarCreateInput!): Calendar!
+  updateCalendar(id: ID!, calendarInput: CalendarUpdateInput!): Calendar!
+  deleteCalendar(calendarId: String!): DeleteCalendarResponse!
+}
+
+input CalendarCreateInput {
+  name: String!
+  description: String
+  creatorId: String!
+}
+
+input CalendarUpdateInput {
+  id: ID!
+  name: String!
+  description: String
+  creatorId: String!
+}
+
+type DeleteCalendarResponse {
+  message: String!
+}

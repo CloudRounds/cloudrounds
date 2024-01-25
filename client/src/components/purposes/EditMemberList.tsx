@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Modal, Button, Spin, Pagination, AutoComplete } from 'antd';
 import { useQuery, useMutation } from 'react-query';
-import { fetchUsers } from '@/services/users';
-import { fetchRequests, createRequest, createBulkRequests } from '@/services/requests';
+import { fetchUsers } from '@/services/users/UserService';
+import { fetchRequests, createRequest, createBulkRequests } from '@/services/requests/RequestService';
 import { toast } from 'react-toastify';
 import InviteByEmail from './InviteByEmail';
 import CurrentMembersList from './components/CurrentMembersList';
 import { RiAdminFill } from 'react-icons/ri';
-import { deleteRequest } from '@/services/requests';
+import { deleteRequest } from '@/services/requests/RequestService';
 
 const EditMemberList = ({ open, handleClose, refetchPurposes, selectedPurpose, setSelectedPurpose }) => {
   const { data: users, isLoading: isLoadingUsers } = useQuery('users', fetchUsers);
@@ -189,11 +189,20 @@ const EditMemberList = ({ open, handleClose, refetchPurposes, selectedPurpose, s
   const paginatedMembers = currentAndUnregistered.slice(startIndex, startIndex + itemsPerPage);
 
   const FooterButtons = () => (
-    <div key='buttons' className='mb-3'>
-      <Button key='back' onClick={handleModalClose}>
+    <div
+      key='buttons'
+      className='mb-3'>
+      <Button
+        key='back'
+        onClick={handleModalClose}>
         Cancel
       </Button>
-      <Button key='submit' ghost className='submit-blue-button' type='primary' onClick={handleSave}>
+      <Button
+        key='submit'
+        ghost
+        className='submit-blue-button'
+        type='primary'
+        onClick={handleSave}>
         Save
       </Button>
     </div>
@@ -250,7 +259,9 @@ const EditMemberList = ({ open, handleClose, refetchPurposes, selectedPurpose, s
         />
       </div>
 
-      <div className='member-row member-current' style={{ width: '100%', position: 'relative', minHeight: '370px' }}>
+      <div
+        className='member-row member-current'
+        style={{ width: '100%', position: 'relative', minHeight: '370px' }}>
         <p className='member-row-title'>Subscribers</p>
         <CurrentMembersList
           members={paginatedMembers}

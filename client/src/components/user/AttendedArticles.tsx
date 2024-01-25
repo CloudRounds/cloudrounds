@@ -1,7 +1,7 @@
 import { useQuery } from 'react-query';
 import { Modal, List, Progress } from 'antd';
 import { formatDate } from '@/utils/dates';
-import { fetchCurrentUser } from '@/services/users';
+import { fetchCurrentUser } from '@/services/users/UserService';
 
 const AttendedArticles = ({ isOpen, onClose }) => {
   const { data: user, isLoading, isError } = useQuery('userData', fetchCurrentUser);

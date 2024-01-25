@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useQuery } from 'react-query';
 
-import { createInvite } from '@/services/invites';
-import { fetchUsers } from '@/services/users';
+import { createInvite } from '@/services/invites/InviteService';
+import { fetchUsers } from '@/services/users/UserService';
 
 import { Modal, Button, Input, Form, Spin } from 'antd';
 import { toast } from 'react-toastify';
@@ -88,8 +88,14 @@ const InviteByEmail = ({
     <div className='mt-auto'>
       <Button onClick={() => setEmailModalOpen(true)}>Invite by email</Button>
 
-      <Modal title='Invite by Email' open={isEmailModalOpen} onCancel={handleCloseEmailModal} onOk={handleOk}>
-        <Form form={form} onFinish={handleSubmit}>
+      <Modal
+        title='Invite by Email'
+        open={isEmailModalOpen}
+        onCancel={handleCloseEmailModal}
+        onOk={handleOk}>
+        <Form
+          form={form}
+          onFinish={handleSubmit}>
           {isSending ? (
             <Spin />
           ) : (

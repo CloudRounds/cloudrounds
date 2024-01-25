@@ -2,13 +2,17 @@ import { useState, useEffect } from 'react';
 import { notification } from 'antd';
 import axios from 'axios';
 
-export const useForm = validate => {
+interface FormErrors {
+  [key: string]: string | undefined;
+}
+
+export const useForm = (validate: any) => {
   const [values, setValues] = useState({
     name: '',
     email: '',
     message: ''
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [shouldSubmit, setShouldSubmit] = useState(false);
 
   const openNotificationWithIcon = () => {
@@ -18,7 +22,7 @@ export const useForm = validate => {
     });
   };
 
-  const handleSubmit = event => {
+  const handleSubmit = (event: any) => {
     event.preventDefault();
     setErrors(validate(values));
     // Your url for API
@@ -41,7 +45,7 @@ export const useForm = validate => {
     }
   }, [errors, shouldSubmit]);
 
-  const handleChange = event => {
+  const handleChange = (event: any) => {
     event.persist();
     setValues(values => ({
       ...values,

@@ -1,9 +1,13 @@
-import styles from './LoadingSpinner.module.css';
+interface LoadingSpinnerProps {
+  asOverlay?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+}
 
-const LoadingSpinner = props => {
+const LoadingSpinner = (props: LoadingSpinnerProps) => {
   return (
-    <div className={`${props.asOverlay && styles.loadingSpinnerOverlay}`}>
-      <div className={styles.ldsDualRing}></div>
+    <div className={`${props.asOverlay && 'loadingSpinnerOverlay'} `}>
+      <div className='ldsDualRing'></div>
     </div>
   );
 };

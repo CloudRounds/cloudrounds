@@ -1,6 +1,10 @@
 import styled from 'styled-components';
 
-export const StyledContainer = styled.div.attrs(props => ({
+interface StyledContainerProps {
+  shouldHaveBorder?: boolean;
+}
+
+export const StyledContainer = styled.div.attrs<StyledContainerProps>(props => ({
   ...props,
   shouldHaveBorder: undefined
 }))`

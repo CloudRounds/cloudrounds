@@ -1,0 +1,49 @@
+type Article {
+  id: ID!
+  title: String!
+  eventLink: String
+  date: DateTime!
+  duration: String
+  organizerId: String!
+  organizer: User!
+  meetingType: String
+  meetingId: String
+  passcode: String
+  speaker: String
+  location: String
+  additionalDetails: String
+  feedbacks: [Feedback!]!
+  calendarId: String!
+  calendar: Calendar!
+  favorites: [Favorite!]!
+  attendees: [User!]!
+}
+
+type Query {
+  articles: [Article!]!
+}
+
+type Mutation {
+  createArticle(articleInput: ArticleCreateInput!): Article!
+  updateArticle(id: ID!, articleInput: ArticleCreateInput!): Article!
+  deleteArticle(id: ID!): DeleteArticleResponse!
+}
+
+input ArticleCreateInput {
+  title: String!
+  eventLink: String
+  date: DateTime!
+  duration: String
+  organizerId: String!
+  meetingType: String
+  meetingId: String
+  passcode: String
+  speaker: String
+  location: String
+  additionalDetails: String
+  calendarId: String!
+}
+
+type DeleteArticleResponse {
+  message: String!
+}

@@ -1,4 +1,18 @@
-const InputField = ({ field, value, onChange, error }) => (
+interface Field {
+  label: string;
+  name: string;
+  type: string;
+  required: boolean;
+}
+
+interface InputFieldProps {
+  field: Field;
+  value: string;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  error: string;
+}
+
+const InputField = ({ field, value, onChange, error }: InputFieldProps) => (
   <div className='mb-4'>
     <label className='block text-sm font-medium text-gray-600'>{field.label}</label>
     <input

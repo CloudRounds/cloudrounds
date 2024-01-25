@@ -1,60 +1,70 @@
 import useSuperAdmin from '@/hooks/useSuperAdmin';
-import { bulkUpdatePurposes, fetchPurposes } from '@/services/purposes';
+import { updateCalendar, fetchCalendars } from '@/services/calendars/CalendarService';
 import { Button, Modal, Spin, Table, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import MemberList from './MemberList';
 import AccessDenied from './AccessDenied';
+import { Calendar } from '@/types';
+import { User } from '@/types';
+import { ColumnType } from 'antd/es/table';
 
 const Admin = () => {
-  const { data, isLoading: isLoadingPurposes } = useQuery('purposes', () => fetchPurposes());
+  const localUser = localStorage.getItem('CloudRoundsUser');
+  const user = localUser ? (JSON.parse(localUser) as User) : null;
+
+  const { data, isLoading: isLoadingCalendars } = useQuery<Calendar[]>(
+    ['calendars', user?.id],
+    () => fetchCalendars(user?.id || ''),
+    {
+      enabled: !!user
+    }
+  );
+
   const [openModal, setOpenModal] = useState(false);
-  const [selectedPurpose, setSelectedPurpose] = useState(null);
-
-  const [purposes, setPurposes] = useState([]);
-
+  const [selectedCalendar, setSelectedCalendar] = useState<Calendar | null>(null);
+  const [calendars, setCalendars] = useState<Calendar[]>([]);
   const { isSuperAdmin, isLoading: isSuperAdminCheckLoading, isError } = useSuperAdmin();
 
   useEffect(() => {
-    if (!isLoadingPurposes) {
-      setPurposes(data);
+    if (!isLoadingCalendars) {
+      setCalendars(data || []);
     }
-  }, [isLoadingPurposes]);
+  }, [isLoadingCalendars]);
 
-  const mutation = useMutation(bulkUpdatePurposes, {
-    onSuccess: data => {
-      setPurposes(prevPurposes => prevPurposes.map(p => (p._id === data._id ? data : p)));
-      console.log('Purposes/permissions updated successfully');
-      closeModal();
+  const mutation = useMutation(updateCalendar, {
+    onSuccess: (updatedCalendar: Calendar) => {
+      setCalendars(prevCalendars => prevCalendars.map(p => (p.id === updatedCalendar.id ? updatedCalendar : p)));
+      console.log('Calendars/permissions updated successfully');
+      setOpenModal(false);
     },
-    onError: error => {
-      console.error('Error updating purposes/permissions:', error);
+    onError: (error: Error) => {
+      console.error('Error updating calendars/permissions:', error);
     }
   });
 
   const handleSavePermissions = () => {
-    mutation.mutate(selectedPurpose);
+    if (selectedCalendar) {
+      mutation.mutate({ calendarId: selectedCalendar.id, editedCalendar: selectedCalendar });
+    }
   };
 
-  const handlePermissionChange = (memberId, type) => {
-    setPurposes(prevPurposes => {
-      return prevPurposes.map(p => {
-        if (p._id === selectedPurpose._id) {
-          const updatedPurpose = { ...p };
-          if (type === 'canRead') {
-            if (updatedPurpose.canReadMembers.includes(memberId)) {
-              updatedPurpose.canReadMembers = updatedPurpose.canReadMembers.filter(id => id !== memberId);
-            } else {
-              updatedPurpose.canReadMembers.push(memberId);
-            }
-          } else if (type === 'canWrite') {
-            if (updatedPurpose.canWriteMembers.includes(memberId)) {
-              updatedPurpose.canWriteMembers = updatedPurpose.canWriteMembers.filter(id => id !== memberId);
-            } else {
-              updatedPurpose.canWriteMembers.push(memberId);
-            }
+  const handlePermissionChange = (memberId: string, type: 'canRead' | 'canWrite') => {
+    setCalendars(prevCalendars => {
+      return prevCalendars.map(p => {
+        if (p.id === selectedCalendar?.id) {
+          const updatedCalendar = { ...p };
+          const memberArray: string[] =
+            type === 'canRead' ? updatedCalendar.canReadMembers : updatedCalendar.canWriteMembers;
+
+          if (memberArray.includes(memberId)) {
+            updatedCalendar[type === 'canRead' ? 'canReadMembers' : 'canWriteMembers'] = memberArray.filter(
+              id => id !== memberId
+            );
+          } else {
+            updatedCalendar[type === 'canRead' ? 'canReadMembers' : 'canWriteMembers'].push(memberId);
           }
-          return updatedPurpose;
+          return updatedCalendar;
         }
         return p;
       });
@@ -65,11 +75,11 @@ const Admin = () => {
     return <Spin />;
   }
 
-  const renderMemberCount = members => members?.length || 0;
+  const renderMemberCount = (members: string[]) => members?.length || 0;
 
-  const columns = [
+  const columns: ColumnType<Calendar>[] = [
     {
-      title: 'Purpose',
+      title: 'Calendar',
       dataIndex: 'name',
       key: 'name'
     },
@@ -96,7 +106,7 @@ const Admin = () => {
       render: (_, record) => (
         <Button
           onClick={() => {
-            setSelectedPurpose(record);
+            setSelectedCalendar(record);
             setOpenModal(true);
           }}>
           Edit Permissions
@@ -106,11 +116,11 @@ const Admin = () => {
   ];
 
   const handleCloseModal = () => {
-    setSelectedPurpose(null);
+    setSelectedCalendar(null);
     setOpenModal(false);
   };
 
-  if (isLoadingPurposes || isSuperAdminCheckLoading) {
+  if (isLoadingCalendars || isSuperAdminCheckLoading) {
     return <Spin />;
   }
 
@@ -120,33 +130,42 @@ const Admin = () => {
 
   return (
     <div>
-      <Table dataSource={purposes} columns={columns} rowKey='_id' />
-      {selectedPurpose && (
+      <Table
+        dataSource={calendars}
+        columns={columns}
+        rowKey='_id'
+      />
+      {selectedCalendar && (
         <Modal
-          title={`Edit Permissions for ${selectedPurpose.name}`}
+          title={`Edit Permissions for ${selectedCalendar.name}`}
           open={openModal}
           onOk={handleSavePermissions}
           onCancel={handleCloseModal}
           footer={[
-            <Button key='back' onClick={handleCloseModal}>
+            <Button
+              key='back'
+              onClick={handleCloseModal}>
               Cancel
             </Button>,
-            <Button key='submit' type='primary' onClick={handleSavePermissions}>
+            <Button
+              key='submit'
+              type='primary'
+              onClick={handleSavePermissions}>
               Save
             </Button>
           ]}>
           <div>
-            <Typography.Text>Can Read Members ({renderMemberCount(selectedPurpose.canReadMembers)})</Typography.Text>
+            <Typography.Text>Can Read Members ({renderMemberCount(selectedCalendar.canReadMembers)})</Typography.Text>
             <MemberList
-              members={selectedPurpose.canReadMembers || []}
+              members={selectedCalendar.canReadMembers || []}
               type='canRead'
               handlePermissionChange={handlePermissionChange}
             />
           </div>
           <div>
-            <Typography.Text>Can Write Members ({renderMemberCount(selectedPurpose.canWriteMembers)})</Typography.Text>
+            <Typography.Text>Can Write Members ({renderMemberCount(selectedCalendar.canWriteMembers)})</Typography.Text>
             <MemberList
-              members={selectedPurpose.canWriteMembers || []}
+              members={selectedCalendar.canWriteMembers || []}
               type='canWrite'
               handlePermissionChange={handlePermissionChange}
             />

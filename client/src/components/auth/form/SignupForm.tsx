@@ -1,16 +1,22 @@
 import { Form, Input, Button, Select, Spin, AutoComplete } from 'antd';
-import { createUser } from '@/services/users';
+import { createUser } from '@/services/users/UserService';
 import { observer } from 'mobx-react-lite';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
-import { getInviteByToken, registerWithToken } from '@/services/invites';
-import { getDomainSuggestions, generateEmailSuggestions } from '../fields/authFields';
+import { getDomainSuggestions, generateEmailSuggestions, AuthField } from '../fields/authFields';
+import { Rule } from 'antd/es/form';
+import { getInviteByToken, registerWithToken } from '@/services/invites/InviteService';
 
 const { Option } = Select;
 
-const SignupForm = observer(({ fields, setIsSignUp }) => {
-  const [emailSuggestions, setEmailSuggestions] = useState([]);
+interface SignupFormProps {
+  fields: AuthField[];
+  setIsSignUp: (isSignUp: boolean) => void;
+}
+
+const SignupForm: React.FC<SignupFormProps> = observer(({ fields, setIsSignUp }) => {
+  const [emailSuggestions, setEmailSuggestions] = useState<string[]>([]);
   const [selectedUniversity, setSelectedUniversity] = useState('');
 
   const navigate = useNavigate();
@@ -46,7 +52,7 @@ const SignupForm = observer(({ fields, setIsSignUp }) => {
       setIsSignUp(false);
       navigate('/login');
       form.resetFields();
-    } catch (error) {
+    } catch (error: any) {
       setIsLoading(false);
       if (error.response && error.response.data) {
         const errorMessage = error.response.data;
@@ -75,7 +81,7 @@ const SignupForm = observer(({ fields, setIsSignUp }) => {
     }
   }, []);
 
-  const onUniversityChange = value => {
+  const onUniversityChange = (value: string) => {
     setSelectedUniversity(value);
 
     const currentEmailValue = form.getFieldValue('email');
@@ -86,7 +92,7 @@ const SignupForm = observer(({ fields, setIsSignUp }) => {
     }
   };
 
-  const onEmailSearch = value => {
+  const onEmailSearch = (value: string) => {
     if (value === '') {
       setEmailSuggestions([]);
       return;
@@ -99,9 +105,15 @@ const SignupForm = observer(({ fields, setIsSignUp }) => {
   const usernameRules = usernameField ? usernameField.rules : [];
 
   return (
-    <Form form={form} onFinish={handleSubmit} initialValues={{ university: '' }} className='signup-form'>
+    <Form
+      form={form}
+      onFinish={handleSubmit}
+      initialValues={{ university: '' }}
+      className='signup-form'>
       <div className='p-8 py-2 md:py-0 w-full mx-auto'>
-        <div id='signup-form' className={isLoading ? '' : `scrollable-area`}>
+        <div
+          id='signup-form'
+          className={isLoading ? '' : `scrollable-area`}>
           <h1 className='authform-title'>Sign up</h1>
           {fields.map((field, index) => (
             <div key={index}>
@@ -111,17 +123,17 @@ const SignupForm = observer(({ fields, setIsSignUp }) => {
                 rules={
                   field.name === 'username'
                     ? usernameRules
-                    : [
+                    : ([
                         { required: true, message: 'This field is required' },
                         field.name === 'passwordConfirmation' && {
-                          validator: (_, value) => {
+                          validator: (_: any, value: string) => {
                             if (!value || form.getFieldValue('password') === value) {
                               return Promise.resolve();
                             }
                             return Promise.reject(new Error('Passwords do not match'));
                           }
                         }
-                      ].filter(Boolean)
+                      ].filter(Boolean) as Rule[])
                 }
                 labelCol={{ span: 24 }}
                 wrapperCol={{ span: 24 }}>
@@ -129,17 +141,29 @@ const SignupForm = observer(({ fields, setIsSignUp }) => {
                   <Select onChange={onUniversityChange}>
                     {field.choices &&
                       field.choices.map((choice, i) => (
-                        <Option key={i} value={choice.value} disabled={!choice.value}>
+                        <Option
+                          key={i}
+                          value={choice.value}
+                          disabled={!choice.value}>
                           {choice.label}
                         </Option>
                       ))}
                   </Select>
                 ) : field.name === 'email' ? (
-                  <AutoComplete options={emailSuggestions.map(email => ({ value: email }))} onSearch={onEmailSearch}>
-                    <Input type={field.type} disabled={field.name === 'email' && token} />
+                  <AutoComplete
+                    options={emailSuggestions.map(email => ({ value: email }))}
+                    onSearch={onEmailSearch}>
+                    <Input
+                      type={field.type}
+                      disabled={!!(field.name === 'email' && token)}
+                    />
                   </AutoComplete>
                 ) : (
-                  <Input type={field.type} disabled={field.name === 'email' && token} autoComplete='new-password' />
+                  <Input
+                    type={field.type}
+                    disabled={!!(field.name === 'email' && token)}
+                    autoComplete='new-password'
+                  />
                 )}
               </Form.Item>
             </div>
@@ -148,11 +172,16 @@ const SignupForm = observer(({ fields, setIsSignUp }) => {
             {isLoading ? (
               <Spin />
             ) : (
-              <Button type='primary' className='signup-button' htmlType='submit'>
+              <Button
+                type='primary'
+                className='signup-button'
+                htmlType='submit'>
                 Sign Up
               </Button>
             )}
-            <div className='flex justify-center mt-5 cursor-pointer ' onClick={() => navigate('/login')}>
+            <div
+              className='flex justify-center mt-5 cursor-pointer '
+              onClick={() => navigate('/login')}>
               <p className='text-gray-500 underline hover:text-blue-500'>Already have an account? Login</p>
             </div>
           </div>

@@ -2,12 +2,12 @@ import { observer } from 'mobx-react';
 import { useEffect, useState } from 'react';
 import { Button, Input, Modal, Spin, Table } from 'antd';
 import useSettingsPermissions from '@/hooks/useSettingsPermissions';
-import { deletePurpose, updatePurpose } from '@/services/purposes';
+import { deletePurpose, updatePurpose } from '@/services/calendars/CalendarService';
 import EditMemberList from './EditMemberList';
 import NewPurpose from './NewPurpose';
 import { useMutation } from 'react-query';
 import { getColumns, getMemberColums } from './components/columns';
-import { removeUserFromPurpose } from '../../services/purposes';
+import { removeUserFromPurpose } from '../../services/calendars/CalendarService';
 import { toast } from 'react-toastify';
 import { FcCalendar } from 'react-icons/fc';
 
@@ -146,8 +146,7 @@ const PurposesList = observer(() => {
       <h1 className='my-4 text-xl'>Your Calendars</h1>
       <Button
         className='flex items-center basic-btn purple-light-full new-calendar-button'
-        onClick={() => setOpenNewPurpose(true)}
-      >
+        onClick={() => setOpenNewPurpose(true)}>
         <span style={{ marginRight: '8px' }}>
           <FcCalendar />
         </span>
@@ -170,7 +169,11 @@ const PurposesList = observer(() => {
         className='full-width-mobile overflow-x-auto'
       />
 
-      <Modal title='Edit Calendar' open={open} onCancel={handleClose} onOk={handleSave}>
+      <Modal
+        title='Edit Calendar'
+        open={open}
+        onCancel={handleClose}
+        onOk={handleSave}>
         {editField === 'name' && (
           <Input
             autoFocus

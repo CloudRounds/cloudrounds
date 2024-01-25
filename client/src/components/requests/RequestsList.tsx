@@ -1,33 +1,35 @@
-import { deleteRequest, updateRequest } from '@/services/requests';
+import useRequestPermissions from '@/hooks/useRequestPermissions';
+import { deleteRequest, updateRequestStatus } from '@/services/requests/RequestService';
 import userStore from '@/stores/userStore';
+import { Calendar, Request, User } from '@/types';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   DeleteOutlined,
-  MoreOutlined,
-  HourglassOutlined
+  HourglassOutlined,
+  MoreOutlined
 } from '@ant-design/icons';
-import { Button, Dropdown, Layout, Modal, Pagination, Progress, Spin, Table, Typography } from 'antd';
+import { Button, Dropdown, Layout, Modal, Pagination, Spin, Table, Typography } from 'antd';
 import { observer } from 'mobx-react';
 import { useEffect, useState } from 'react';
-import { useMutation } from 'react-query';
-import useRequestPermissions from '@/hooks/useRequestPermissions';
+import { useMutation, useQueryClient } from 'react-query';
 
 const { Content } = Layout;
 
 const RequestsList = observer(() => {
   const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = JSON.parse(localUser);
+  const user = localUser ? (JSON.parse(localUser) as User) : null;
+  const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [localRequests, setLocalRequests] = useState([]);
+  const [localRequests, setLocalRequests] = useState<Request[]>([]);
 
   const { requests, allowedRequests, isLoading: isQueryLoading, refetch } = useRequestPermissions();
   const [showUserRequests, setShowUserRequests] = useState(true);
-  const [isStatusUpdating, setIsStatusUpdating] = useState(null);
+  const [isStatusUpdating, setIsStatusUpdating] = useState<string | null>(null);
 
   useEffect(() => {
     if (isQueryLoading) return;
@@ -35,16 +37,15 @@ const RequestsList = observer(() => {
   }, [isQueryLoading, allowedRequests]);
 
   const deleteMutation = useMutation(deleteRequest, {
-    onSuccess: (data, variables) => {
-      refetch();
-      userStore.setSubmittedRequests(userStore.submittedRequests.filter(request => request._id !== variables));
+    onSuccess: () => {
+      queryClient.invalidateQueries('requests');
     },
     onError: error => {
       console.error('Error deleting request:', error);
     }
   });
 
-  const handleDelete = requestId => {
+  const handleDelete = (requestId: string) => {
     Modal.confirm({
       title: 'Are you sure you want to delete this request?',
       content: 'This action cannot be undone.',
@@ -61,30 +62,39 @@ const RequestsList = observer(() => {
   };
 
   const updateStatusMutation = useMutation(
-    async ({ id, purpose, status }) => {
-      setIsStatusUpdating(id);
-
-      const updatedRequest = { _id: id, status, email: user.email, purpose };
-      await updateRequest(updatedRequest);
+    async ({
+      requestId,
+      calendarId,
+      status,
+      message
+    }: {
+      requestId: string;
+      calendarId: string;
+      status: string;
+      message: string;
+    }) => {
+      return updateRequestStatus(requestId, calendarId, status, message);
     },
     {
       onSuccess: (data, variables) => {
+        // Update the local state with the updated request status
         const updatedRequests = localRequests.map(request => {
-          if (request._id === variables.id) {
+          if (request.id === variables.requestId) {
             return { ...request, status: variables.status, isApproving: false };
           }
           return request;
         });
-        refetch();
-        setLocalRequests(updatedRequests);
-        userStore.setSubmittedRequests(updatedRequests.filter(r => r.user._id === user._id));
 
+        setLocalRequests(updatedRequests);
+
+        // Update the user store and refetch data
+        userStore.setSubmittedRequests(updatedRequests.filter(r => r.user.id === user?.id));
+        refetch();
         setIsStatusUpdating(null);
         handleClose();
       },
       onError: (error, variables) => {
         console.error('There was an error updating the request:', error);
-
         setIsStatusUpdating(null);
         handleClose();
       }
@@ -95,12 +105,12 @@ const RequestsList = observer(() => {
     setOpenMenuId(null);
   };
 
-  const handleChangePage = (newPage, newRowsPerPage) => {
+  const handleChangePage = (newPage: number, newRowsPerPage: number) => {
     setPage(newPage);
     setRowsPerPage(newRowsPerPage);
   };
 
-  const handleChangeRowsPerPage = event => {
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 25));
     setPage(0);
   };
@@ -109,8 +119,8 @@ const RequestsList = observer(() => {
     setShowUserRequests(!showUserRequests);
   };
 
-  const updateStatus = (id, purposeId, status) => {
-    updateStatusMutation.mutate({ id, purpose: purposeId, status });
+  const updateStatus = (id: string, calendarId: string, status: string, message: string) => {
+    updateStatusMutation.mutate({ requestId: id, status, message, calendarId });
   };
 
   if (isQueryLoading || isLoading) {
@@ -122,28 +132,21 @@ const RequestsList = observer(() => {
   }
 
   const displayedRequests = showUserRequests
-    ? requests.filter(req => req.user._id === user._id)
-    : localRequests.filter(req => req.user._id !== user._id);
+    ? requests.filter((req: Request) => req.user.id === user?.id)
+    : localRequests.filter((req: Request) => req.user?.id !== user?.id);
 
   const columns = [
     {
-      title: 'Purpose',
-      dataIndex: 'purpose',
-      key: 'purpose',
-      render: purpose => <strong>{purpose && purpose.name}</strong>
+      title: 'Calendar',
+      dataIndex: 'calendar',
+      key: 'calendar',
+      render: (calendar: Calendar) => <strong>{calendar && calendar.name}</strong>
     },
-//{
-//  title: 'Calendar Owner',
-//  dataIndex: 'purpose',
-//  key: 'purpose.creator',
-//  render: purpose => <span>{[purpose.creator].username}</span>
-//},
-
     {
       title: 'User',
       dataIndex: 'user',
       key: 'user',
-      render: user => (
+      render: (user: User) => (
         <div>
           <p style={{ padding: 0, margin: 0, fontSize: '12px' }}>{user.username}</p>
           <span style={{ padding: 0, margin: 0, fontSize: '12px', color: 'blue' }}>{user.email}</span>
@@ -154,39 +157,41 @@ const RequestsList = observer(() => {
       title: 'Message',
       dataIndex: 'message',
       key: 'message',
-      render: text => <strong>{text}</strong>
+      render: (text: string) => <strong>{text}</strong>
     },
     ...(!showUserRequests
       ? [
           {
             title: 'Actions',
             key: 'actions',
-            render: (text, request) => {
+            render: (text: string, request: Request) => {
               const menuItems = [
                 {
                   key: 'approve',
                   label: 'Approve',
                   disabled: request.status === 'Approved',
-                  onClick: () => updateStatus(request._id, request.purpose._id, 'Approved')
+                  onClick: () => updateStatus(request.id, request.calendar.id, 'Approved', '')
                 },
                 {
                   key: 'deny',
                   label: 'Deny',
                   disabled: request.status === 'Denied',
-                  onClick: () => updateStatus(request._id, request.purpose._id, 'Denied')
+                  onClick: () => updateStatus(request.id, request.calendar.id, 'Denied', '')
                 },
                 {
                   key: 'reset',
                   label: 'Reset',
                   disabled: request.status === 'Pending',
-                  onClick: () => updateStatus(request._id, request.purpose._id, 'Pending')
+                  onClick: () => updateStatus(request.id, request.calendar.id, 'Pending', '')
                 }
               ];
 
-              return isStatusUpdating === request._id ? (
+              return isStatusUpdating === request.id ? (
                 <Spin className='ml-1' />
               ) : (
-                <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+                <Dropdown
+                  menu={{ items: menuItems }}
+                  trigger={['click']}>
                   <Button icon={<MoreOutlined />} />
                 </Dropdown>
               );
@@ -197,26 +202,28 @@ const RequestsList = observer(() => {
           {
             title: 'Actions',
             key: 'actions',
-            render: (text, request) => {
+            render: (text: string, request: Request) => {
               const menuItems = [
                 {
                   key: 'approve',
                   label: 'Approve',
                   disabled: request.status === 'Approved',
-                  onClick: () => updateStatus(request._id, request.purpose._id, 'Approved')
+                  onClick: () => updateStatus(request.id, request.calendar.id, 'Approved', '')
                 },
                 {
                   key: 'deny',
                   label: 'Deny',
                   disabled: request.status === 'Denied',
-                  onClick: () => updateStatus(request._id, request.purpose._id, 'Denied')
-                }
+                  onClick: () => updateStatus(request.id, request.calendar.id, 'Denied', '')
+                }s
               ];
 
-              return isStatusUpdating === request._id ? (
+              return isStatusUpdating === request.id ? (
                 <Spin className='ml-1' />
               ) : (
-                <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+                <Dropdown
+                  menu={{ items: menuItems }}
+                  trigger={['click']}>
                   <Button icon={<MoreOutlined />} />
                 </Dropdown>
               );
@@ -227,7 +234,7 @@ const RequestsList = observer(() => {
       title: 'Status',
       key: 'status',
       width: '15%',
-      render: (text, request) => {
+      render: (text: string, request: Request) => {
         if (request.status === 'Denied') {
           return <CloseCircleOutlined style={{ color: 'indianred' }} />;
         } else if (request.status === 'Pending') {
@@ -241,10 +248,10 @@ const RequestsList = observer(() => {
       title: 'Delete',
       key: 'delete',
       width: '20%',
-      render: (text, request) => (
+      render: (text: string, request: Request) => (
         <Button
           icon={<DeleteOutlined />}
-          onClick={() => handleDelete(request._id)}
+          onClick={() => handleDelete(request.id)}
           danger
           className='hover:bg-red-500 cancel-request-btn'
         />
@@ -255,11 +262,15 @@ const RequestsList = observer(() => {
   return (
     <Layout className='w-full mx-auto h-screen'>
       <div className='w-full bg-white p-6 min-h-[280px] text-center full-width-mobile'>
-        <Button onClick={toggleView} className='mb-5'>
+        <Button
+          onClick={toggleView}
+          className='mb-5'>
           {!showUserRequests ? 'Incoming Requests' : 'Outgoing Requests'}
         </Button>
         <hr className='my-5' />
-        <Typography.Title level={2} className='mb-5'>
+        <Typography.Title
+          level={2}
+          className='mb-5'>
           {!showUserRequests ? 'Outgoing Requests' : 'Incoming Requests'}
         </Typography.Title>
         <Table
@@ -267,7 +278,7 @@ const RequestsList = observer(() => {
             rowsPerPage > 0 ? displayedRequests.slice((page - 1) * rowsPerPage, page * rowsPerPage) : displayedRequests
           }
           pagination={false}
-          rowKey={record => record._id}
+          rowKey={record => record.id}
           columns={columns}
           scroll={{ x: 'max-content' }}
           className='w-full overflow-x-auto'

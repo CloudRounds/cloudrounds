@@ -1,0 +1,298 @@
+type Article {
+  id: ID!
+  title: String!
+  eventLink: String
+  date: DateTime!
+  duration: String
+  organizerId: String!
+  organizer: User!
+  meetingType: String
+  meetingId: String
+  passcode: String
+  speaker: String
+  location: String
+  additionalDetails: String
+  feedbacks: [Feedback!]!
+  calendarId: String!
+  calendar: Calendar!
+  favorites: [Favorite!]!
+  attendees: [User!]!
+}
+
+type Query {
+  articles: [Article!]!
+  calendars: [Calendar!]!
+  calendarsByUser(userId: String!): [Calendar!]!
+  calendar(calendarId: String!): Calendar!
+  favorites(userId: ID!): [Favorite!]!
+  favoriteById(id: ID!): Favorite
+  feedbacks: [Feedback!]!
+  deleteFeedback(userId: String!): [Feedback!]!
+  invites: [Invite!]!
+  invite(token: String!): Invite!
+  requests: [Request]
+  users: [User]
+  userById(userId: ID!): User
+  userByUsername(username: String!): User
+  userByToken(token: String!): User
+}
+
+type Mutation {
+  createArticle(articleInput: ArticleCreateInput!): Article!
+  updateArticle(id: ID!, articleInput: ArticleCreateInput!): Article!
+  deleteArticle(id: ID!): DeleteArticleResponse!
+  forgotPassword(email: String!): ForgotPasswordResponse!
+  resetPassword(resetToken: String!, newPassword: String!): ResetPasswordResponse!
+  verifyEmail(token: String!): VerifyEmailResponse!
+  createCalendar(calendarInput: CalendarCreateInput!): Calendar!
+  updateCalendar(id: ID!, calendarInput: CalendarUpdateInput!): Calendar!
+  deleteCalendar(calendarId: String!): DeleteCalendarResponse!
+  addFavorite(favoriteInput: FavoriteCreateInput!): Favorite!
+  removeFavorite(id: ID!): DeleteFavoriteResponse!
+  createFeedback(feedbackInput: FeedbackInput!): Feedback!
+  updateFeedback(feedbackId: String!, feedback: String!): Feedback!
+  deleteFeedback(feedbackId: String!): DeleteFeedbackResponse!
+  createInvite(inviteInput: InviteInput!): Invite!
+  registerWithToken(token: String!, username: String!, email: String!, password: String!, university: String!, firstName: String!, lastName: String!): RegisterResponse!
+  deleteInvite(token: String!): DeleteInviteResponse!
+  createRequest(calendarId: String!, userId: String!): Request
+  updateRequestStatus(requestId: ID!, calendarId: ID!, status: String!): UpdateRequestStatusResponse
+  deleteRequest(requestId: ID!): DeleteRequestResponse
+  loginUser(credential: String!, password: String!): LoginResponse
+  registerUser(userData: UserData!): User
+  updateUser(id: ID!, updates: UserUpdateInput!): User
+  changePassword(userId: ID!, currentPassword: String!, newPassword: String!): ChangePasswordResponse
+  toggleAttendance(userId: ID!, articleId: ID!, isAttending: Boolean!): ToggleAttendanceResponse
+  toggleFavorite(userId: ID!, articleId: ID!, isFavorite: Boolean!): ToggleFavoriteResponse
+  deleteUser(id: ID!): DeleteUserResponse
+}
+
+input ArticleCreateInput {
+  title: String!
+  eventLink: String
+  date: DateTime!
+  duration: String
+  organizerId: String!
+  meetingType: String
+  meetingId: String
+  passcode: String
+  speaker: String
+  location: String
+  additionalDetails: String
+  calendarId: String!
+}
+
+type DeleteArticleResponse {
+  message: String!
+}
+
+type ForgotPasswordResponse {
+  message: String!
+}
+
+type ResetPasswordResponse {
+  message: String!
+}
+
+type VerifyEmailResponse {
+  message: String!
+}
+
+scalar DateTime
+
+type Calendar {
+  id: ID!
+  name: String!
+  description: String
+  creatorId: String!
+  creator: User!
+  canReadMembers: [User!]!
+  canWriteMembers: [User!]!
+  articles: [Article!]!
+  invites: [Invite!]!
+  requests: [Request!]!
+  emailMembers: [EmailMember!]!
+}
+
+input CalendarCreateInput {
+  name: String!
+  description: String
+  creatorId: String!
+}
+
+input CalendarUpdateInput {
+  id: ID!
+  name: String!
+  description: String
+  creatorId: String!
+}
+
+type DeleteCalendarResponse {
+  message: String!
+}
+
+type EmailMember {
+  id: ID!
+  email: String!
+  calendarId: String!
+  calendar: Calendar!
+}
+
+type Favorite {
+  id: ID!
+  userId: String!
+  user: User!
+  articleId: String!
+  article: Article!
+}
+
+input FavoriteCreateInput {
+  userId: ID!
+  articleId: ID!
+}
+
+type DeleteFavoriteResponse {
+  message: String!
+}
+
+type Feedback {
+  id: ID!
+  articleId: String!
+  article: Article!
+  userId: String!
+  user: User!
+  feedback: String!
+}
+
+input FeedbackInput {
+  articleId: String!
+  userId: String!
+  feedback: String!
+}
+
+type DeleteFeedbackResponse {
+  message: String!
+}
+
+type Invite {
+  id: ID!
+  email: String!
+  calendarId: String!
+  calendarName: String!
+  token: String!
+  expirationTime: DateTime!
+  createdAt: DateTime!
+  creator: String
+  calendar: Calendar!
+}
+
+input InviteInput {
+  email: String!
+  calendarId: String!
+  calendarName: String!
+  token: String!
+  expirationTime: DateTime!
+  creator: String
+}
+
+type RegisterResponse {
+  message: String!
+  token: String!
+  user: User!
+}
+
+type DeleteInviteResponse {
+  message: String!
+}
+
+type Request {
+  id: ID!
+  calendarId: String!
+  calendar: Calendar!
+  userId: String!
+  user: User!
+  yearOfStudy: String
+  status: String!
+  message: String
+  email: String
+  createdAt: DateTime!
+}
+
+type DeleteRequestResponse {
+  message: String!
+}
+
+type UpdateRequestStatusResponse {
+  status: String!
+  updatedRequest: Request
+}
+
+type User {
+  id: ID!
+  username: String!
+  firstName: String!
+  lastName: String!
+  password: String!
+  email: String!
+  university: String!
+  isAdmin: Boolean!
+  createdCalendars: [Calendar!]!
+  canReadCalendars: [Calendar!]!
+  canWriteCalendars: [Calendar!]!
+  organizedArticles: [Article!]!
+  favorites: [Favorite!]!
+  resetToken: String
+  resetTokenExpiry: Int
+  registerToken: String
+  registerTokenExpiry: Int
+  emailValidated: Boolean!
+  feedbacks: [Feedback!]!
+  requests: [Request!]!
+  attended: [Article!]!
+}
+
+type LoginResponse {
+  message: String!
+  token: String!
+  user: User!
+}
+
+input UserData {
+  username: String!
+  email: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  university: String!
+  isAdmin: Boolean
+  registerToken: String
+  registerTokenExpiry: Int
+  emailValidated: Boolean
+}
+
+input UserUpdateInput {
+  username: String!
+  email: String!
+  firstName: String!
+  lastName: String!
+  university: String!
+  isAdmin: Boolean
+}
+
+type ChangePasswordResponse {
+  message: String!
+}
+
+type ToggleAttendanceResponse {
+  message: String!
+  attended: [Article!]!
+}
+
+type ToggleFavoriteResponse {
+  message: String!
+  favorites: [Favorite!]!
+}
+
+type DeleteUserResponse {
+  message: String!
+}

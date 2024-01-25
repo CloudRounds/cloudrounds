@@ -1,4 +1,4 @@
-import { removeUserFromPurpose } from '@/services/purposes';
+import { removeUserFromPurpose } from '@/services/calendars/CalendarService';
 import { HourglassOutlined, UserDeleteOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import { List, Modal } from 'antd';
 import { useState } from 'react';
@@ -104,9 +104,17 @@ const CurrentMembersList = ({
 
   return (
     <div className='flex flex-row justify-between h-full mx-4'>
-      <List className='custom-list w-1/2' dataSource={firstHalfSubscribers} renderItem={renderListItem} />
+      <List
+        className='custom-list w-1/2'
+        dataSource={firstHalfSubscribers}
+        renderItem={renderListItem}
+      />
       <div className='mx-6'></div>
-      <List className='custom-list w-1/2' dataSource={secondHalfSubscribers} renderItem={renderListItem} />
+      <List
+        className='custom-list w-1/2'
+        dataSource={secondHalfSubscribers}
+        renderItem={renderListItem}
+      />
     </div>
   );
 };

@@ -1,0 +1,49 @@
+type Invite {
+  id: ID!
+  email: String!
+  calendarId: String!
+  calendarName: String!
+  token: String!
+  expirationTime: DateTime!
+  createdAt: DateTime!
+  creator: String
+  calendar: Calendar!
+}
+
+type Query {
+  invites: [Invite!]!
+  invite(token: String!): Invite!
+}
+
+type Mutation {
+  createInvite(inviteInput: InviteInput!): Invite!
+  registerWithToken(
+    token: String!
+    username: String!
+    email: String!
+    password: String!
+    university: String!
+    firstName: String!
+    lastName: String!
+  ): RegisterResponse!
+  deleteInvite(token: String!): DeleteInviteResponse!
+}
+
+input InviteInput {
+  email: String!
+  calendarId: String!
+  calendarName: String!
+  token: String!
+  expirationTime: DateTime!
+  creator: String
+}
+
+type RegisterResponse {
+  message: String!
+  token: String!
+  user: User!
+}
+
+type DeleteInviteResponse {
+  message: String!
+}

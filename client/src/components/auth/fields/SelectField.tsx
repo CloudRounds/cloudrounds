@@ -1,4 +1,21 @@
-const SelectField = ({ field, value, onChange, error, border = true, classes }) => (
+interface Field {
+  label: string;
+  name: string;
+  type: string;
+  required: boolean;
+  choices?: any;
+}
+
+interface SelectFieldProps {
+  field: Field;
+  value: string;
+  onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  error: string;
+  border?: boolean;
+  classes?: string;
+}
+
+const SelectField = ({ field, value, onChange, error, border = true, classes }: SelectFieldProps) => (
   <div className={`mb-4`}>
     <label className='block text-sm font-medium text-gray-600'>{field.label}</label>
     <select
@@ -8,8 +25,10 @@ const SelectField = ({ field, value, onChange, error, border = true, classes }) 
       value={value}
       onChange={onChange}>
       {field.choices &&
-        field.choices.map((choice, i) => (
-          <option key={i} value={choice.value}>
+        field.choices.map((choice: any, i: number) => (
+          <option
+            key={i}
+            value={choice.value}>
             {choice.label}
           </option>
         ))}

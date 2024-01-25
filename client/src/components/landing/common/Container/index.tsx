@@ -1,5 +1,11 @@
 import { StyledContainer } from './styles';
 
-const Container = ({ border, children }) => <StyledContainer shouldHaveBorder={border}>{children}</StyledContainer>;
+interface ContainerProps {
+  border?: boolean;
+  children: any;
+}
+const Container = ({ border, children }: ContainerProps) => (
+  <StyledContainer shouldHaveBorder={border}>{children}</StyledContainer>
+);
 
 export default Container;

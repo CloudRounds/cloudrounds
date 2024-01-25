@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
-import { fetchPurposes } from '@/services/purposes';
+import { fetchCalendars } from '@/services/calendars/CalendarService';
 import { useQuery } from 'react-query';
+import { Calendar, User } from '@/types';
 
-const useSettingsPermissions = passedUser => {
-  const [user, setUser] = useState(passedUser);
+const useSettingsPermissions = (passedUser: User) => {
+  const [user, setUser] = useState<User | null>(passedUser);
 
   useEffect(() => {
     if (!passedUser) {
       const localUser = localStorage.getItem('CloudRoundsUser');
-      setUser(JSON.parse(localUser));
+      const parsedUser = localUser ? (JSON.parse(localUser) as User) : null;
+
+      setUser(parsedUser);
     }
   }, [passedUser]);
 
@@ -21,16 +24,16 @@ const useSettingsPermissions = passedUser => {
     isError,
     error,
     refetch: refetchPurposes
-  } = useQuery(['userPurposes', user?._id], () => fetchPurposes(user?._id), {
-    enabled: user !== undefined
+  } = useQuery(['userPurposes', user?.id], () => fetchCalendars(user?.id || ''), {
+    enabled: user !== undefined || user !== ''
   });
 
   useEffect(() => {
     if (!isLoading && user) {
-      const canWrite = data?.filter(purpose => purpose.canWriteMembers.map(u => u._id).includes(user?._id.toString()));
+      const canWrite = data?.filter((calendar: Calendar) => calendar.canWriteMembers.map(u => u.id).includes(user?.id.toString()));
       setCanWritePurposes(canWrite);
 
-      const canRead = data?.filter(purpose => purpose.canReadMembers.map(u => u._id).includes(user?._id));
+      const canRead = data?.filter((calendar: Calendar) => calendar.canReadMembers.map(u => u.id).includes(user?.id));
       setCanReadPurposes(canRead);
     }
   }, [isLoading, user]);
