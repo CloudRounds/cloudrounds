@@ -222,15 +222,9 @@ const NewArticleForm = ({
   };
 
   return (
-    <Modal
-      open={open}
-      onCancel={onModalClose}
-      footer={null}
-      className='new-article-form'>
+    <Modal open={open} onCancel={onModalClose} footer={null} className='new-article-form'>
       {allowedCalendars.length > 0 ? (
-        <Form
-          onFinish={selectedArticle ? handleSave : handleSubmit}
-          className='compact-form'>
+        <Form onFinish={selectedArticle ? handleSave : handleSubmit} className='compact-form'>
           <Form.Item
             label='Title*'
             labelCol={{ span: 24 }}
@@ -255,15 +249,11 @@ const NewArticleForm = ({
                 <Select
                   value={(articleCalendar as Calendar).id}
                   onChange={value => setArticleCalendar({ ...(articleCalendar as Calendar), id: value })}>
-                  <Option
-                    value=''
-                    disabled>
+                  <Option value='' disabled>
                     <span className='disabled-option'>Select Calendar</span>
                   </Option>
                   {allowedCalendars.map(calendar => (
-                    <Option
-                      key={calendar.id}
-                      value={calendar.id}>
+                    <Option key={calendar.id} value={calendar.id}>
                       {calendar.name}
                     </Option>
                   ))}
@@ -271,11 +261,7 @@ const NewArticleForm = ({
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item
-                label='Speaker'
-                labelCol={{ span: 24 }}
-                colon={false}
-                className='newArticleForm'>
+              <Form.Item label='Speaker' labelCol={{ span: 24 }} colon={false} className='newArticleForm'>
                 <Input
                   placeholder='Speaker'
                   value={article.speaker || ''}
@@ -322,14 +308,8 @@ const NewArticleForm = ({
 
           <Row gutter={24}>
             <Col span={12}>
-              <Form.Item
-                label='Meeting Type'
-                labelCol={{ span: 24 }}
-                colon={false}
-                className='newArticleForm'>
-                <Select
-                  value={article.meetingType}
-                  onChange={value => setArticle({ ...article, meetingType: value })}>
+              <Form.Item label='Meeting Type' labelCol={{ span: 24 }} colon={false} className='newArticleForm'>
+                <Select value={article.meetingType} onChange={value => setArticle({ ...article, meetingType: value })}>
                   <Select.Option value='Virtual'>Virtual</Select.Option>
                   <Select.Option value='In-Person'>In-Person</Select.Option>
                   <Select.Option value='Hybrid'>Hybrid</Select.Option>
@@ -339,11 +319,7 @@ const NewArticleForm = ({
 
             {article.meetingType !== 'In-Person' && (
               <Col span={12}>
-                <Form.Item
-                  label='Meeting Details'
-                  labelCol={{ span: 24 }}
-                  colon={false}
-                  className='newArticleForm'>
+                <Form.Item label='Meeting Details' labelCol={{ span: 24 }} colon={false} className='newArticleForm'>
                   <Row gutter={16}>
                     <Col span={9}>
                       <Input
@@ -385,11 +361,7 @@ const NewArticleForm = ({
             />
           </Form.Item>
 
-          <Form.Item
-            label='Notes'
-            labelCol={{ span: 24 }}
-            colon={false}
-            className='newArticleForm'>
+          <Form.Item label='Notes' labelCol={{ span: 24 }} colon={false} className='newArticleForm'>
             <Input.TextArea
               placeholder='Additional Details (e.g. required readings, preparation material)'
               value={article.additionalDetails || ''}
@@ -398,24 +370,14 @@ const NewArticleForm = ({
           </Form.Item>
           <Form.Item>
             <Row gutter={24}>
-              <Col
-                span={8}
-                style={{ display: 'flex', justifyContent: 'center' }}></Col>
-              <Col
-                span={8}
-                style={{ display: 'flex', justifyContent: 'center' }}>
-                <Button
-                  type='primary'
-                  ghost
-                  className='submit-blue-button'
-                  htmlType='submit'>
+              <Col span={8} style={{ display: 'flex', justifyContent: 'center' }}></Col>
+              <Col span={8} style={{ display: 'flex', justifyContent: 'center' }}>
+                <Button type='primary' ghost className='submit-blue-button' htmlType='submit'>
                   Submit
                 </Button>
               </Col>
               {selectedArticle && (
-                <Col
-                  span={8}
-                  style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Col span={8} style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <Button
                     className='delete-button'
                     icon={<DeleteOutlined />}
@@ -429,9 +391,7 @@ const NewArticleForm = ({
       ) : (
         <div className='disabled-option'>
           No calendars yet. Click the{' '}
-          <a
-            href='https://cloudrounds.com/manage'
-            style={{ color: '#333', textDecoration: 'underline' }}>
+          <a href='https://cloudrounds.com/manage' style={{ color: '#333', textDecoration: 'underline' }}>
             Manage tab
           </a>{' '}
           to create a calendar.

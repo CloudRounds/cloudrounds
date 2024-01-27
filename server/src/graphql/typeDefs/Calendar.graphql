@@ -9,25 +9,27 @@ type Calendar {
   name: String!
   description: String
   creatorId: String!
-  creator: User!
-  canReadMembers: [User!]!
-  canWriteMembers: [User!]!
-  articles: [Article!]!
-  invites: [Invite!]!
-  requests: [Request!]!
-  emailMembers: [EmailMember!]!
+  creator: User
+  canReadMembers: [User]
+  canWriteMembers: [User]
+  articles: [Article]
+  invites: [Invite]
+  requests: [Request]
+  emailMembers: [EmailMember]
 }
 
 type Query {
-  calendars: [Calendar!]!
-  calendarsByUser(userId: String!): [Calendar!]!
-  calendar(calendarId: String!): Calendar!
+  calendars: [Calendar]
+  calendarsByUser(userId: String!): [Calendar]
+  calendar(calendarId: String!): Calendar
 }
 
 type Mutation {
   createCalendar(calendarInput: CalendarCreateInput!): Calendar!
   updateCalendar(id: ID!, calendarInput: CalendarUpdateInput!): Calendar!
   deleteCalendar(calendarId: String!): DeleteCalendarResponse!
+  addEmailMemberToCalendar(calendarId: String!, email: String!): Calendar!
+  removeUserFromCalendar(userId: String!, calendarId: String!): RemoveUserFromCalendarResponse!
 }
 
 input CalendarCreateInput {
@@ -44,5 +46,9 @@ input CalendarUpdateInput {
 }
 
 type DeleteCalendarResponse {
+  message: String!
+}
+
+type RemoveUserFromCalendarResponse {
   message: String!
 }

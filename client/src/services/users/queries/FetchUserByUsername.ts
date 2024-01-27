@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
-export const UPDATE_USER_MUTATION = gql`
-  mutation UpdateUser($id: ID!, $updates: UserUpdateInput!) {
-    updateUser(id: $id, updates: $updates) {
+export const FETCH_USER_BY_USERNAME_QUERY = gql`
+  query UserByUsername($username: String!) {
+    userByUsername(username: $username) {
       id
       username
       firstName
@@ -14,7 +14,6 @@ export const UPDATE_USER_MUTATION = gql`
         name
         description
         creatorId
-        creator
         canReadMembers {
           id
         }
@@ -26,7 +25,6 @@ export const UPDATE_USER_MUTATION = gql`
         name
         description
         creatorId
-        creator
         canReadMembers {
           id
         }
@@ -38,7 +36,6 @@ export const UPDATE_USER_MUTATION = gql`
         name
         description
         creatorId
-        creator
         canReadMembers {
           id
         }
@@ -54,6 +51,8 @@ export const UPDATE_USER_MUTATION = gql`
         userId
         articleId
       }
+      registerToken
+      registerTokenExpiry
       emailValidated
       feedbacks {
         id
@@ -77,3 +76,4 @@ export const UPDATE_USER_MUTATION = gql`
     }
   }
 `;
+

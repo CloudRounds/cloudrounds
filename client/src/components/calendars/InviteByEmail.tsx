@@ -7,15 +7,26 @@ import { fetchUsers } from '@/services/users/UserService';
 
 import { Modal, Button, Input, Form, Spin } from 'antd';
 import { toast } from 'react-toastify';
+import { Calendar, User } from '@/types';
+import { addEmailMemberToCalendar } from '@/services/calendars/CalendarService';
+
+interface InviteByEmailProps {
+  selectedCalendar: Calendar | null;
+  setSelectedCalendar: (calendar: Calendar) => void;
+  isEmailModalOpen: boolean;
+  setEmailModalOpen: (isEmailModalOpen: boolean) => void;
+  createRequestMutation: any;
+  refetchCalendars: () => void;
+}
 
 const InviteByEmail = ({
-  selectedPurpose,
-  setSelectedPurpose,
+  selectedCalendar,
+  setSelectedCalendar,
   isEmailModalOpen,
   setEmailModalOpen,
   createRequestMutation,
-  refetchPurposes
-}) => {
+  refetchCalendars
+}: InviteByEmailProps) => {
   const [emailInput, setEmailInput] = useState('');
   const [form] = Form.useForm();
 
@@ -27,52 +38,52 @@ const InviteByEmail = ({
     setEmailInput('');
   };
 
-  const handleExistingUser = async existingUserId => {
+  const handleExistingUser = async (existingUserId: string) => {
     const request = {
-      purposeId: selectedPurpose._id,
+      calendarId: selectedCalendar?.id,
       userId: existingUserId
     };
     await createRequestMutation.mutateAsync(request);
 
-    refetchPurposes();
+    refetchCalendars();
     setIsSending(false);
   };
 
   const handleSubmit = async () => {
     setIsSending(true);
 
-    const existingUser = users.find(user => user.email === emailInput);
+    const existingUser = users.find((user: User) => user.email === emailInput);
 
     if (existingUser) {
-      await handleExistingUser(existingUser._id);
-      handleCloseEmailModal();
-      return;
+      await handleExistingUser(existingUser.id);
+    } else {
+      const token = uuidv4();
+      // expires 72 hours from now
+      const expirationTime = new Date(Date.now() + 72 * 60 * 60 * 1000);
+
+      if (!selectedCalendar) {
+        return;
+      }
+      const fullName = `${selectedCalendar.creator.firstName} ${selectedCalendar.creator.lastName}`;
+      const inviteData = {
+        email: emailInput,
+        creator: fullName,
+        calendarName: selectedCalendar.name,
+        calendarId: selectedCalendar.id,
+        token,
+        expirationTime
+      };
+
+      try {
+        await createInvite(inviteData);
+        await addEmailMemberToCalendar(selectedCalendar.id, emailInput);
+        toast.success('Invite sent successfully!');
+      } catch (error) {
+        toast.error('Error sending invite. Please try again.');
+      }
     }
 
-    const token = uuidv4();
-    // expires  72 hours from now
-    const expirationTime = new Date(Date.now() + 72 * 60 * 60 * 1000);
-
-    const fullName = `${selectedPurpose.creator.firstName} ${selectedPurpose.creator.lastName}`;
-    const inviteData = {
-      email: emailInput,
-      creator: fullName,
-      calendar: selectedPurpose.name,
-      purposeId: selectedPurpose._id,
-      token,
-      expirationTime
-    };
-
-    try {
-      await createInvite(inviteData);
-      const updatedEmailMemberList = [...selectedPurpose.emailMemberList, emailInput];
-      setSelectedPurpose(prev => ({ ...prev, emailMemberList: updatedEmailMemberList }));
-      toast.success('Invite sent successfully!');
-      handleCloseEmailModal();
-    } catch (error) {
-      toast.error('Error sending invite. Please try again.');
-      handleCloseEmailModal();
-    }
+    handleCloseEmailModal();
     setIsSending(false);
   };
 
@@ -88,14 +99,8 @@ const InviteByEmail = ({
     <div className='mt-auto'>
       <Button onClick={() => setEmailModalOpen(true)}>Invite by email</Button>
 
-      <Modal
-        title='Invite by Email'
-        open={isEmailModalOpen}
-        onCancel={handleCloseEmailModal}
-        onOk={handleOk}>
-        <Form
-          form={form}
-          onFinish={handleSubmit}>
+      <Modal title='Invite by Email' open={isEmailModalOpen} onCancel={handleCloseEmailModal} onOk={handleOk}>
+        <Form form={form} onFinish={handleSubmit}>
           {isSending ? (
             <Spin />
           ) : (

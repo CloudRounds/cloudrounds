@@ -31,7 +31,7 @@ type Query {
 }
 
 type Mutation {
-  loginUser(credential: String!, password: String!): LoginResponse
+  loginUser(username: String!, password: String!): LoginResponse
   registerUser(userData: UserData!): User
   updateUser(id: ID!, updates: UserUpdateInput!): User
   changePassword(userId: ID!, currentPassword: String!, newPassword: String!): ChangePasswordResponse

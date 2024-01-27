@@ -8,6 +8,7 @@ import AccessDenied from './AccessDenied';
 import { Calendar } from '@/types';
 import { User } from '@/types';
 import { ColumnType } from 'antd/es/table';
+import { fetchUserById } from '@/services/users/UserService';
 
 const Admin = () => {
   const localUser = localStorage.getItem('CloudRoundsUser');
@@ -49,24 +50,41 @@ const Admin = () => {
     }
   };
 
-  const handlePermissionChange = (memberId: string, type: 'canRead' | 'canWrite') => {
-    setCalendars(prevCalendars => {
-      return prevCalendars.map(p => {
-        if (p.id === selectedCalendar?.id) {
-          const updatedCalendar = { ...p };
-          const memberArray: string[] =
-            type === 'canRead' ? updatedCalendar.canReadMembers : updatedCalendar.canWriteMembers;
+  const updateUserPermissions = async (memberId: string, type: string) => {
+    const user = await fetchUserById(memberId);
+    if (user) {
+      setCalendars(prevCalendars => {
+        return prevCalendars.map(calendar => {
+          if (calendar.id === selectedCalendar?.id) {
+            const updatedCalendar = { ...calendar };
+            const memberArray = type === 'canRead' ? updatedCalendar.canReadMembers : updatedCalendar.canWriteMembers;
+            updatedCalendar[type === 'canRead' ? 'canReadMembers' : 'canWriteMembers'] = [...memberArray, user];
+            return updatedCalendar;
+          }
+          return calendar;
+        });
+      });
+    }
+  };
 
-          if (memberArray.includes(memberId)) {
+  const handlePermissionChange = (memberId: string, type: string) => {
+    setCalendars(prevCalendars => {
+      return prevCalendars.map(calendar => {
+        if (calendar.id === selectedCalendar?.id) {
+          const updatedCalendar = { ...calendar };
+          const memberArray = type === 'canRead' ? updatedCalendar.canReadMembers : updatedCalendar.canWriteMembers;
+          const memberIds = memberArray.map(member => member.id);
+
+          if (memberIds.includes(memberId)) {
             updatedCalendar[type === 'canRead' ? 'canReadMembers' : 'canWriteMembers'] = memberArray.filter(
-              id => id !== memberId
+              member => member.id !== memberId
             );
           } else {
-            updatedCalendar[type === 'canRead' ? 'canReadMembers' : 'canWriteMembers'].push(memberId);
+            updateUserPermissions(memberId, type);
           }
           return updatedCalendar;
         }
-        return p;
+        return calendar;
       });
     });
   };
@@ -75,7 +93,7 @@ const Admin = () => {
     return <Spin />;
   }
 
-  const renderMemberCount = (members: string[]) => members?.length || 0;
+  const renderMemberCount = (members: User[]) => members?.length || 0;
 
   const columns: ColumnType<Calendar>[] = [
     {
@@ -130,11 +148,7 @@ const Admin = () => {
 
   return (
     <div>
-      <Table
-        dataSource={calendars}
-        columns={columns}
-        rowKey='_id'
-      />
+      <Table dataSource={calendars} columns={columns} rowKey='_id' />
       {selectedCalendar && (
         <Modal
           title={`Edit Permissions for ${selectedCalendar.name}`}
@@ -142,15 +156,10 @@ const Admin = () => {
           onOk={handleSavePermissions}
           onCancel={handleCloseModal}
           footer={[
-            <Button
-              key='back'
-              onClick={handleCloseModal}>
+            <Button key='back' onClick={handleCloseModal}>
               Cancel
             </Button>,
-            <Button
-              key='submit'
-              type='primary'
-              onClick={handleSavePermissions}>
+            <Button key='submit' type='primary' onClick={handleSavePermissions}>
               Save
             </Button>
           ]}>

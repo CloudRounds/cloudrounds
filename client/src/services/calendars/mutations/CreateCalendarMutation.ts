@@ -7,6 +7,12 @@ export const CREATE_CALENDAR_MUTATION = gql`
       name
       description
       creatorId
+      canReadMembers {
+        id
+      }
+      canWriteMembers {
+        id
+      }
     }
   }
 `;

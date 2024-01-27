@@ -1,9 +1,16 @@
+import { User } from '@/types';
 import { Checkbox, List, Pagination } from 'antd';
 import { useState } from 'react';
 
-const MemberList = ({ members, type, handlePermissionChange }) => {
-  const users = (members || []).map(u => ({ id: u._id, username: u.username }));
-  const userIds = (members || []).map(u => u._id);
+interface MemberListProps {
+  members: User[];
+  type: string;
+  handlePermissionChange: (userId: string, type: string) => void;
+}
+
+const MemberList = ({ members, type, handlePermissionChange }: MemberListProps) => {
+  const users = (members || []).map(u => ({ id: u.id, username: u.username }));
+  const userIds = (members || []).map(u => u.id);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -12,7 +19,7 @@ const MemberList = ({ members, type, handlePermissionChange }) => {
   const indexOfFirstItem = indexOfLastItem - pageSize;
   const currentMembers = users.slice(indexOfFirstItem, indexOfLastItem);
 
-  const handlePageChange = (page, pageSize) => {
+  const handlePageChange = (page: number, pageSize: number) => {
     setCurrentPage(page);
   };
 

@@ -38,12 +38,8 @@ const NewRequest = () => {
   };
 
   return (
-    <Paper
-      elevation={3}
-      sx={{ width: '40%', margin: '0 auto', mt: 8 }}>
-      <Grid
-        item
-        xs={12}>
+    <Paper elevation={3} sx={{ width: '40%', margin: '0 auto', mt: 8 }}>
+      <Grid item xs={12}>
         <Typography
           variant='h5'
           align='center'
@@ -59,13 +55,8 @@ const NewRequest = () => {
         </Typography>
       </Grid>
       <form onSubmit={handleFormSubmit}>
-        <Grid
-          container
-          spacing={3}
-          sx={{ padding: 4 }}>
-          <Grid
-            item
-            xs={8}>
+        <Grid container spacing={3} sx={{ padding: 4 }}>
+          <Grid item xs={8}>
             <TextField
               select
               label='Calendar'
@@ -74,17 +65,13 @@ const NewRequest = () => {
               value={calendar}
               onChange={e => setCalendar(e.target.value)}>
               {Object.keys(TEMPLATE_CALENDAR_CHOICES).map((key, index) => (
-                <MenuItem
-                  key={index}
-                  value={key}>
+                <MenuItem key={index} value={key}>
                   {TEMPLATE_CALENDAR_CHOICES[key]}
                 </MenuItem>
               ))}
             </TextField>
           </Grid>
-          <Grid
-            item
-            xs={4}>
+          <Grid item xs={4}>
             <TextField
               fullWidth
               required
@@ -94,17 +81,13 @@ const NewRequest = () => {
               value={yearOfStudy}
               onChange={e => setYearOfStudy(e.target.value)}>
               {YEAR_OF_STUDY_CHOICES.map((option, index) => (
-                <MenuItem
-                  key={index}
-                  value={option}>
+                <MenuItem key={index} value={option}>
                   {option}
                 </MenuItem>
               ))}
             </TextField>
           </Grid>
-          <Grid
-            item
-            xs={12}>
+          <Grid item xs={12}>
             <TextField
               fullWidth
               multiline
@@ -115,26 +98,13 @@ const NewRequest = () => {
               onChange={e => setMessage(e.target.value)}
             />
           </Grid>
-          <Grid
-            item
-            xs={12}
-            style={{ textAlign: 'center' }}>
-            <Button
-              type='submit'
-              variant='contained'
-              color='primary'
-              style={{ marginBottom: '10px' }}>
+          <Grid item xs={12} style={{ textAlign: 'center' }}>
+            <Button type='submit' variant='contained' color='primary' style={{ marginBottom: '10px' }}>
               Submit
             </Button>
           </Grid>
-          <Grid
-            item
-            xs={12}
-            style={{ textAlign: 'center' }}>
-            <Button
-              variant='outlined'
-              color='primary'
-              onClick={() => navigate('/requests/submitted')}>
+          <Grid item xs={12} style={{ textAlign: 'center' }}>
+            <Button variant='outlined' color='primary' onClick={() => navigate('/requests/submitted')}>
               View Submitted Requests
             </Button>
           </Grid>

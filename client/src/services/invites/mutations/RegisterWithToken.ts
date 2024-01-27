@@ -23,7 +23,78 @@ export const REGISTER_WITH_TOKEN_MUTATION = gql`
       token
       user {
         id
-        // Add other user fields as necessary
+        username
+        firstName
+        lastName
+        email
+        university
+        isAdmin
+        createdCalendars {
+          name
+          description
+          creatorId
+          creator
+          canReadMembers {
+            id
+          }
+          canWriteMembers {
+            id
+          }
+        }
+        canReadCalendars {
+          name
+          description
+          creatorId
+          creator
+          canReadMembers {
+            id
+          }
+          canWriteMembers {
+            id
+          }
+        }
+        canWriteCalendars {
+          name
+          description
+          creatorId
+          creator
+          canReadMembers {
+            id
+          }
+          canWriteMembers {
+            id
+          }
+        }
+        organizedArticles {
+          id
+        }
+        favorites {
+          id
+          userId
+          articleId
+        }
+        registerToken
+        registerTokenExpiry
+        emailValidated
+        feedbacks {
+          id
+          feedback
+          userId
+          articleId
+        }
+        requests {
+          id
+          userId
+          calendarId
+          status
+          message
+          yearOfStudy
+          email
+        }
+        attended {
+          id
+          articleId
+        }
       }
     }
   }

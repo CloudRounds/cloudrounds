@@ -11,9 +11,7 @@ const Home = observer(() => {
     <div className='mt-8'>
       {user && (
         <>
-          <Typography.Title
-            level={4}
-            className='text-center'>
+          <Typography.Title level={4} className='text-center'>
             Welcome, {user ? user.firstName : 'None'}.
           </Typography.Title>
           <Typography className='text-center'>Get started in 2 simple steps:</Typography>
@@ -24,16 +22,9 @@ const Home = observer(() => {
             align='middle'
             style={{ marginTop: '16px', paddingLeft: '32px', paddingRight: '32px', paddingBottom: '20px' }}>
             {homeLinks.map((navlink, index) => (
-              <Col
-                key={index}
-                xs={20}
-                sm={20}
-                md={13}
-                lg={13}>
+              <Col key={index} xs={20} sm={20} md={13} lg={13}>
                 <div style={{ maxWidth: '' }}>
-                  <a
-                    href={navlink.endpoint || '#'}
-                    style={{ textDecoration: 'none', display: 'block' }}>
+                  <a href={navlink.endpoint || '#'} style={{ textDecoration: 'none', display: 'block' }}>
                     <Card
                       className={`text-center h-150 p-2 border-2  ${
                         navlink.endpoint ? 'hover:bg-slate-50' : 'border-dotted hover:italic'
@@ -42,9 +33,7 @@ const Home = observer(() => {
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <div className='flex items-center justify-center mb-2'>
                           <navlink.Icon style={{ fontSize: '24px' }} />
-                          <Typography.Text
-                            className='ml-2'
-                            strong>
+                          <Typography.Text className='ml-2' strong>
                             {navlink.label}
                           </Typography.Text>
                         </div>

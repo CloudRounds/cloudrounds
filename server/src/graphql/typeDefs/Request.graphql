@@ -17,6 +17,7 @@ type Query {
 
 type Mutation {
   createRequest(calendarId: String!, userId: String!): Request
+  createBulkRequests(userIds: [String!]!, purposeId: String!): [Request]
   updateRequestStatus(requestId: ID!, calendarId: ID!, status: String!): UpdateRequestStatusResponse
   deleteRequest(requestId: ID!): DeleteRequestResponse
 }

@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
-export const FETCH_CALENDARS_QUERY = gql`
-  query Calendars {
-    calendars {
+export const FETCH_CALENDARS_BY_USER_QUERY = gql`
+  query Calendars($userId: String) {
+    calendars(userId: $userId) {
       id
       name
       description

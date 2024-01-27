@@ -28,6 +28,7 @@ const SignupForm: React.FC<SignupFormProps> = observer(({ fields, setIsSignUp })
 
   const handleSubmit = async () => {
     const values = form.getFieldsValue();
+    const { passwordConfirmation, ...userData } = values;
 
     setIsLoading(true);
 
@@ -35,13 +36,13 @@ const SignupForm: React.FC<SignupFormProps> = observer(({ fields, setIsSignUp })
       let response;
 
       if (token) {
-        response = await registerWithToken({ ...values, token });
+        response = await registerWithToken({ ...userData, token });
         toast.success('Successfully signed up. Please login to start using the platform.', {
           autoClose: 5000,
           pauseOnFocusLoss: false
         });
       } else {
-        response = await createUser(values);
+        response = await createUser(userData);
         toast.success('Successfully signed up. Please check your email to validate your account.', {
           autoClose: 5000,
           pauseOnFocusLoss: false
@@ -105,15 +106,9 @@ const SignupForm: React.FC<SignupFormProps> = observer(({ fields, setIsSignUp })
   const usernameRules = usernameField ? usernameField.rules : [];
 
   return (
-    <Form
-      form={form}
-      onFinish={handleSubmit}
-      initialValues={{ university: '' }}
-      className='signup-form'>
+    <Form form={form} onFinish={handleSubmit} initialValues={{ university: '' }} className='signup-form'>
       <div className='p-8 py-2 md:py-0 w-full mx-auto'>
-        <div
-          id='signup-form'
-          className={isLoading ? '' : `scrollable-area`}>
+        <div id='signup-form' className={isLoading ? '' : `scrollable-area`}>
           <h1 className='authform-title'>Sign up</h1>
           {fields.map((field, index) => (
             <div key={index}>
@@ -141,29 +136,17 @@ const SignupForm: React.FC<SignupFormProps> = observer(({ fields, setIsSignUp })
                   <Select onChange={onUniversityChange}>
                     {field.choices &&
                       field.choices.map((choice, i) => (
-                        <Option
-                          key={i}
-                          value={choice.value}
-                          disabled={!choice.value}>
+                        <Option key={i} value={choice.value} disabled={!choice.value}>
                           {choice.label}
                         </Option>
                       ))}
                   </Select>
                 ) : field.name === 'email' ? (
-                  <AutoComplete
-                    options={emailSuggestions.map(email => ({ value: email }))}
-                    onSearch={onEmailSearch}>
-                    <Input
-                      type={field.type}
-                      disabled={!!(field.name === 'email' && token)}
-                    />
+                  <AutoComplete options={emailSuggestions.map(email => ({ value: email }))} onSearch={onEmailSearch}>
+                    <Input type={field.type} disabled={!!(field.name === 'email' && token)} />
                   </AutoComplete>
                 ) : (
-                  <Input
-                    type={field.type}
-                    disabled={!!(field.name === 'email' && token)}
-                    autoComplete='new-password'
-                  />
+                  <Input type={field.type} disabled={!!(field.name === 'email' && token)} autoComplete='new-password' />
                 )}
               </Form.Item>
             </div>
@@ -172,16 +155,11 @@ const SignupForm: React.FC<SignupFormProps> = observer(({ fields, setIsSignUp })
             {isLoading ? (
               <Spin />
             ) : (
-              <Button
-                type='primary'
-                className='signup-button'
-                htmlType='submit'>
+              <Button type='primary' className='signup-button' htmlType='submit'>
                 Sign Up
               </Button>
             )}
-            <div
-              className='flex justify-center mt-5 cursor-pointer '
-              onClick={() => navigate('/login')}>
+            <div className='flex justify-center mt-5 cursor-pointer ' onClick={() => navigate('/login')}>
               <p className='text-gray-500 underline hover:text-blue-500'>Already have an account? Login</p>
             </div>
           </div>

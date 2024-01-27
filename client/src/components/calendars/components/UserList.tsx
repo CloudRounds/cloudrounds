@@ -1,8 +1,15 @@
 import { List } from 'antd';
 import { UserAddOutlined } from '@ant-design/icons';
+import { User } from '@/types';
 
-const UserList = ({ users, setTargetKeys, setDeltaTargetKeys }) => {
-  const handleAddUser = userId => {
+interface UserListProps {
+  users: User[];
+  setTargetKeys: (updater: (prev: string[]) => string[]) => void;
+  setDeltaTargetKeys: (updater: (prev: string[]) => string[]) => void;
+}
+
+const UserList = ({ users, setTargetKeys, setDeltaTargetKeys }: UserListProps) => {
+  const handleAddUser = (userId: string) => {
     setTargetKeys(prevKeys => [...prevKeys, userId]);
     setDeltaTargetKeys(prev => [...prev, userId]);
   };
@@ -13,11 +20,11 @@ const UserList = ({ users, setTargetKeys, setDeltaTargetKeys }) => {
       dataSource={users}
       renderItem={user => (
         <List.Item
-          key={user._id}
+          key={user.id}
           actions={[
             <UserAddOutlined
               className='text-xl text-blue-300 hover:text-blue-500'
-              onClick={() => handleAddUser(user._id)}
+              onClick={() => handleAddUser(user.id)}
             />
           ]}>
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>

@@ -1,5 +1,5 @@
 import { Row, Col } from 'antd';
-import { Fade } from 'react-awesome-reveal';
+import { Fade, FadeProps } from 'react-awesome-reveal';
 import { Button } from '../../common/Button';
 import { SvgIcon } from '../../common/SvgIcon';
 import {
@@ -20,7 +20,7 @@ interface ContentBlockProps {
   section: string;
   button: any;
   id: string;
-  direction: string;
+  direction: FadeProps['direction'];
 }
 
 const ContentBlock = ({ icon, title, content, section, button, id, direction }: ContentBlockProps) => {
@@ -77,8 +77,8 @@ const ContentBlock = ({ icon, title, content, section, button, id, direction }: 
               ) : (
                 <ServiceWrapper>
                   <Row justify='space-between'>
-                    {typeof section === 'object' &&
-                      section.map((item: any, id: string) => {
+                    {Array.isArray(section) &&
+                      section.map((item: any, id: number | string) => {
                         return (
                           <Col
                             key={id}

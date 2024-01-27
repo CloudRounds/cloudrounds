@@ -15,11 +15,11 @@ export const colors = [
   '#f48686'
 ];
 
-export const getRandomElement = list => list[Math.floor(Math.random() * list.length)];
+export const getRandomElement = (list: string[]) => list[Math.floor(Math.random() * list.length)];
 
 export const getRandomColor = () => getRandomElement(colors);
 
-export const hashStringToColor = string => {
+export const hashStringToColor = (string: string) => {
   let hash = 0;
   for (let i = 0; i < string.length; i++) {
     hash = string.charCodeAt(i) + ((hash << 5) - hash);
@@ -27,7 +27,7 @@ export const hashStringToColor = string => {
   return colors[Math.abs(hash) % colors.length];
 };
 
-export const createAcronym = purposeName => {
+export const createAcronym = (purposeName: string) => {
   return purposeName
     .split(' ')
     .filter(Boolean)

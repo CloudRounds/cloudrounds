@@ -1,6 +1,17 @@
+import { Calendar } from '@/types';
 import { DeleteOutlined, EditOutlined, UserSwitchOutlined, UsergroupDeleteOutlined } from '@ant-design/icons';
+import { ColumnProps } from 'antd/es/table';
 
-export const getColumns = (handleOpen, handleOpenMemberList, handleLeave) => {
+type OpenHandler = (record?: Calendar | null, field?: 'name' | 'description' | null) => void;
+type OpenMemberListHandler = (record: Calendar) => void;
+type LeaveHandler = (calendar: Calendar) => void;
+type DeleteHandler = (record: string) => void;
+
+export const getColumns = (
+  handleOpen: OpenHandler,
+  handleOpenMemberList: OpenMemberListHandler,
+  handleLeave: DeleteHandler
+): ColumnProps<Calendar>[] => {
   return [
     {
       title: 'Name',
@@ -42,7 +53,7 @@ export const getColumns = (handleOpen, handleOpenMemberList, handleLeave) => {
         <DeleteOutlined
           onMouseEnter={e => (e.currentTarget.style.color = 'red')}
           onMouseLeave={e => (e.currentTarget.style.color = 'inherit')}
-          onClick={() => handleLeave(record._id)}
+          onClick={() => handleLeave(record.id)}
           className='cursor-pointer text-lg'
         />
       )
@@ -50,7 +61,7 @@ export const getColumns = (handleOpen, handleOpenMemberList, handleLeave) => {
   ];
 };
 
-export const getMemberColums = handleLeave => {
+export const getMemberColumns = (handleLeave: LeaveHandler): ColumnProps<Calendar>[] => {
   return [
     {
       title: 'Name',

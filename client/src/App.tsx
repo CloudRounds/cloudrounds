@@ -4,7 +4,7 @@ import { Suspense, lazy, useEffect, useState } from 'react';
 import { Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { Spin } from 'antd';
-import { fetchCurrentUser } from './services/users/UserService';
+import { fetchCurrentUser, fetchUsers } from './services/users/UserService';
 import AuthPage from './components/auth/AuthPage';
 import { useQuery } from 'react-query';
 import Home from './components/landing/pages/Home';
@@ -12,9 +12,10 @@ import Navbar from './components/home/Navbar';
 import 'react-toastify/dist/ReactToastify.css';
 import ResetPassword from './components/auth/form/ResetPassword';
 import EmailVerification from './components/auth/form/EmailVerification';
-import { User } from './types/User';
+import { User } from './types';
+import { fetchAllCalendars, fetchCalendars } from './services/calendars/CalendarService';
 
-const PurposesList = lazy(() => import('./components/purposes/PurposesList'));
+const PurposesList = lazy(() => import('./components/calendars/CalendarsList'));
 const RequestsList = lazy(() => import('./components/requests/RequestsList'));
 const ArticleList = lazy(() => import('./components/articles/ArticleList'));
 const OlderArticles = lazy(() => import('./components/articles/OlderArticles'));
@@ -22,7 +23,6 @@ const UserSettings = lazy(() => import('./components/user/UserSettings'));
 const Admin = lazy(() => import('./components/admin/Admin'));
 
 const App = observer(() => {
-  const localUser = localStorage.getItem('CloudRoundsUser');
   const token = localStorage.getItem('CloudRoundsToken');
 
   let parsedUser: User | null = null;
@@ -37,6 +37,17 @@ const App = observer(() => {
 
   const [user, setUser] = useState<User | null>(parsedUser);
 
+  useEffect(() => {
+    async function fetchData() {
+      const users = await fetchUsers();
+      console.log('USERS:', users);
+
+      const calendars = await fetchAllCalendars();
+      console.log('CALENDARS:', calendars);
+    }
+    fetchData();
+  }, []);
+
   // const isNonAuthPath = (): boolean => {
   //   const nonAuthPatterns: RegExp[] = [
   //     /^\/login$/,
@@ -50,7 +61,7 @@ const App = observer(() => {
   // };
 
   const { data: fetchedUser, isLoading } = useQuery('userData', fetchCurrentUser, {
-    enabled: !!user || !token
+    enabled: !!token
   });
 
   useEffect(() => {
@@ -61,18 +72,18 @@ const App = observer(() => {
     if (fetchedUser) {
       localStorage.setItem('CloudRoundsUser', JSON.stringify(fetchedUser));
       setUser(fetchedUser);
+    } else {
+      localStorage.removeItem('CloudRoundsUser');
+      setUser(null);
     }
   }, [isLoading, fetchedUser]);
 
   useEffect(() => {
-    if (!token || !localUser) {
+    if (!token || !user) {
       localStorage.removeItem('CloudRoundsUser');
       localStorage.removeItem('CloudRoundsToken');
-      // if (!isNonAuthPath()) {
-      // window.location.href = '/login';
-      // }
     }
-  }, [localUser, token]);
+  }, [user, token]);
 
   axios.interceptors.request.use(
     config => {
@@ -101,54 +112,18 @@ const App = observer(() => {
         <NavbarWithLocation />
         <Suspense fallback={<Spin />}>
           <Routes>
-            <Route
-              path='/'
-              element={<Home />}
-            />
-            <Route
-              path='/admin'
-              element={<Admin />}
-            />
-            <Route
-              path='/calendar'
-              element={<ArticleList />}
-            />
-            <Route
-              path='/manage'
-              element={<PurposesList />}
-            />
-            <Route
-              path='/past-events'
-              element={<OlderArticles />}
-            />
-            <Route
-              path='/requests'
-              element={<RequestsList />}
-            />
-            <Route
-              path='/login'
-              element={<AuthPage />}
-            />
-            <Route
-              path='/verify-email/:token'
-              element={<EmailVerification />}
-            />
-            <Route
-              path='/register'
-              element={<AuthPage />}
-            />
-            <Route
-              path='/forgot-password'
-              element={<AuthPage />}
-            />
-            <Route
-              path='/reset-password/:resetToken'
-              element={<ResetPassword />}
-            />
-            <Route
-              path='/settings'
-              element={<UserSettings />}
-            />
+            <Route path='/' element={<Home />} />
+            <Route path='/admin' element={<Admin />} />
+            <Route path='/calendar' element={<ArticleList />} />
+            <Route path='/manage' element={<PurposesList />} />
+            <Route path='/past-events' element={<OlderArticles />} />
+            <Route path='/requests' element={<RequestsList />} />
+            <Route path='/login' element={<AuthPage />} />
+            <Route path='/verify-email/:token' element={<EmailVerification />} />
+            <Route path='/register' element={<AuthPage />} />
+            <Route path='/forgot-password' element={<AuthPage />} />
+            <Route path='/reset-password/:resetToken' element={<ResetPassword />} />
+            <Route path='/settings' element={<UserSettings />} />
           </Routes>
         </Suspense>
       </Router>

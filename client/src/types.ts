@@ -56,17 +56,17 @@ export type ArticleCreateInput = {
 
 export type Calendar = {
   __typename?: 'Calendar';
-  articles: Array<Article>;
-  canReadMembers: Array<User>;
-  canWriteMembers: Array<User>;
-  creator: User;
+  articles?: Maybe<Array<Maybe<Article>>>;
+  canReadMembers?: Maybe<Array<Maybe<User>>>;
+  canWriteMembers?: Maybe<Array<Maybe<User>>>;
+  creator?: Maybe<User>;
   creatorId: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
-  emailMembers: Array<EmailMember>;
+  emailMembers?: Maybe<Array<Maybe<EmailMember>>>;
   id: Scalars['ID']['output'];
-  invites: Array<Invite>;
+  invites?: Maybe<Array<Maybe<Invite>>>;
   name: Scalars['String']['output'];
-  requests: Array<Request>;
+  requests?: Maybe<Array<Maybe<Request>>>;
 };
 
 export type CalendarCreateInput = {
@@ -196,9 +196,11 @@ export type LoginResponse = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  addEmailMemberToCalendar: Calendar;
   addFavorite: Favorite;
   changePassword?: Maybe<ChangePasswordResponse>;
   createArticle: Article;
+  createBulkRequests?: Maybe<Array<Maybe<Request>>>;
   createCalendar: Calendar;
   createFeedback: Feedback;
   createInvite: Invite;
@@ -214,6 +216,7 @@ export type Mutation = {
   registerUser?: Maybe<User>;
   registerWithToken: RegisterResponse;
   removeFavorite: DeleteFavoriteResponse;
+  removeUserFromCalendar: RemoveUserFromCalendarResponse;
   resetPassword: ResetPasswordResponse;
   toggleAttendance?: Maybe<ToggleAttendanceResponse>;
   toggleFavorite?: Maybe<ToggleFavoriteResponse>;
@@ -223,6 +226,12 @@ export type Mutation = {
   updateRequestStatus?: Maybe<UpdateRequestStatusResponse>;
   updateUser?: Maybe<User>;
   verifyEmail: VerifyEmailResponse;
+};
+
+
+export type MutationAddEmailMemberToCalendarArgs = {
+  calendarId: Scalars['String']['input'];
+  email: Scalars['String']['input'];
 };
 
 
@@ -240,6 +249,12 @@ export type MutationChangePasswordArgs = {
 
 export type MutationCreateArticleArgs = {
   articleInput: ArticleCreateInput;
+};
+
+
+export type MutationCreateBulkRequestsArgs = {
+  purposeId: Scalars['String']['input'];
+  userIds: Array<Scalars['String']['input']>;
 };
 
 
@@ -300,8 +315,8 @@ export type MutationForgotPasswordArgs = {
 
 
 export type MutationLoginUserArgs = {
-  credential: Scalars['String']['input'];
   password: Scalars['String']['input'];
+  username: Scalars['String']['input'];
 };
 
 
@@ -323,6 +338,12 @@ export type MutationRegisterWithTokenArgs = {
 
 export type MutationRemoveFavoriteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationRemoveUserFromCalendarArgs = {
+  calendarId: Scalars['String']['input'];
+  userId: Scalars['String']['input'];
 };
 
 
@@ -384,9 +405,9 @@ export type MutationVerifyEmailArgs = {
 export type Query = {
   __typename?: 'Query';
   articles: Array<Article>;
-  calendar: Calendar;
-  calendars: Array<Calendar>;
-  calendarsByUser: Array<Calendar>;
+  calendar?: Maybe<Calendar>;
+  calendars?: Maybe<Array<Maybe<Calendar>>>;
+  calendarsByUser?: Maybe<Array<Maybe<Calendar>>>;
   deleteFeedback: Array<Feedback>;
   favoriteById?: Maybe<Favorite>;
   favorites: Array<Favorite>;
@@ -450,6 +471,11 @@ export type RegisterResponse = {
   message: Scalars['String']['output'];
   token: Scalars['String']['output'];
   user: User;
+};
+
+export type RemoveUserFromCalendarResponse = {
+  __typename?: 'RemoveUserFromCalendarResponse';
+  message: Scalars['String']['output'];
 };
 
 export type Request = {
@@ -641,6 +667,7 @@ export type ResolversTypes = {
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   RegisterResponse: ResolverTypeWrapper<RegisterResponse>;
+  RemoveUserFromCalendarResponse: ResolverTypeWrapper<RemoveUserFromCalendarResponse>;
   Request: ResolverTypeWrapper<Request>;
   ResetPasswordResponse: ResolverTypeWrapper<ResetPasswordResponse>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
@@ -684,6 +711,7 @@ export type ResolversParentTypes = {
   Mutation: {};
   Query: {};
   RegisterResponse: RegisterResponse;
+  RemoveUserFromCalendarResponse: RemoveUserFromCalendarResponse;
   Request: Request;
   ResetPasswordResponse: ResetPasswordResponse;
   String: Scalars['String']['output'];
@@ -719,17 +747,17 @@ export type ArticleResolvers<ContextType = any, ParentType extends ResolversPare
 };
 
 export type CalendarResolvers<ContextType = any, ParentType extends ResolversParentTypes['Calendar'] = ResolversParentTypes['Calendar']> = {
-  articles?: Resolver<Array<ResolversTypes['Article']>, ParentType, ContextType>;
-  canReadMembers?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
-  canWriteMembers?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
-  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  articles?: Resolver<Maybe<Array<Maybe<ResolversTypes['Article']>>>, ParentType, ContextType>;
+  canReadMembers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  canWriteMembers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   creatorId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  emailMembers?: Resolver<Array<ResolversTypes['EmailMember']>, ParentType, ContextType>;
+  emailMembers?: Resolver<Maybe<Array<Maybe<ResolversTypes['EmailMember']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  invites?: Resolver<Array<ResolversTypes['Invite']>, ParentType, ContextType>;
+  invites?: Resolver<Maybe<Array<Maybe<ResolversTypes['Invite']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  requests?: Resolver<Array<ResolversTypes['Request']>, ParentType, ContextType>;
+  requests?: Resolver<Maybe<Array<Maybe<ResolversTypes['Request']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -830,9 +858,11 @@ export type LoginResponseResolvers<ContextType = any, ParentType extends Resolve
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+  addEmailMemberToCalendar?: Resolver<ResolversTypes['Calendar'], ParentType, ContextType, RequireFields<MutationAddEmailMemberToCalendarArgs, 'calendarId' | 'email'>>;
   addFavorite?: Resolver<ResolversTypes['Favorite'], ParentType, ContextType, RequireFields<MutationAddFavoriteArgs, 'favoriteInput'>>;
   changePassword?: Resolver<Maybe<ResolversTypes['ChangePasswordResponse']>, ParentType, ContextType, RequireFields<MutationChangePasswordArgs, 'currentPassword' | 'newPassword' | 'userId'>>;
   createArticle?: Resolver<ResolversTypes['Article'], ParentType, ContextType, RequireFields<MutationCreateArticleArgs, 'articleInput'>>;
+  createBulkRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['Request']>>>, ParentType, ContextType, RequireFields<MutationCreateBulkRequestsArgs, 'purposeId' | 'userIds'>>;
   createCalendar?: Resolver<ResolversTypes['Calendar'], ParentType, ContextType, RequireFields<MutationCreateCalendarArgs, 'calendarInput'>>;
   createFeedback?: Resolver<ResolversTypes['Feedback'], ParentType, ContextType, RequireFields<MutationCreateFeedbackArgs, 'feedbackInput'>>;
   createInvite?: Resolver<ResolversTypes['Invite'], ParentType, ContextType, RequireFields<MutationCreateInviteArgs, 'inviteInput'>>;
@@ -844,10 +874,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteRequest?: Resolver<Maybe<ResolversTypes['DeleteRequestResponse']>, ParentType, ContextType, RequireFields<MutationDeleteRequestArgs, 'requestId'>>;
   deleteUser?: Resolver<Maybe<ResolversTypes['DeleteUserResponse']>, ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['ForgotPasswordResponse'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'email'>>;
-  loginUser?: Resolver<Maybe<ResolversTypes['LoginResponse']>, ParentType, ContextType, RequireFields<MutationLoginUserArgs, 'credential' | 'password'>>;
+  loginUser?: Resolver<Maybe<ResolversTypes['LoginResponse']>, ParentType, ContextType, RequireFields<MutationLoginUserArgs, 'password' | 'username'>>;
   registerUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationRegisterUserArgs, 'userData'>>;
   registerWithToken?: Resolver<ResolversTypes['RegisterResponse'], ParentType, ContextType, RequireFields<MutationRegisterWithTokenArgs, 'email' | 'firstName' | 'lastName' | 'password' | 'token' | 'university' | 'username'>>;
   removeFavorite?: Resolver<ResolversTypes['DeleteFavoriteResponse'], ParentType, ContextType, RequireFields<MutationRemoveFavoriteArgs, 'id'>>;
+  removeUserFromCalendar?: Resolver<ResolversTypes['RemoveUserFromCalendarResponse'], ParentType, ContextType, RequireFields<MutationRemoveUserFromCalendarArgs, 'calendarId' | 'userId'>>;
   resetPassword?: Resolver<ResolversTypes['ResetPasswordResponse'], ParentType, ContextType, RequireFields<MutationResetPasswordArgs, 'newPassword' | 'resetToken'>>;
   toggleAttendance?: Resolver<Maybe<ResolversTypes['ToggleAttendanceResponse']>, ParentType, ContextType, RequireFields<MutationToggleAttendanceArgs, 'articleId' | 'isAttending' | 'userId'>>;
   toggleFavorite?: Resolver<Maybe<ResolversTypes['ToggleFavoriteResponse']>, ParentType, ContextType, RequireFields<MutationToggleFavoriteArgs, 'articleId' | 'isFavorite' | 'userId'>>;
@@ -861,9 +892,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   articles?: Resolver<Array<ResolversTypes['Article']>, ParentType, ContextType>;
-  calendar?: Resolver<ResolversTypes['Calendar'], ParentType, ContextType, RequireFields<QueryCalendarArgs, 'calendarId'>>;
-  calendars?: Resolver<Array<ResolversTypes['Calendar']>, ParentType, ContextType>;
-  calendarsByUser?: Resolver<Array<ResolversTypes['Calendar']>, ParentType, ContextType, RequireFields<QueryCalendarsByUserArgs, 'userId'>>;
+  calendar?: Resolver<Maybe<ResolversTypes['Calendar']>, ParentType, ContextType, RequireFields<QueryCalendarArgs, 'calendarId'>>;
+  calendars?: Resolver<Maybe<Array<Maybe<ResolversTypes['Calendar']>>>, ParentType, ContextType>;
+  calendarsByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Calendar']>>>, ParentType, ContextType, RequireFields<QueryCalendarsByUserArgs, 'userId'>>;
   deleteFeedback?: Resolver<Array<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<QueryDeleteFeedbackArgs, 'userId'>>;
   favoriteById?: Resolver<Maybe<ResolversTypes['Favorite']>, ParentType, ContextType, RequireFields<QueryFavoriteByIdArgs, 'id'>>;
   favorites?: Resolver<Array<ResolversTypes['Favorite']>, ParentType, ContextType, RequireFields<QueryFavoritesArgs, 'userId'>>;
@@ -881,6 +912,11 @@ export type RegisterResponseResolvers<ContextType = any, ParentType extends Reso
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type RemoveUserFromCalendarResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['RemoveUserFromCalendarResponse'] = ResolversParentTypes['RemoveUserFromCalendarResponse']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -972,6 +1008,7 @@ export type Resolvers<ContextType = any> = {
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   RegisterResponse?: RegisterResponseResolvers<ContextType>;
+  RemoveUserFromCalendarResponse?: RemoveUserFromCalendarResponseResolvers<ContextType>;
   Request?: RequestResolvers<ContextType>;
   ResetPasswordResponse?: ResetPasswordResponseResolvers<ContextType>;
   ToggleAttendanceResponse?: ToggleAttendanceResponseResolvers<ContextType>;

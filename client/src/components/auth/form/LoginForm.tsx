@@ -66,7 +66,7 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
       localStorage.setItem('CloudRoundsToken', response.token);
       localStorage.setItem('CloudRoundsUser', JSON.stringify(response.user));
 
-      const feedbacks = await fetchUserFeedbacks(response.user._id);
+      const feedbacks = await fetchUserFeedbacks(response.user.id);
       userStore.setFeedbacks(feedbacks);
 
       setTimeout(() => {
@@ -117,9 +117,7 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
   return (
     <>
       {isForgotPassword ? (
-        <Form
-          layout='vertical'
-          onFinish={handleForgotPassword}>
+        <Form layout='vertical' onFinish={handleForgotPassword}>
           <div className={isSendingEmail || isLoading ? '' : `scrollable-area`}>
             <div className='px-8 w-full mx-auto'>
               <Form.Item>
@@ -140,16 +138,11 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
                 ) : (
                   <>
                     <div className='flex justify-center mt-8'>
-                      <Button
-                        type='primary'
-                        htmlType='submit'
-                        className='login-button'>
+                      <Button type='primary' htmlType='submit' className='login-button'>
                         Send Password Reset Email
                       </Button>
                     </div>
-                    <div
-                      className='flex justify-center mt-5 cursor-pointer'
-                      onClick={() => setIsForgotPassword(false)}>
+                    <div className='flex justify-center mt-5 cursor-pointer' onClick={() => setIsForgotPassword(false)}>
                       <Typography.Text className='text-gray-500 underline hover:text-blue-500'>
                         Back to login
                       </Typography.Text>
@@ -164,9 +157,7 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
         <Form onFinish={handleSubmit}>
           <div className={isSendingEmail || isLoading ? 'overflow-hidden' : `scrollable-area`}>
             <div className='px-8 w-full mx-auto'>
-              <div
-                id='login-form'
-                style={{ marginBottom: '30px' }}>
+              <div id='login-form' style={{ marginBottom: '30px' }}>
                 {fields.map((field, index) => (
                   <div key={index}>
                     {field.name === 'password' ? (
@@ -225,17 +216,12 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
               ) : (
                 <div className='pb-4 sm:pb-8 w-full text-center'>
                   <div className='flex justify-center mt-8'>
-                    <Button
-                      type='primary'
-                      htmlType='submit'
-                      className='login-button'>
+                    <Button type='primary' htmlType='submit' className='login-button'>
                       Login
                     </Button>
                   </div>
 
-                  <div
-                    className='flex justify-center mt-5 cursor-pointer '
-                    onClick={() => navigate('/register')}>
+                  <div className='flex justify-center mt-5 cursor-pointer' onClick={() => navigate('/register')}>
                     <Typography.Text className='text-gray-500 underline hover:text-blue-500'>
                       New to {appName}? Create account
                     </Typography.Text>

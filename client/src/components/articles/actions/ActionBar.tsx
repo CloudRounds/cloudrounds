@@ -189,11 +189,7 @@ const ActionBar = ({
         open={showSidebar}
         width={250}
         closeIcon={<RightOutlined />}>
-        <Input
-          placeholder='Search...'
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-        />
+        <Input placeholder='Search...' value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
 
         <Divider>Calendars</Divider>
         <div className='flex items-center mb-2'>
@@ -221,9 +217,7 @@ const ActionBar = ({
             </Typography.Link>
           </Dropdown>
         </div>
-        <Space
-          direction='vertical'
-          className='w-full'>
+        <Space direction='vertical' className='w-full'>
           {filteredCalendars.map(calendar => (
             <Checkbox
               disabled={emptyCalendars.includes(calendar)}
@@ -236,20 +230,14 @@ const ActionBar = ({
         </Space>
         <Divider>Organizers</Divider>
         <div className='flex justify-between'>
-          <Button
-            size='small'
-            onClick={selectAllOrganizers}>
+          <Button size='small' onClick={selectAllOrganizers}>
             Select All
           </Button>
-          <Button
-            size='small'
-            onClick={deselectAllOrganizers}>
+          <Button size='small' onClick={deselectAllOrganizers}>
             Deselect All
           </Button>
         </div>
-        <Space
-          direction='vertical'
-          className='w-full mt-4'>
+        <Space direction='vertical' className='w-full mt-4'>
           {selectedOrganizers.map(organizer => (
             <Checkbox
               key={organizer}
@@ -268,9 +256,7 @@ const ActionBar = ({
         className='flex justify-end items-center w-full px-4 py-3.5 mb-5 purple-light-full'
         style={{ background: '#c7d2fe' }}>
         <App />
-        <button
-          className='flex items-center basic-btn purple-light-full'
-          onClick={toggleNewArticleModal}>
+        <button className='flex items-center basic-btn purple-light-full' onClick={toggleNewArticleModal}>
           <span style={{ marginRight: '8px' }}>
             <FcCalendar />
           </span>

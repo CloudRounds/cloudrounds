@@ -11,7 +11,6 @@ export const FETCH_ALL_INVITES_QUERY = gql`
       expirationTime
       createdAt
       creator
-      // Add other fields if necessary
     }
   }
 `;

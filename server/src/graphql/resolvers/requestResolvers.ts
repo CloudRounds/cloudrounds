@@ -126,7 +126,26 @@ const RequestResolver = {
 
       return { message: 'Request deleted successfully' };
     },
-  }
+    async createBulkRequests(_: any, { userIds, calendarId }: { userIds: string[], calendarId: string }) {
+      const createdRequests = [];
+
+      for (const userId of userIds) {
+        try {
+          const createdRequest = await db.request.create({
+            data: {
+              userId: userId,
+              calendarId: calendarId,
+            },
+          });
+          createdRequests.push(createdRequest);
+        } catch (error) {
+          console.error('Error creating request for user:', userId, error);
+        }
+      }
+
+      return createdRequests;
+    },
+  },
 };
 
 export default RequestResolver;

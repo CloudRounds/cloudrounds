@@ -5,6 +5,8 @@ import { FETCH_REQUESTS_QUERY } from './queries/Requests';
 import { UPDATE_REQUEST_STATUS_MUTATION } from './mutations/UpdateRequest';
 import { CREATE_REQUEST_MUTATION } from './mutations/CreateRequest';
 import { DELETE_REQUEST_MUTATION } from './mutations/DeleteRequest';
+import { CREATE_BULK_REQUESTS_MUTATION } from './mutations/CreateBulkRequests';
+import { Request } from '@/types';
 
 
 export const updateRequestStatus = async (
@@ -33,6 +35,18 @@ export const createRequest = async (calendarId: string, userId: string) => {
     return data.createRequest;
   } catch (error) {
     console.error('There was an error creating the request:', error);
+  }
+};
+
+export const createBulkRequests = async (userIds: string[], purposeId: string) => {
+  try {
+    const { data } = await client.mutate({
+      mutation: CREATE_BULK_REQUESTS_MUTATION,
+      variables: { userIds, purposeId },
+    });
+    return data.createBulkRequests.requests
+  } catch (error) {
+    console.error('There was an error creating bulk requests:', error);
   }
 };
 

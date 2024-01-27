@@ -1,13 +1,12 @@
 import { gql } from '@apollo/client';
 
-export const FETCH_CURRENT_USER_QUERY = gql`
+export const FETCH_USER_BY_ID_QUERY = gql`
   query UserById($userId: ID!) {
     userById(userId: $userId) {
       id
       username
       firstName
       lastName
-      password
       email
       university
       isAdmin
@@ -15,7 +14,6 @@ export const FETCH_CURRENT_USER_QUERY = gql`
         name
         description
         creatorId
-        creator
         canReadMembers {
           id
         }
@@ -27,7 +25,6 @@ export const FETCH_CURRENT_USER_QUERY = gql`
         name
         description
         creatorId
-        creator
         canReadMembers {
           id
         }
@@ -39,7 +36,6 @@ export const FETCH_CURRENT_USER_QUERY = gql`
         name
         description
         creatorId
-        creator
         canReadMembers {
           id
         }
@@ -75,7 +71,7 @@ export const FETCH_CURRENT_USER_QUERY = gql`
       }
       attended {
         id
-        articleId
+        title
       }
     }
   }

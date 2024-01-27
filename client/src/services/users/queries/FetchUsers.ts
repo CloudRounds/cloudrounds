@@ -7,7 +7,6 @@ export const FETCH_USERS_QUERY = gql`
       username
       firstName
       lastName
-      password
       email
       university
       isAdmin
@@ -15,7 +14,6 @@ export const FETCH_USERS_QUERY = gql`
         name
         description
         creatorId
-        creator
         canReadMembers {
           id
         }
@@ -24,28 +22,16 @@ export const FETCH_USERS_QUERY = gql`
         }
       }
       canReadCalendars {
+        id
         name
         description
         creatorId
-        creator
-        canReadMembers {
-          id
-        }
-        canWriteMembers {
-          id
-        }
       }
       canWriteCalendars {
+        id
         name
         description
         creatorId
-        creator
-        canReadMembers {
-          id
-        }
-        canWriteMembers {
-          id
-        }
       }
       organizedArticles {
         id
@@ -55,8 +41,6 @@ export const FETCH_USERS_QUERY = gql`
         userId
         articleId
       }
-      registerToken
-      registerTokenExpiry
       emailValidated
       feedbacks {
         id
@@ -72,10 +56,6 @@ export const FETCH_USERS_QUERY = gql`
         message
         yearOfStudy
         email
-      }
-      attended {
-        id
-        articleId
       }
     }
   }

@@ -186,16 +186,9 @@ const ArticleList = observer(() => {
         userCalendars={userCalendars || []}
         emptyCalendars={calendarsWithoutArticles}
       />
-      <div
-        style={{ padding: '0 16px' }}
-        className='content-container'>
-        <Row
-          gutter={16}
-          className='custom-flex'>
-          <Col
-            xs={24}
-            lg={12}
-            className='calendar-col'>
+      <div style={{ padding: '0 16px' }} className='content-container'>
+        <Row gutter={16} className='custom-flex'>
+          <Col xs={24} lg={12} className='calendar-col'>
             <div className='max-w-full overflow-x-auto'>
               <ArticleCalendar articles={filteredArticles} />
             </div>

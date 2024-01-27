@@ -14,7 +14,11 @@ export const Content = styled('p')`
   margin: 1.5rem 0 2rem 0;
 `;
 
-export const StyledRow = styled(Row)`
+type StyledRowProps = {
+  direction?: string;
+} & React.ComponentProps<typeof Row>;
+
+export const StyledRow = styled(Row) <StyledRowProps>`
   flex-direction: ${({ direction }) => (direction === 'left' ? 'row' : 'row-reverse')};
 `;
 

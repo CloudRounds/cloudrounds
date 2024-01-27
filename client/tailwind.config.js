@@ -22,6 +22,6 @@ module.exports = {
   variants: {
     extend: {}
   },
-  content: ['./index.html', './src/**/*.{js,jsx}'],
+  content: ['./index.html', './src/**/*.{ts,tsx}'],
   plugins: []
 };

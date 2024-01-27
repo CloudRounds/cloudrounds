@@ -4,8 +4,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { sendEmail } from '../../middleware/mailer';
 import { Prisma, User } from '@prisma/client';
-import { getUserById, getUserByUsername } from '../services/users';
-
+import { getUserById, getUserByUsername, getUsers } from '../services/users';
 
 const URL_HOST = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://cloudrounds.com';
 
@@ -30,20 +29,15 @@ interface Context {
 const UserResolver = {
   Query: {
     async users() {
-      return await db.user.findMany({
-        select: {
-          id: true,
-          username: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          university: true,
-          isAdmin: true,
-          attended: true,
-          favorites: true,
-          createdCalendars: true
-        }
-      })
+      console.log('RESOLVER CALLED!')
+      try {
+        const users = await getUsers();
+        console.log('From resolver: ', users);
+        return users;
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        throw new Error('Failed to fetch users');
+      }
     },
     async userById(_: any, { userId }: { userId: string }) {
       const user = await getUserById(userId);

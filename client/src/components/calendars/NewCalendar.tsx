@@ -1,32 +1,36 @@
 import { useState } from 'react';
 import { Modal, Input, Button, Spin } from 'antd';
-import { createPurpose } from '@/services/calendars/CalendarService';
+import { createCalendar } from '@/services/calendars/CalendarService';
 import { useMutation } from 'react-query';
 import userStore from '@/stores/userStore';
+import { Calendar, CalendarCreateInput } from '@/types';
 
-const NewPurpose = ({ open, handleClose, userId, setPurposes, refetchPurposes }) => {
+interface NewCalendarProps {
+  open: boolean;
+  handleClose: () => void;
+  calendars: Calendar[];
+  setCalendars: (calendars: Calendar[]) => void;
+  refetchCalendars: () => void;
+}
+
+const NewCalendar = ({ open, handleClose, calendars, setCalendars, refetchCalendars }: NewCalendarProps) => {
   const [loading, setLoading] = useState(false);
-  const [newPurpose, setNewPurpose] = useState({
+  const [newCalendar, setNewCalendar] = useState<CalendarCreateInput>({
     name: '',
     description: '',
-    canReadMembers: [userId],
-    canWriteMembers: [userId],
-    creator: userId
+    creatorId: ''
   });
 
-  const createPurposeMutation = useMutation(createPurpose, {
+  const createCalendarMutation = useMutation(createCalendar, {
     onMutate: () => {
       setLoading(true);
     },
-    onSuccess: async data => {
-      await refetchPurposes();
-      setPurposes(prevPurposes => {
-        const newPurposes = [...prevPurposes, data];
-        userStore.setPurposes(newPurposes);
-        return newPurposes;
-      });
+    onSuccess: async (newCalendar: Calendar) => {
+      refetchCalendars();
+      const newCalendars = [...calendars, newCalendar];
+      userStore.setCalendars(newCalendars);
+      setCalendars(newCalendars);
       setLoading(false);
-
       handleClose();
     },
     onError: () => {
@@ -38,7 +42,7 @@ const NewPurpose = ({ open, handleClose, userId, setPurposes, refetchPurposes })
     if (!loading) {
       setLoading(true);
       try {
-        await createPurposeMutation.mutateAsync(newPurpose);
+        await createCalendarMutation.mutateAsync(newCalendar);
       } catch (error) {
         console.error('Error while saving:', error);
         setLoading(false);
@@ -52,9 +56,7 @@ const NewPurpose = ({ open, handleClose, userId, setPurposes, refetchPurposes })
       open={open}
       onCancel={handleClose}
       footer={[
-        <Button
-          key='back'
-          onClick={handleClose}>
+        <Button key='back' onClick={handleClose}>
           Cancel
         </Button>,
         <Button
@@ -73,12 +75,12 @@ const NewPurpose = ({ open, handleClose, userId, setPurposes, refetchPurposes })
         <>
           <Input
             placeholder='Name/Acronym (e.g. UofT OMR)'
-            onChange={e => setNewPurpose({ ...newPurpose, name: e.target.value })}
+            onChange={e => setNewCalendar({ ...newCalendar, name: e.target.value })}
           />
           <Input
             placeholder='Description (e.g. Weekly Divisional Cardiology Rounds)'
             style={{ marginTop: '10px' }}
-            onChange={e => setNewPurpose({ ...newPurpose, description: e.target.value })}
+            onChange={e => setNewCalendar({ ...newCalendar, description: e.target.value })}
           />
         </>
       )}
@@ -86,4 +88,4 @@ const NewPurpose = ({ open, handleClose, userId, setPurposes, refetchPurposes })
   );
 };
 
-export default NewPurpose;
+export default NewCalendar;

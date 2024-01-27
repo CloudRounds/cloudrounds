@@ -3,7 +3,7 @@ import { fetchCalendars } from '@/services/calendars/CalendarService';
 import { useQuery } from 'react-query';
 import { Calendar, User } from '@/types';
 
-const useSettingsPermissions = (passedUser: User) => {
+const useSettingsPermissions = (passedUser: User | null) => {
   const [user, setUser] = useState<User | null>(passedUser);
 
   useEffect(() => {
@@ -15,36 +15,36 @@ const useSettingsPermissions = (passedUser: User) => {
     }
   }, [passedUser]);
 
-  const [canWritePurposes, setCanWritePurposes] = useState([]);
-  const [canReadPurposes, setCanReadPurposes] = useState([]);
+  const [canWriteCalendars, setCanWriteCalendars] = useState<Calendar[]>([]);
+  const [canReadCalendars, setCanReadCalendars] = useState<Calendar[]>([]);
 
   const {
     data,
     isLoading,
     isError,
     error,
-    refetch: refetchPurposes
-  } = useQuery(['userPurposes', user?.id], () => fetchCalendars(user?.id || ''), {
+    refetch: refetchCalendars
+  } = useQuery(['userCalendars', user?.id], () => fetchCalendars(user?.id || ''), {
     enabled: user !== undefined || user !== ''
   });
 
   useEffect(() => {
     if (!isLoading && user) {
       const canWrite = data?.filter((calendar: Calendar) => calendar.canWriteMembers.map(u => u.id).includes(user?.id.toString()));
-      setCanWritePurposes(canWrite);
+      setCanWriteCalendars(canWrite);
 
       const canRead = data?.filter((calendar: Calendar) => calendar.canReadMembers.map(u => u.id).includes(user?.id));
-      setCanReadPurposes(canRead);
+      setCanReadCalendars(canRead);
     }
   }, [isLoading, user]);
 
   return {
-    purposes: data,
-    canWritePurposes,
-    setCanWritePurposes,
-    canReadPurposes,
+    calendars: data,
+    canWriteCalendars,
+    setCanWriteCalendars,
+    canReadCalendars,
     isLoading,
-    refetchPurposes,
+    refetchCalendars,
     isError,
     error
   };

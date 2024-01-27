@@ -16,5 +16,5 @@
       "*": ["node_modules/*", "src/types/*"]
     }
   },
-  "include": ["src/**/*", "src/graphql/generated/types.ts"],
+  "include": ["src/**/*", "src/graphql/generated/types.ts", "src/copyTypes.ts"],
 }
