@@ -2,15 +2,16 @@ import { observer } from 'mobx-react';
 import { useEffect, useState } from 'react';
 import { Button, Input, Modal, Spin, Table } from 'antd';
 import useSettingsPermissions from '@/hooks/useSettingsPermissions';
-import { deleteCalendar, updateCalendar } from '@/services/calendars/CalendarService';
+import { deleteCalendar, updateCalendar } from '@/services/CalendarService';
 import EditMemberList from './EditMemberList';
 import NewCalendar from './NewCalendar';
 import { UseMutationResult, useMutation } from 'react-query';
 import { getColumns, getMemberColumns } from './components/columns';
-import { removeUserFromCalendar } from '../../services/calendars/CalendarService';
+import { removeUserFromCalendar } from '../../services/CalendarService';
 import { toast } from 'react-toastify';
 import { FcCalendar } from 'react-icons/fc';
-import { Calendar, CalendarCreateInput, User } from '@/types';
+import { Calendar, CreateCalendarInput, User } from '@/types';
+import { INITIAL_CALENDAR_DATA } from '@/utils/constants';
 
 const CalendarsList = observer(() => {
   const localUser = localStorage.getItem('CloudRoundsUser');
@@ -22,7 +23,7 @@ const CalendarsList = observer(() => {
 
   const [openNewCalendar, setOpenNewCalendar] = useState<boolean>(false);
 
-  const [newCalendar, setNewCalendar] = useState<CalendarCreateInput>({ name: '', description: '', creatorId: '' });
+  const [newCalendar, setNewCalendar] = useState<CreateCalendarInput>(INITIAL_CALENDAR_DATA);
   const [selectedCalendar, setSelectedCalendar] = useState<Calendar | null>(null);
 
   const [calendars, setCalendars] = useState<Calendar[]>([]);
@@ -45,10 +46,7 @@ const CalendarsList = observer(() => {
     }
 
     try {
-      const data = await updateCalendar({
-        calendarId: selectedCalendar.id,
-        editedCalendar: newCalendar
-      });
+      const data = await updateCalendar(selectedCalendar.id, newCalendar);
       console.log(data.updatedCalendar);
       setCalendars(data.calendars);
       handleClose();
@@ -100,7 +98,7 @@ const CalendarsList = observer(() => {
     if (!passedCalendar) return;
     const calendar = passedCalendar as Calendar;
     setSelectedCalendar(calendar);
-    setNewCalendar({ name: calendar.name, description: calendar.description, creatorId: user?.id || '' });
+    setNewCalendar({ ...calendar, name: calendar.name, description: calendar.description, creatorId: user?.id || '' });
     setEditField(field);
     setOpen(true);
   };
@@ -112,7 +110,7 @@ const CalendarsList = observer(() => {
 
   const handleClose = () => {
     setOpen(false);
-    setNewCalendar({ name: '', description: '', creatorId: '' });
+    setNewCalendar(INITIAL_CALENDAR_DATA);
     setSelectedCalendar(null);
   };
 

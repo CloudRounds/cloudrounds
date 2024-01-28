@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Spin, Alert } from 'antd';
-import { verifyEmail } from '@/services/auth/AuthService';
+import { verifyEmail } from '@/services/AuthService';
 
 const EmailVerification = () => {
   const { token } = useParams();
@@ -31,12 +31,7 @@ const EmailVerification = () => {
   }
 
   if (error) {
-    return (
-      <Alert
-        message={error}
-        type='error'
-      />
-    );
+    return <Alert message={error} type='error' />;
   }
 
   return null;

@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Modal, Button, Spin, Pagination, AutoComplete } from 'antd';
 import { useQuery, useMutation } from 'react-query';
-import { fetchUsers } from '@/services/users/UserService';
-import { fetchRequests, createRequest, createBulkRequests } from '@/services/requests/RequestService';
+import { fetchUsers } from '@/services/UserService';
+import { fetchRequests, createRequest, createBulkRequests } from '@/services/RequestService';
 import { toast } from 'react-toastify';
 import InviteByEmail from './InviteByEmail';
 import CurrentMembersList from './components/CurrentMembersList';
 import { RiAdminFill } from 'react-icons/ri';
-import { deleteRequest } from '@/services/requests/RequestService';
+import { deleteRequest } from '@/services/RequestService';
 import { Calendar, User, Request } from '@/types';
 
 interface EditMemberListProps {
@@ -149,8 +149,8 @@ const EditMemberList = ({
 
   const handleRemovePendingUser = async (user: User) => {
     if (!selectedCalendar) return;
-    const calendarRequests = requests.filter(r => r.user.id === user.id);
-    const request = calendarRequests.find(r => r.calendar.name === selectedCalendar.name);
+    const calendarRequests = requests.filter(r => r.userId === user.id);
+    const request = calendarRequests.find(r => r.calendar?.name === selectedCalendar.name);
     if (!request) return;
     Modal.confirm({
       title: 'Are you sure you want to remove the pending member?',
@@ -197,7 +197,7 @@ const EditMemberList = ({
     }
     return requests.some(
       request =>
-        request.user.id === userId &&
+        request.userId === userId &&
         request.calendar &&
         request.calendar.name === calendar.name &&
         request.status === 'Pending'

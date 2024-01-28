@@ -1,19 +1,23 @@
-import { StarFilled, StarOutlined } from '@ant-design/icons';
-import { Col, Collapse, Row, Avatar, Typography } from 'antd';
 import { formatDate } from '@/utils/dates';
-import { hashStringToColor, createAcronym } from '@/utils/cardHelpers';
+import { StarFilled, StarOutlined } from '@ant-design/icons';
+import { Avatar, Col, Collapse, Row, Typography } from 'antd';
 import { FaRegEdit } from 'react-icons/fa';
 import ExportToIcalButton from './calendar/ExportToIcalButton';
 
-import purposeIcons from '../ui/PurposeIcons';
-import {EnvironmentOutlined, LinkOutlined} from '@ant-design/icons';
+import { EnvironmentOutlined, LinkOutlined } from '@ant-design/icons';
+import purposeIcons from '../ui/CalendarIcons';
 
-
-
-const { Panel } = Collapse;
 const { Text, Title } = Typography;
 
-const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }) => {
+interface ArticleCardProps {
+  article: any;
+  isOrganizer: boolean;
+  onFavorite: (articleId: string) => void;
+  onEdit: (articleId: string) => void;
+  isFavorite: boolean;
+}
+
+const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }: ArticleCardProps) => {
   const formattedDate = formatDate(article.date);
   const formattedTime = article.duration;
   const isVirtual = article.meetingType === 'Virtual';
@@ -34,7 +38,7 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }) =
     const currentTime = new Date();
 
     // Adjust start time to be 15 minutes earlier
-    const startTimeMinus15Minutes = new Date(eventStartDate - 15 * 60 * 1000);
+    const startTimeMinus15Minutes = new Date(eventStartDate.getTime() - 15 * 60 * 1000);
 
     // Adjust end time to be exactly at the end of the event
     const endTimeExact = new Date(eventEndDate);
@@ -44,7 +48,8 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }) =
   };
 
   const today = new Date();
-  const isToday = formattedDate === formatDate(today); // Check if the date is today
+  const formattedToday = today.toISOString().split('T')[0];
+  const isToday = formattedDate === formatDate(formattedToday);
 
   const isEventLive = isToday && isWithin15MinutesOfEvent(); // Check if the event is live within 15 minutes
 
@@ -62,21 +67,26 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }) =
       label: (
         <div className='relative rounded-md'>
           <div className='flex items-center rounded-md'>
-<Avatar style={{ backgroundColor: '#ddd6fe', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '0px solid #5161ce' }}>
-  {purposeIcons[article.purpose.name]|| purposeIcons.DEFAULT}
-</Avatar>
+            <Avatar
+              style={{
+                backgroundColor: '#ddd6fe',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '0px solid #5161ce'
+              }}>
+              {purposeIcons[article.purpose.name] || purposeIcons.DEFAULT}
+            </Avatar>
 
-
-  <div style={{ flex: 1, marginLeft: '10px' }}>
-    <Title level={5} style={{ margin: 0, padding: 0, maxWidth: '90%' }}>
-      {article.title}
-    </Title>
-    <Text type='secondary'>
-      {formattedDate} | {formattedTime}
-    </Text>
-  </div>
-</div>
-
+            <div style={{ flex: 1, marginLeft: '10px' }}>
+              <Title level={5} style={{ margin: 0, padding: 0, maxWidth: '90%' }}>
+                {article.title}
+              </Title>
+              <Text type='secondary'>
+                {formattedDate} | {formattedTime}
+              </Text>
+            </div>
+          </div>
 
           <div className='absolute top-[-2px] right-[5px]'>
             {isFavorite ? (
@@ -101,7 +111,7 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }) =
             {isOrganizer && (
               <FaRegEdit
                 className='cursor-pointer text-xl hover:text-blue-600 p-1'
-                onClick={event => {
+                onClick={(event: React.MouseEvent<SVGElement>) => {
                   event.stopPropagation();
                   onEdit(article._id);
                 }}
@@ -112,8 +122,6 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }) =
       ),
       children: (
         <Row gutter={[16, 16]} className='relative'>
-              
-              
           {isVirtual && (
             <Col span={24}>
               {isMeetingJoinable ? (
@@ -122,7 +130,7 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }) =
                   target='_blank'
                   rel='noopener noreferrer'
                   className='basic-btn purple-full-link'>
-                 <LinkOutlined />  Join Virtual Meeting
+                  <LinkOutlined /> Join Virtual Meeting
                 </a>
               ) : (
                 <p className='italic'>Link not yet provided.</p>
@@ -150,40 +158,36 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }) =
                   )}
                 </div>
               )}
-                      
-             <p style={{ fontFamily: '', fontWeight: '' }}>
-  {article.location ? (
-    <span>
-      <EnvironmentOutlined /> {article.location}
-    </span>
-  ) : (
-    <span className='italic'>Location not yet provided.</span>
-  )}
-</p>
 
-               <div className='absolute top-[-2px] right-0 mr-2'>
-            <ExportToIcalButton article={article} text='Export' fontSize='12px' />
-          </div>
+              <p style={{ fontFamily: '', fontWeight: '' }}>
+                {article.location ? (
+                  <span>
+                    <EnvironmentOutlined /> {article.location}
+                  </span>
+                ) : (
+                  <span className='italic'>Location not yet provided.</span>
+                )}
+              </p>
+
+              <div className='absolute top-[-2px] right-0 mr-2'>
+                <ExportToIcalButton article={article} text='Export' fontSize='12px' />
+              </div>
             </Col>
           )}
 
           {article.speaker && (
-  <Col span={24}>
-    <p style={{ fontFamily: 'sans-serif', fontWeight: '700' }}>
-      Speaker: <span>{article.speaker}</span>
-    </p>
-  </Col>
-)}
+            <Col span={24}>
+              <p style={{ fontFamily: 'sans-serif', fontWeight: '700' }}>
+                Speaker: <span>{article.speaker}</span>
+              </p>
+            </Col>
+          )}
 
-<Col span={24}>
-  <p style={{ fontFamily: 'sans-serif', fontWeight: '700' }}>
-    Calendar: <span>{article.purpose.name}</span>
-  </p>
-</Col>
-
-              
-               
-              
+          <Col span={24}>
+            <p style={{ fontFamily: 'sans-serif', fontWeight: '700' }}>
+              Calendar: <span>{article.purpose.name}</span>
+            </p>
+          </Col>
 
           {article.additional_details && (
             <Col span={24}>

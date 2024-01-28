@@ -1,5 +1,5 @@
 import useRequestPermissions from '@/hooks/useRequestPermissions';
-import { deleteRequest, updateRequestStatus } from '@/services/requests/RequestService';
+import { deleteRequest, updateRequestStatus } from '@/services/RequestService';
 import userStore from '@/stores/userStore';
 import { Calendar, Request, User } from '@/types';
 import {
@@ -13,8 +13,6 @@ import { Button, Dropdown, Layout, Modal, Pagination, Spin, Table, Typography } 
 import { observer } from 'mobx-react';
 import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
-
-const { Content } = Layout;
 
 const RequestsList = observer(() => {
   const localUser = localStorage.getItem('CloudRoundsUser');
@@ -73,11 +71,11 @@ const RequestsList = observer(() => {
       status: string;
       message: string;
     }) => {
-      return updateRequestStatus(requestId, calendarId, status, message);
+      const email = user?.email;
+      return updateRequestStatus(requestId, calendarId, status, message, email || '');
     },
     {
       onSuccess: (data, variables) => {
-        // Update the local state with the updated request status
         const updatedRequests = localRequests.map(request => {
           if (request.id === variables.requestId) {
             return { ...request, status: variables.status, isApproving: false };
@@ -87,8 +85,7 @@ const RequestsList = observer(() => {
 
         setLocalRequests(updatedRequests);
 
-        // Update the user store and refetch data
-        userStore.setSubmittedRequests(updatedRequests.filter(r => r.user.id === user?.id));
+        userStore.setSubmittedRequests(updatedRequests.filter(r => r.user?.id === user?.id));
         refetch();
         setIsStatusUpdating(null);
         handleClose();
@@ -119,7 +116,11 @@ const RequestsList = observer(() => {
     setShowUserRequests(!showUserRequests);
   };
 
-  const updateStatus = (id: string, calendarId: string, status: string, message: string) => {
+  const updateStatus = (id: string, calendarId: string | undefined, status: string, message: string) => {
+    if (!calendarId) {
+      console.error('Calendar ID is undefined.');
+      return;
+    }
     updateStatusMutation.mutate({ requestId: id, status, message, calendarId });
   };
 
@@ -132,7 +133,7 @@ const RequestsList = observer(() => {
   }
 
   const displayedRequests = showUserRequests
-    ? requests.filter((req: Request) => req.user.id === user?.id)
+    ? requests.filter((req: Request) => req.user?.id === user?.id)
     : localRequests.filter((req: Request) => req.user?.id !== user?.id);
 
   const columns = [
@@ -170,28 +171,26 @@ const RequestsList = observer(() => {
                   key: 'approve',
                   label: 'Approve',
                   disabled: request.status === 'Approved',
-                  onClick: () => updateStatus(request.id, request.calendar.id, 'Approved', '')
+                  onClick: () => updateStatus(request.id, request.calendar?.id, 'Approved', '')
                 },
                 {
                   key: 'deny',
                   label: 'Deny',
                   disabled: request.status === 'Denied',
-                  onClick: () => updateStatus(request.id, request.calendar.id, 'Denied', '')
+                  onClick: () => updateStatus(request.id, request.calendar?.id, 'Denied', '')
                 },
                 {
                   key: 'reset',
                   label: 'Reset',
                   disabled: request.status === 'Pending',
-                  onClick: () => updateStatus(request.id, request.calendar.id, 'Pending', '')
+                  onClick: () => updateStatus(request.id, request.calendar?.id, 'Pending', '')
                 }
               ];
 
               return isStatusUpdating === request.id ? (
                 <Spin className='ml-1' />
               ) : (
-                <Dropdown
-                  menu={{ items: menuItems }}
-                  trigger={['click']}>
+                <Dropdown menu={{ items: menuItems }} trigger={['click']}>
                   <Button icon={<MoreOutlined />} />
                 </Dropdown>
               );
@@ -208,22 +207,20 @@ const RequestsList = observer(() => {
                   key: 'approve',
                   label: 'Approve',
                   disabled: request.status === 'Approved',
-                  onClick: () => updateStatus(request.id, request.calendar.id, 'Approved', '')
+                  onClick: () => updateStatus(request.id, request.calendar?.id, 'Approved', '')
                 },
                 {
                   key: 'deny',
                   label: 'Deny',
                   disabled: request.status === 'Denied',
-                  onClick: () => updateStatus(request.id, request.calendar.id, 'Denied', '')
-                }s
+                  onClick: () => updateStatus(request.id, request.calendar?.id, 'Denied', '')
+                }
               ];
 
               return isStatusUpdating === request.id ? (
                 <Spin className='ml-1' />
               ) : (
-                <Dropdown
-                  menu={{ items: menuItems }}
-                  trigger={['click']}>
+                <Dropdown menu={{ items: menuItems }} trigger={['click']}>
                   <Button icon={<MoreOutlined />} />
                 </Dropdown>
               );
@@ -262,15 +259,11 @@ const RequestsList = observer(() => {
   return (
     <Layout className='w-full mx-auto h-screen'>
       <div className='w-full bg-white p-6 min-h-[280px] text-center full-width-mobile'>
-        <Button
-          onClick={toggleView}
-          className='mb-5'>
+        <Button onClick={toggleView} className='mb-5'>
           {!showUserRequests ? 'Incoming Requests' : 'Outgoing Requests'}
         </Button>
         <hr className='my-5' />
-        <Typography.Title
-          level={2}
-          className='mb-5'>
+        <Typography.Title level={2} className='mb-5'>
           {!showUserRequests ? 'Outgoing Requests' : 'Incoming Requests'}
         </Typography.Title>
         <Table

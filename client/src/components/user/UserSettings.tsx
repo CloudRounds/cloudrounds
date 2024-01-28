@@ -1,49 +1,50 @@
-import { observer } from 'mobx-react';
-import { Avatar, List, Card, Button, Input, Typography, Spin, Layout } from 'antd';
-import { Modal, Space, Divider, Select } from 'antd';
-import { CheckOutlined, CloseOutlined, EditOutlined } from '@ant-design/icons';
-import { useEffect, useState } from 'react';
-import { updateUser, deleteUser } from '@/services/users/UserService';
-import { toast } from 'react-toastify';
-import PasswordChange from './PasswordChange';
-import { UNIVERSITY_CHOICES } from '@/utils/constants';
-import { useMutation } from 'react-query';
 import useSettingsPermissions from '@/hooks/useSettingsPermissions';
+import { deleteUser, updateUser } from '@/services/UserService';
+import { Calendar, CreateUserInput, TempUserValues, User, UserStringValues, UserWithPassword } from '@/types';
+import { UNIVERSITY_CHOICES } from '@/utils/constants';
+import { CheckOutlined, CloseOutlined, EditOutlined } from '@ant-design/icons';
+import { Button, Divider, Input, Layout, List, Modal, Select, Space, Spin, Typography } from 'antd';
+import { observer } from 'mobx-react';
+import { useEffect, useState } from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
 import AttendedArticles from './AttendedArticles';
+import PasswordChange from './PasswordChange';
+import { isUser } from '@/types/isSomeType';
+
+type EditingField = keyof User | keyof TempUserValues | keyof CreateUserInput | 'pasword';
 
 const UserSettings = observer(() => {
   const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = JSON.parse(localUser);
+  const user = JSON.parse(localUser || '{}') as UserWithPassword;
 
   const [open, setOpen] = useState(false);
   const [isAttendedModalOpen, setIsAttendedModalOpen] = useState(false);
 
-  const [editingField, setEditingField] = useState(null);
-  const [tempValues, setTempValues] = useState({
+  const [editingField, setEditingField] = useState<EditingField | null>(null);
+  const [tempValues, setTempValues] = useState<TempUserValues>({
     username: user.username,
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
-    canRead: [],
-    canWrite: [],
+    canReadCalendars: [],
+    canWriteCalendars: [],
     university: user.university
   });
 
   const [showPasswordChange, setShowPasswordChange] = useState(false);
 
-  const { canWritePurposes, canReadPurposes, isLoading } = useSettingsPermissions();
+  const { canWriteCalendars, canReadCalendars, isLoading } = useSettingsPermissions(null);
 
   const mutation = useMutation(updateUser, {
     onSuccess: data => {
-      console.log(data);
       if (data && data.user) {
         localStorage.setItem('CloudRoundsUser', JSON.stringify(data.user));
-        const updatedUser = data.user;
-        setTempValues({ ...tempValues, updatedUser });
+        setTempValues({ ...tempValues, ...data.user });
         toast.success('Field updated successfully!', { autoClose: 2000, pauseOnFocusLoss: false });
       }
     },
-    onError: error => {
+    onError: (error: any) => {
       toast.error(error.message || 'Error updating field. Please try again.', {
         autoClose: 2000,
         pauseOnFocusLoss: false
@@ -53,29 +54,46 @@ const UserSettings = observer(() => {
 
   useEffect(() => {
     if (!isLoading) {
-      setTempValues({ ...tempValues, canRead: user.canReadPurposes, canWrite: user.canWritePurposes });
+      setTempValues({
+        ...tempValues,
+        canReadCalendars: user.canReadCalendars.map(calendar => calendar.name),
+        canWriteCalendars: user.canWriteCalendars.map(calendar => calendar.name)
+      });
     }
-  }, [isLoading]);
+  }, [isLoading, user]);
 
-  const handleFieldUpdate = async (field, newValue) => {
-    const updatedUser = { _id: user._id, [field]: newValue };
-    mutation.mutate(updatedUser);
+  const handleFieldUpdate = async (
+    field: keyof TempUserValues | keyof UserStringValues,
+    newValue: string | string[] | undefined
+  ) => {
+    if (isUser(user) && newValue) {
+      const updatedUser: Partial<User> = { ...user, [field]: newValue };
+      mutation.mutate(updatedUser as User);
+    }
   };
 
-  const handleEditToggle = field => {
-    setEditingField(field);
-    setTempValues(prevValues => ({ ...prevValues, [field]: user[field] }));
+  const handleEditToggle = (field: keyof TempUserValues | 'password') => {
+    if (isUser(user)) {
+      setEditingField(field);
+      setTempValues(prevValues => ({ ...prevValues, [field]: user[field as keyof User] }));
+    }
   };
 
   const areFieldsValid = () => {
-    return ['username', 'firstName', 'lastName', 'email', 'university'].every(field => !!tempValues[field]);
+    return ['username', 'firstName', 'lastName', 'email', 'university'].every(
+      field => !!tempValues[field as keyof TempUserValues]
+    );
   };
 
-  const handleSaveAll = async field => {
-    if (areFieldsValid()) {
-      await handleFieldUpdate(field, tempValues[field]);
+  const handleSaveAll = async (field: keyof TempUserValues | keyof UserStringValues) => {
+    if (field in tempValues) {
+      if (areFieldsValid()) {
+        await handleFieldUpdate(field, tempValues[field as keyof TempUserValues]);
+      } else {
+        toast.error(`Invalid or empty fields.`, { autoClose: 2000, pauseOnFocusLoss: false });
+      }
     } else {
-      toast.error(`Invalid or empty fields.`, { autoClose: 2000, pauseOnFocusLoss: false });
+      console.error('Invalid field: ', field);
     }
     setEditingField(null);
   };
@@ -84,19 +102,19 @@ const UserSettings = observer(() => {
     setEditingField(null);
   };
 
-  const handleChange = (field, value) => {
+  const handleChange = (field: keyof TempUserValues | keyof UserStringValues, value: string | string[]) => {
     setTempValues(prevValues => ({ ...prevValues, [field]: value }));
   };
 
   const handleDeleteAccount = async () => {
     try {
-      await deleteUser(user._id);
-
-      toast.success('Account deleted successfully!', { autoClose: 2000, pauseOnFocusLoss: false });
+      if (isUser(user)) {
+        await deleteUser(user.id);
+        toast.success('Account deleted successfully!', { autoClose: 2000, pauseOnFocusLoss: false });
+      }
     } catch (error) {
       toast.error('Error deleting account. Please try again.', { autoClose: 2000, pauseOnFocusLoss: false });
     }
-    setOpenDeleteDialog(false);
   };
 
   const handleClickOpen = () => {
@@ -107,28 +125,23 @@ const UserSettings = observer(() => {
     setOpen(false);
   };
 
-  const renderField = (label, field, choices) => (
+  const renderField = (label: string, field: keyof TempUserValues | 'password', choices: any[] | null = null) => (
     <div style={{ width: editingField === field ? '70%' : '100%', marginBottom: '1rem' }}>
       <Typography.Text>{label}</Typography.Text>
       <div style={{ backgroundColor: '#F9FAFC', borderRadius: '5px', display: 'flex', alignItems: 'center' }}>
         {editingField === field ? (
           <>
             {choices ? (
-              <Select
-                autoFocus
-                value={tempValues[field]}
-                onChange={value => handleChange(field, value)}>
+              <Select autoFocus value={tempValues[field]} onChange={value => handleChange(field, value)}>
                 {choices.map((choice, index) => (
-                  <Select.Option
-                    key={index}
-                    value={choice.label}>
+                  <Select.Option key={index} value={choice.label}>
                     {choice.label}
                   </Select.Option>
                 ))}
               </Select>
             ) : editingField === 'password' ? (
               <PasswordChange
-                userId={user._id}
+                userId={user.id}
                 onSuccess={() => {
                   setShowPasswordChange(false);
                   setEditingField(null);
@@ -136,22 +149,12 @@ const UserSettings = observer(() => {
                 onCancel={handleCancel}
               />
             ) : (
-              <Input
-                autoFocus
-                value={tempValues[field]}
-                onChange={e => handleChange(field, e.target.value)}
-              />
+              <Input autoFocus value={tempValues[field]} onChange={e => handleChange(field, e.target.value)} />
             )}
             {field !== 'password' && (
               <Space>
-                <Button
-                  icon={<CheckOutlined />}
-                  onClick={() => handleSaveAll(field)}
-                />
-                <Button
-                  icon={<CloseOutlined />}
-                  onClick={handleCancel}
-                />
+                <Button icon={<CheckOutlined />} onClick={() => handleSaveAll(field)} />
+                <Button icon={<CloseOutlined />} onClick={handleCancel} />
               </Space>
             )}
           </>
@@ -160,7 +163,7 @@ const UserSettings = observer(() => {
             {field === 'password' ? (
               <Typography.Text>••••••••</Typography.Text>
             ) : (
-              <Typography.Text>{user[field]}</Typography.Text>
+              <Typography.Text>{user.password}</Typography.Text>
             )}
             <Button
               icon={<EditOutlined />}
@@ -186,26 +189,18 @@ const UserSettings = observer(() => {
         <div
           className='flex items-center justify-center'
           style={{ paddingInline: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-          <Typography.Title
-            level={2}
-            className='mt-3'>
+          <Typography.Title level={2} className='mt-3'>
             Account Settings
           </Typography.Title>
         </div>
         <div>
-          <Space
-            direction='vertical'
-            style={{ width: '100%' }}>
+          <Space direction='vertical' style={{ width: '100%' }}>
             <div className='mx-auto max-w-[600px] p-6'>
               <Divider className='text-lg font-semibold'>LOGIN INFORMATION</Divider>
               <div className='mt-4'>
                 <div className='mb-3'>
                   <Typography.Text>Username</Typography.Text>
-                  <Input
-                    disabled
-                    value={tempValues['username']}
-                    style={{ cursor: 'default' }}
-                  />
+                  <Input disabled value={tempValues['username']} style={{ cursor: 'default' }} />
                 </div>
                 {renderField('Password', 'password')}
               </div>
@@ -232,10 +227,7 @@ const UserSettings = observer(() => {
                         View Details
                       </button>
                     </div>
-                    <AttendedArticles
-                      isOpen={isAttendedModalOpen}
-                      onClose={() => setIsAttendedModalOpen(false)}
-                    />
+                    <AttendedArticles isOpen={isAttendedModalOpen} onClose={() => setIsAttendedModalOpen(false)} />
                   </div>
                 ) : (
                   <List.Item>No articles attended.</List.Item>
@@ -250,13 +242,13 @@ const UserSettings = observer(() => {
                     <div className='flex items-center'>
                       <p className='font-medium mr-2'>Calendars:</p>
                       <span className='text-gray-600 text-sm'>
-                        {canWritePurposes && canWritePurposes.map(p => p.name).join(', ')}
+                        {canWriteCalendars && canWriteCalendars.map(p => p.name).join(', ')}
                       </span>
                     </div>
                     <div className='flex items-center mb-2'>
                       <p className='font-medium mr-2'>Subscribed:</p>
                       <span className='text-gray-600 text-sm'>
-                        {canReadPurposes && canReadPurposes.map(p => p.name).join(', ')}
+                        {canReadCalendars && canReadCalendars.map(p => p.name).join(', ')}
                       </span>
                     </div>
                   </div>
@@ -277,9 +269,7 @@ const UserSettings = observer(() => {
                 open={open}
                 onCancel={handleClose}
                 footer={[
-                  <Button
-                    key='back'
-                    onClick={handleClose}>
+                  <Button key='back' onClick={handleClose}>
                     Cancel
                   </Button>,
                   <Button

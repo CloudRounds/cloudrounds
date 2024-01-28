@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useQuery } from 'react-query';
 
-import { createInvite } from '@/services/invites/InviteService';
-import { fetchUsers } from '@/services/users/UserService';
+import { createInvite } from '@/services/InviteService';
+import { fetchUsers } from '@/services/UserService';
 
 import { Modal, Button, Input, Form, Spin } from 'antd';
 import { toast } from 'react-toastify';
 import { Calendar, User } from '@/types';
-import { addEmailMemberToCalendar } from '@/services/calendars/CalendarService';
+import { addEmailMemberToCalendar } from '@/services/CalendarService';
 
 interface InviteByEmailProps {
   selectedCalendar: Calendar | null;

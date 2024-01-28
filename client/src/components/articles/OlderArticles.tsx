@@ -1,43 +1,38 @@
 import useArticlePermissions from '@/hooks/useArticlePermissions';
-import { sortArticlesDescending } from '@/services/articles/ArticleService';
-import {
-  createFeedback,
-  fetchUserFeedbacks,
-  updateFeedback,
-  deleteFeedback
-} from '@/services/feedbacks/FeedbackService';
-import { toggleAttending } from '@/services/users/UserService';
+import { sortArticlesDescending } from '@/services/ArticleService';
+import { createFeedback, fetchUserFeedbacks, updateFeedback, deleteFeedback } from '@/services/FeedbackService';
+import { toggleAttending } from '@/services/UserService';
 import { formatDate } from '@/utils/dates';
 import { EditOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { Button, Card, Checkbox, Input, Layout, Modal, Pagination, Spin, Table, Typography } from 'antd';
 import { observer } from 'mobx-react';
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
-import PurposeAvatar from '../ui/PurposeAvatar';
-import purposeIcons from '../ui/PurposeIcons';
+import calendarIcons from '../ui/CalendarIcons';
+import { Article, Feedback, User } from '@/types';
 
 const { TextArea } = Input;
 
 const OlderArticles = observer(() => {
   const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = JSON.parse(localUser);
+  const user = JSON.parse(localUser || '{}') as User;
 
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [open, setOpen] = useState(false);
-  const [currentFeedback, setCurrentFeedback] = useState(null);
-  const [currentArticle, setCurrentArticle] = useState(null);
-  const [userFeedbacks, setUserFeedbacks] = useState([]);
+  const [page, setPage] = useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const [open, setOpen] = useState<boolean>(false);
+  const [currentFeedback, setCurrentFeedback] = useState<Feedback | null>(null);
+  const [currentArticle, setCurrentArticle] = useState<Article | null>(null);
+  const [userFeedbacks, setUserFeedbacks] = useState<Feedback[]>([]);
   const [attended, setAttended] = useState(user.attended);
   const [isEditOperation, setIsEditOperation] = useState(false);
 
-  const {
-    data: feedbacks,
-    isLoading: isFeedbacksQueryLoading,
-    refetch: refetchFeedbacks
-  } = useQuery(['feedbacks', user?._id], () => fetchUserFeedbacks(user?._id), {
-    enabled: !!user
-  });
+  const { data: feedbacks, isLoading: isFeedbacksQueryLoading } = useQuery(
+    ['feedbacks', user?.id],
+    () => fetchUserFeedbacks(user?.id),
+    {
+      enabled: !!user
+    }
+  );
 
   const { allowedArticles, isLoading } = useArticlePermissions();
 
@@ -52,10 +47,15 @@ const OlderArticles = observer(() => {
     }
   }, [feedbacks, isFeedbacksQueryLoading]);
 
-  const handleFeedbackSubmit = async currentArticle => {
+  const handleFeedbackSubmit = async (currentArticle: Article | null) => {
+    if (!currentArticle) {
+      console.error('There was an error submitting the feedback: no article selected');
+      return;
+    }
     try {
-      const updatedFeedback = await createFeedback(user._id, currentFeedback.feedback, currentArticle._id);
-      const temp = userFeedbacks.filter(f => f._id !== updatedFeedback._id);
+      if (!currentFeedback) return;
+      const updatedFeedback = await createFeedback(user.id, currentFeedback.feedback, currentArticle.id);
+      const temp = userFeedbacks.filter(f => f.id !== updatedFeedback.id);
       setUserFeedbacks([...temp, updatedFeedback]);
       handleClose();
     } catch (error) {
@@ -64,10 +64,10 @@ const OlderArticles = observer(() => {
   };
 
   const handleEditFeedbackAction = async () => {
-    if (currentFeedback.feedback === '') {
+    if (currentFeedback?.feedback === '') {
       try {
-        await deleteFeedback(currentFeedback._id);
-        const temp = userFeedbacks.filter(f => f._id !== currentFeedback._id);
+        await deleteFeedback(currentFeedback.id);
+        const temp = userFeedbacks.filter(f => f.id !== currentFeedback.id);
         setUserFeedbacks(temp);
         handleClose();
       } catch (error) {
@@ -75,8 +75,9 @@ const OlderArticles = observer(() => {
       }
     } else {
       try {
-        const updatedFeedback = await updateFeedback(user._id, currentFeedback.feedback, currentArticle._id);
-        const temp = userFeedbacks.filter(f => f._id !== updatedFeedback._id);
+        if (!currentArticle || !currentFeedback) return;
+        const updatedFeedback = await updateFeedback(currentFeedback?.feedback, currentArticle?.id);
+        const temp = userFeedbacks.filter(f => f.id !== updatedFeedback.id);
         setUserFeedbacks([...temp, updatedFeedback]);
         handleClose();
       } catch (error) {
@@ -85,32 +86,32 @@ const OlderArticles = observer(() => {
     }
   };
 
-  const getFeedback = articleId => {
+  const getFeedback = (articleId: string) => {
     const feedbackObj = userFeedbacks.find(f => f.articleId && f.articleId === articleId);
     return feedbackObj ? feedbackObj : null;
   };
 
-  const handleToggleAttending = async (articleId, isAttending) => {
+  const handleToggleAttending = async (articleId: string, isAttending: boolean) => {
     try {
-      const response = await toggleAttending(user._id, articleId, isAttending);
-      const attendedArticles = allowedArticles.filter(a => response.attended.includes(a._id));
+      const response = await toggleAttending(user.id, articleId, isAttending);
+      const attendedArticles = allowedArticles.filter(a => response.attended.includes(a.id));
       setAttended(attendedArticles);
     } catch (error) {
       console.error('There was an error updating attendance:', error);
     }
   };
 
-  const handleChangePage = (page, pageSize) => {
+  const handleChangePage = (page: number, pageSize: number) => {
     setPage(page - 1);
   };
 
-  const handleChangeRowsPerPage = (current, size) => {
+  const handleChangeRowsPerPage = (current: number, size: number) => {
     setRowsPerPage(size);
 
     setPage(1);
   };
 
-  const handleOpen = (article, feedback, isEdit) => {
+  const handleOpen = (article: Article, feedback: Feedback | null, isEdit: boolean) => {
     setCurrentArticle(article);
     setCurrentFeedback(feedback);
     setIsEditOperation(isEdit);
@@ -121,10 +122,16 @@ const OlderArticles = observer(() => {
     setOpen(false);
   };
 
+  const handleFeedbackChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCurrentFeedback(prev => {
+      return prev ? { ...prev, feedback: e.target.value } : null;
+    });
+  };
+
   if (isLoading || isFeedbacksQueryLoading) return <Spin />;
 
-  const renderFeedback = article => {
-    const feedbackObj = getFeedback(article._id);
+  const renderFeedback = (article: Article) => {
+    const feedbackObj = getFeedback(article.id);
     return feedbackObj ? (
       <div style={{ fontSize: '12px' }}>
         <span>{feedbackObj.feedback}</span>
@@ -136,14 +143,14 @@ const OlderArticles = observer(() => {
       </div>
     ) : (
       <button
-        onClick={() => handleOpen(article, '', false)}
+        onClick={() => handleOpen(article, feedbackObj, false)}
         className='flex items-center justify-center  hover:text-[#5161ce] border rounded-md px-[5px] py-1'>
         <PlusCircleOutlined style={{ fontSize: '16px' }} />
       </button>
     );
   };
 
-  const titleStyle = {
+  const titleStyle: React.CSSProperties = {
     maxWidth: '200px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -153,29 +160,25 @@ const OlderArticles = observer(() => {
 
   return (
     <Layout>
-      <Card
-        bordered={false}
-        className='w-full text-center'>
-        <Typography.Title
-          level={2}
-          className='mt-4'>
+      <Card bordered={false} className='w-full text-center'>
+        <Typography.Title level={2} className='mt-4'>
           Previous Events
         </Typography.Title>
         <Table
           className='mt-8'
           dataSource={filteredArticles.slice(page * rowsPerPage, (page + 1) * rowsPerPage)}
           pagination={false}
-          rowKey={record => record._id}
+          rowKey={record => record.id}
           scroll={{ x: 'max-content' }}
           style={{ overflowX: 'auto' }}>
           <Table.Column
-            title='Purpose'
-            dataIndex='purpose'
-            key='purpose'
-            render={purpose => (
+            title='Calendar'
+            dataIndex='calendar'
+            key='calendar'
+            render={calendar => (
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                {purposeIcons[purpose?.name] || purposeIcons.DEFAULT}
-                {purpose && purpose.name && <span style={{ marginLeft: '8px' }}>{purpose.name}</span>}
+                {calendarIcons[calendar?.name] || calendarIcons.DEFAULT}
+                {calendar && calendar.name && <span style={{ marginLeft: '8px' }}>{calendar.name}</span>}
               </div>
             )}
             width='20%' // Initial width for larger screens
@@ -198,10 +201,10 @@ const OlderArticles = observer(() => {
             title='Attended'
             dataIndex='attended'
             key='attended'
-            render={(text, article) => (
+            render={(text, article: Article) => (
               <Checkbox
-                checked={attended.map(a => a._id).includes(article._id)}
-                onChange={e => handleToggleAttending(article._id, e.target.checked)}
+                checked={attended.map(a => a.id).includes(article.id)}
+                onChange={e => handleToggleAttending(article.id, e.target.checked)}
               />
             )}
             width='15%' // Initial width for larger screens
@@ -210,7 +213,7 @@ const OlderArticles = observer(() => {
             title='Feedback'
             dataIndex='feedback'
             key='feedback'
-            render={(text, article) => renderFeedback(article)}
+            render={(text, article: Article) => renderFeedback(article)}
             width='20%' // Initial width for larger screens
           />
         </Table>
@@ -233,10 +236,7 @@ const OlderArticles = observer(() => {
         footer={[
           <Button
             key='submit'
-            type=''
-            onClick={() =>
-              isEditOperation ? handleEditFeedbackAction(currentArticle) : handleFeedbackSubmit(currentArticle)
-            }>
+            onClick={() => (isEditOperation ? handleEditFeedbackAction() : handleFeedbackSubmit(currentArticle))}>
             Submit
           </Button>
         ]}>
@@ -244,8 +244,8 @@ const OlderArticles = observer(() => {
         <TextArea
           id='feedback-edit'
           placeholder='This feature is being worked on!'
-          value={currentFeedback && currentFeedback.feedback}
-          onChange={e => setCurrentFeedback(prev => ({ ...prev, feedback: e.target.value }))}
+          value={(currentFeedback && currentFeedback.feedback) || ''}
+          onChange={handleFeedbackChange}
           rows={4}
         />
       </Modal>

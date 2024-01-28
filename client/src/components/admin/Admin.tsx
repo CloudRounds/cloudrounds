@@ -1,14 +1,14 @@
 import useSuperAdmin from '@/hooks/useSuperAdmin';
-import { updateCalendar, fetchCalendars } from '@/services/calendars/CalendarService';
+import { updateCalendar, fetchCalendars } from '@/services/CalendarService';
 import { Button, Modal, Spin, Table, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import MemberList from './MemberList';
 import AccessDenied from './AccessDenied';
-import { Calendar } from '@/types';
+import { Calendar, UpdateCalendarMutationArgs } from '@/types';
 import { User } from '@/types';
 import { ColumnType } from 'antd/es/table';
-import { fetchUserById } from '@/services/users/UserService';
+import { fetchUserById } from '@/services/UserService';
 
 const Admin = () => {
   const localUser = localStorage.getItem('CloudRoundsUser');
@@ -33,16 +33,19 @@ const Admin = () => {
     }
   }, [isLoadingCalendars]);
 
-  const mutation = useMutation(updateCalendar, {
-    onSuccess: (updatedCalendar: Calendar) => {
-      setCalendars(prevCalendars => prevCalendars.map(p => (p.id === updatedCalendar.id ? updatedCalendar : p)));
-      console.log('Calendars/permissions updated successfully');
-      setOpenModal(false);
-    },
-    onError: (error: Error) => {
-      console.error('Error updating calendars/permissions:', error);
+  const mutation = useMutation<Calendar, Error, UpdateCalendarMutationArgs>(
+    ({ calendarId, editedCalendar }) => updateCalendar(calendarId, editedCalendar),
+    {
+      onSuccess: (updatedCalendar: Calendar) => {
+        setCalendars(prevCalendars => prevCalendars.map(p => (p.id === updatedCalendar.id ? updatedCalendar : p)));
+        console.log('Calendars/permissions updated successfully');
+        setOpenModal(false);
+      },
+      onError: (error: Error) => {
+        console.error('Error updating calendars/permissions:', error);
+      }
     }
-  });
+  );
 
   const handleSavePermissions = () => {
     if (selectedCalendar) {
@@ -58,7 +61,7 @@ const Admin = () => {
           if (calendar.id === selectedCalendar?.id) {
             const updatedCalendar = { ...calendar };
             const memberArray = type === 'canRead' ? updatedCalendar.canReadMembers : updatedCalendar.canWriteMembers;
-            updatedCalendar[type === 'canRead' ? 'canReadMembers' : 'canWriteMembers'] = [...memberArray, user];
+            updatedCalendar[type === 'canRead' ? 'canReadMembers' : 'canWriteMembers'] = [...(memberArray || []), user];
             return updatedCalendar;
           }
           return calendar;
@@ -73,11 +76,11 @@ const Admin = () => {
         if (calendar.id === selectedCalendar?.id) {
           const updatedCalendar = { ...calendar };
           const memberArray = type === 'canRead' ? updatedCalendar.canReadMembers : updatedCalendar.canWriteMembers;
-          const memberIds = memberArray.map(member => member.id);
+          const memberIds = memberArray?.map(member => member?.id);
 
-          if (memberIds.includes(memberId)) {
-            updatedCalendar[type === 'canRead' ? 'canReadMembers' : 'canWriteMembers'] = memberArray.filter(
-              member => member.id !== memberId
+          if (memberIds?.includes(memberId)) {
+            updatedCalendar[type === 'canRead' ? 'canReadMembers' : 'canWriteMembers'] = memberArray?.filter(
+              member => member?.id !== memberId
             );
           } else {
             updateUserPermissions(memberId, type);
@@ -93,7 +96,9 @@ const Admin = () => {
     return <Spin />;
   }
 
-  const renderMemberCount = (members: User[]) => members?.length || 0;
+  const renderMemberCount = (members: User[] | undefined): number => {
+    return members?.filter((member): member is User => member !== null && member !== undefined).length || 0;
+  };
 
   const columns: ColumnType<Calendar>[] = [
     {
@@ -164,17 +169,29 @@ const Admin = () => {
             </Button>
           ]}>
           <div>
-            <Typography.Text>Can Read Members ({renderMemberCount(selectedCalendar.canReadMembers)})</Typography.Text>
+            <Typography.Text>
+              Can Read Members ({renderMemberCount(selectedCalendar.canReadMembers ?? undefined)})
+            </Typography.Text>
             <MemberList
-              members={selectedCalendar.canReadMembers || []}
+              members={
+                selectedCalendar.canReadMembers?.filter(
+                  (member): member is User => member !== null && member !== undefined
+                ) || []
+              }
               type='canRead'
               handlePermissionChange={handlePermissionChange}
             />
           </div>
           <div>
-            <Typography.Text>Can Write Members ({renderMemberCount(selectedCalendar.canWriteMembers)})</Typography.Text>
+            <Typography.Text>
+              Can Write Members ({renderMemberCount(selectedCalendar.canWriteMembers ?? undefined)})
+            </Typography.Text>
             <MemberList
-              members={selectedCalendar.canWriteMembers || []}
+              members={
+                selectedCalendar.canWriteMembers?.filter(
+                  (member): member is User => member !== null && member !== undefined
+                ) || []
+              }
               type='canWrite'
               handlePermissionChange={handlePermissionChange}
             />

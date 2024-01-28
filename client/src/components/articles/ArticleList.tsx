@@ -1,7 +1,7 @@
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import useArticlePermissions from '@/hooks/useArticlePermissions';
-import { deleteArticle, sortArticles } from '@/services/articles/ArticleService';
-import { toggleFavorite, getFavorites } from '@/services/users/UserService';
+import { deleteArticle, sortArticles } from '@/services/ArticleService';
+import { toggleFavorite, getFavorites } from '@/services/UserService';
 import {
   getEmptyCalendars,
   getCalendarsAfterCreate,
@@ -219,10 +219,10 @@ const ArticleList = observer(() => {
               <ArticleCard
                 key={index}
                 article={article}
-                isOrganizer={article.organizer.username === user.username}
+                isOrganizer={article.organizer?.username === user.username}
                 onFavorite={() => handleFavorite(article.id)}
                 onEdit={() => handleEdit(article.id)}
-                isFavorite={favorites && favorites.includes(article.id)}
+                isFavorite={(favorites && favorites.includes(article.id)) || false}
               />
             ))}
             {filteredArticles.length > 4 && (

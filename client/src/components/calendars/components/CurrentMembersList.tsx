@@ -1,4 +1,4 @@
-import { removeUserFromCalendar } from '@/services/calendars/CalendarService';
+import { removeUserFromCalendar } from '@/services/CalendarService';
 import { Calendar, User } from '@/types';
 import { HourglassOutlined, UserDeleteOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import { List, Modal } from 'antd';

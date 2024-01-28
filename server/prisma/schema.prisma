@@ -12,24 +12,25 @@ generator client {
 }
 
 model Article {
-  id                 String     @id @default(uuid())
-  title              String
-  event_link         String?
-  date               DateTime
-  duration           String?
-  organizerId        String
-  organizer          User       @relation(name: "OrganizedArticles", fields: [organizerId], references: [id])
-  meetingType        String?
-  meeting_id         String?
-  passcode           String?
-  speaker            String?
-  location           String?
-  additional_details String?
-  feedbacks          Feedback[]
-  calendarId         String
-  calendar           Calendar   @relation(name: "CalendarArticles", fields: [calendarId], references: [id])
-  favorites          Favorite[]
-  attendees          User[]     @relation("ArticleAttendees")
+  id                String     @id @default(uuid())
+  title             String
+  eventLink         String?
+  date              DateTime
+  duration          String?
+  organizerId       String
+  organizer         User       @relation(name: "OrganizedArticles", fields: [organizerId], references: [id])
+  meetingType       String?
+  meetingId         String?
+  passcode          String?
+  speaker           String?
+  location          String?
+  additionalDetails String?
+  createdAt         DateTime   @default(now())
+  feedbacks         Feedback[]
+  calendarId        String
+  calendar          Calendar   @relation(name: "CalendarArticles", fields: [calendarId], references: [id])
+  favorites         Favorite[]
+  attendees         User[]     @relation("ArticleAttendees")
 
   @@index([calendarId])
   @@index([organizerId])
@@ -40,6 +41,7 @@ model Calendar {
   name            String
   description     String?
   creatorId       String
+  createdAt       DateTime      @default(now())
   creator         User          @relation(name: "UserCalendars", fields: [creatorId], references: [id])
   canReadMembers  User[]        @relation("CanReadCalendar")
   canWriteMembers User[]        @relation("CanWriteCalendar")
@@ -60,39 +62,42 @@ model User {
   email               String     @unique
   university          String
   isAdmin             Boolean    @default(false)
-  createdCalendars    Calendar[] @relation(name: "UserCalendars")
+  calendars           Calendar[] @relation(name: "UserCalendars")
   canReadCalendars    Calendar[] @relation("CanReadCalendar")
   canWriteCalendars   Calendar[] @relation("CanWriteCalendar")
   organizedArticles   Article[]  @relation("OrganizedArticles")
   favorites           Favorite[]
   resetToken          String?
-  resetTokenExpiry    Int?
+  resetTokenExpiry    DateTime?
   registerToken       String?
-  registerTokenExpiry Int?
+  registerTokenExpiry DateTime?
   emailValidated      Boolean    @default(false)
   feedbacks           Feedback[]
   requests            Request[]
   attended            Article[]  @relation("ArticleAttendees")
+  createdAt           DateTime   @default(now())
 }
 
 model Feedback {
-  id        String  @id @default(uuid())
+  id        String   @id @default(uuid())
   articleId String
-  article   Article @relation(fields: [articleId], references: [id])
+  article   Article  @relation(fields: [articleId], references: [id])
   userId    String
-  user      User    @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
   feedback  String
+  createdAt DateTime @default(now())
 
   @@index([articleId])
   @@index([userId])
 }
 
 model Favorite {
-  id        String  @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    String
-  user      User    @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
   articleId String
-  article   Article @relation(fields: [articleId], references: [id])
+  article   Article  @relation(fields: [articleId], references: [id])
+  createdAt DateTime @default(now())
 
   @@index([articleId])
   @@index([userId])
@@ -113,16 +118,16 @@ model Invite {
 }
 
 model Request {
-  id            String   @id @default(uuid())
-  calendarId    String
-  calendar      Calendar @relation(fields: [calendarId], references: [id])
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
-  year_of_study String?
-  status        String   @default("Pending")
-  message       String?
-  email         String?
-  created_at    DateTime @default(now())
+  id          String   @id @default(uuid())
+  calendarId  String
+  calendar    Calendar @relation(fields: [calendarId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  yearOfStudy String?
+  status      String   @default("Pending")
+  message     String?
+  email       String?
+  createdAt   DateTime @default(now())
 
   @@index([calendarId])
   @@index([userId])
@@ -133,6 +138,7 @@ model EmailMember {
   email      String
   calendarId String
   calendar   Calendar @relation(fields: [calendarId], references: [id])
+  createdAt  DateTime @default(now())
 
   @@index([calendarId])
 }

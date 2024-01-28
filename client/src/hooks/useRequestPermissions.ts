@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
-import { fetchRequests } from '@/services/requests/RequestService';
+import { fetchRequests } from '@/services/RequestService';
 import { Calendar, Request, User } from '@/types';
 
 const useRequestPermissions = () => {

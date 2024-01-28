@@ -7,6 +7,8 @@ interface EmailContent {
 }
 
 export const sendEmail = async (subject: string, text: string, to: string) => {
+  console.log("EMAIL CREDENTIALS", process.env.EMAIL_HOST_USER, process.env.EMAIL_HOST_PASSWORD)
+
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
@@ -29,7 +31,7 @@ export const sendEmail = async (subject: string, text: string, to: string) => {
 
 export const sendRegistrationLink = async (emailContent: EmailContent) => {
   const { to, subject, html } = emailContent;
-
+  console.log("EMAIL CREDENTIALS", process.env.EMAIL_HOST_USER, process.env.EMAIL_HOST_PASSWORD)
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,

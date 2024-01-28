@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { sessionCheck } from './services/auth/AuthService';
+import { sessionCheck } from './services/AuthService';
 
 interface SessionCheckProps {
   setLoggedInUser: (user: any) => void;

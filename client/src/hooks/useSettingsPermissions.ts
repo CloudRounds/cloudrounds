@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchCalendars } from '@/services/calendars/CalendarService';
+import { fetchCalendars } from '@/services/CalendarService';
 import { useQuery } from 'react-query';
 import { Calendar, User } from '@/types';
 

@@ -1,6 +1,0 @@
-type EmailMember {
-  id: ID!
-  email: String!
-  calendarId: String!
-  calendar: Calendar!
-}

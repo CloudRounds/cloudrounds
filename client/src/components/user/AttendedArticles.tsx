@@ -1,10 +1,16 @@
 import { useQuery } from 'react-query';
 import { Modal, List, Progress } from 'antd';
 import { formatDate } from '@/utils/dates';
-import { fetchCurrentUser } from '@/services/users/UserService';
+import { fetchCurrentUser } from '@/services/UserService';
+import { Article } from '@/types';
 
-const AttendedArticles = ({ isOpen, onClose }) => {
-  const { data: user, isLoading, isError } = useQuery('userData', fetchCurrentUser);
+interface AttendedArticlesProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const AttendedArticles = ({ isOpen, onClose }: AttendedArticlesProps) => {
+  const { data: user, isLoading } = useQuery('userData', fetchCurrentUser);
 
   if (isLoading) {
     return <Progress type='circle' />;
@@ -19,11 +25,11 @@ const AttendedArticles = ({ isOpen, onClose }) => {
       cancelButtonProps={{ style: { display: '' } }}>
       <List>
         {user?.attended?.length > 0 ? (
-          user?.attended?.map((article, index) => (
+          user?.attended?.map((article: Article, index: number) => (
             <List.Item key={index}>
               {article.title}
               <span style={{ marginLeft: '6px', color: 'gray', fontSize: '0.85rem' }}>
-                ({formatDate(article.date)})
+                ({formatDate(article.date.toISOString().split('T')[0])})
               </span>
             </List.Item>
           ))

@@ -3,14 +3,19 @@ import { Button, Table } from 'antd';
 import CalendarCell from './CalendarCell';
 import { monthNames } from '@/utils/constants';
 import { CalendarOutlined, RightCircleOutlined, LeftCircleOutlined } from '@ant-design/icons';
-import { MdToday } from 'react-icons/md';
+import { Article } from '@/types';
 
-const ArticleCalendar = ({ articles }) => {
-  const [date, setDate] = useState(new Date());
-  const [selected, setSelected] = useState(false);
-  const [scrolling, setScrolling] = useState(false); // Add scrolling state
+type Week = {
+  [key: number]: React.ReactNode | null;
+  key?: number;
+};
 
-  const changeMonth = offset => {
+const ArticleCalendar = ({ articles }: { articles: Article[] }) => {
+  const [date, setDate] = useState<Date>(new Date());
+  const [selected, setSelected] = useState<boolean>(false);
+  const [scrolling, setScrolling] = useState<boolean>(false);
+
+  const changeMonth = (offset: number) => {
     const newDate = new Date(date);
     newDate.setHours(0, 0, 0, 0);
     newDate.setDate(1);
@@ -25,9 +30,9 @@ const ArticleCalendar = ({ articles }) => {
     setSelected(false);
   };
 
-  const handleWheel = event => {
+  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     if (scrolling) {
-      return; // Do nothing if already scrolling
+      return; // do nothing if already scrolling
     }
 
     // Add a delay of 500 milliseconds (0.5 second) after changing the month
@@ -38,7 +43,7 @@ const ArticleCalendar = ({ articles }) => {
     changeMonthWithDelay(offset);
   };
 
-  const changeMonthWithDelay = offset => {
+  const changeMonthWithDelay = (offset: number) => {
     // Change the month
     changeMonth(offset);
 
@@ -49,7 +54,6 @@ const ArticleCalendar = ({ articles }) => {
       setScrolling(false); // Set scrolling back to false after the delay
     }, 1500);
   };
-
 
   const month = date.getMonth();
   const year = date.getFullYear();
@@ -66,7 +70,7 @@ const ArticleCalendar = ({ articles }) => {
     let day = 1;
 
     for (let i = 0; i < 6; i++) {
-      let week = {};
+      let week: Week = {};
 
       for (let j = 0; j < 7; j++) {
         if (i === 0 && j < firstDay) {
@@ -107,12 +111,12 @@ const ArticleCalendar = ({ articles }) => {
 
   const calendarData = generateCalendarCells();
 
- return (
-  <div
-    id='calendar-container'
-    className='flex flex-col'
-    onWheel={handleWheel} // Make sure to use the correct event handler here
-  >
+  return (
+    <div
+      id='calendar-container'
+      className='flex flex-col'
+      onWheel={handleWheel} // Make sure to use the correct event handler here
+    >
       <div id='calendar-head' className='flex items-center justify-between bg-[#5161ce]  text-white rounded-t-xl p-2'>
         <Button
           id='prev-month'

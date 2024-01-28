@@ -1,9 +1,6 @@
-import { Article } from '@/types';
 import dayjs from 'dayjs';
 
-
-
-export const compareDates = (a: Article, b: Article) => {
+export const compareDates = (a: any, b: any) => {
   const dateA = dayjs(a.date);
   const dateB = dayjs(b.date);
 

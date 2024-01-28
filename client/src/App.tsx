@@ -1,10 +1,10 @@
-import axios from 'axios';
+// import axios from 'axios';
 import { observer } from 'mobx-react-lite';
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { Spin } from 'antd';
-import { fetchCurrentUser, fetchUsers } from './services/users/UserService';
+import { fetchCurrentUser } from './services/UserService';
 import AuthPage from './components/auth/AuthPage';
 import { useQuery } from 'react-query';
 import Home from './components/landing/pages/Home';
@@ -13,7 +13,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import ResetPassword from './components/auth/form/ResetPassword';
 import EmailVerification from './components/auth/form/EmailVerification';
 import { User } from './types';
-import { fetchAllCalendars, fetchCalendars } from './services/calendars/CalendarService';
 
 const PurposesList = lazy(() => import('./components/calendars/CalendarsList'));
 const RequestsList = lazy(() => import('./components/requests/RequestsList'));
@@ -24,7 +23,6 @@ const Admin = lazy(() => import('./components/admin/Admin'));
 
 const App = observer(() => {
   const token = localStorage.getItem('CloudRoundsToken');
-
   let parsedUser: User | null = null;
   try {
     const localUserData = localStorage.getItem('CloudRoundsUser');
@@ -36,29 +34,6 @@ const App = observer(() => {
   }
 
   const [user, setUser] = useState<User | null>(parsedUser);
-
-  useEffect(() => {
-    async function fetchData() {
-      const users = await fetchUsers();
-      console.log('USERS:', users);
-
-      const calendars = await fetchAllCalendars();
-      console.log('CALENDARS:', calendars);
-    }
-    fetchData();
-  }, []);
-
-  // const isNonAuthPath = (): boolean => {
-  //   const nonAuthPatterns: RegExp[] = [
-  //     /^\/login$/,
-  //     /^\/login\/.+$/,
-  //     /^\/register$/,
-  //     /^\/forgot-password$/,
-  //     /^\/reset-password\/.+$/,
-  //     /^\/verify-email\/.+$/
-  //   ];
-  //   return nonAuthPatterns.some(pattern => pattern.test(window.location.pathname));
-  // };
 
   const { data: fetchedUser, isLoading } = useQuery('userData', fetchCurrentUser, {
     enabled: !!token
@@ -84,19 +59,6 @@ const App = observer(() => {
       localStorage.removeItem('CloudRoundsToken');
     }
   }, [user, token]);
-
-  axios.interceptors.request.use(
-    config => {
-      const token = localStorage.getItem('CloudRoundsToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    error => {
-      return Promise.reject(error);
-    }
-  );
 
   const NavbarWithLocation = () => {
     const location = useLocation();

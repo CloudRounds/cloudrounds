@@ -3,49 +3,47 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import path from 'path';
 
-// Import GraphQL-related modules
-import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4'
-import { resolvers, typeDefs } from './graphql';
+import { authRouter } from './routes/authRouter';
+import { articleRouter } from './routes/articleRouter';
+import { calendarRouter } from './routes/calendarRouter';
+import { feedbackRouter } from './routes/feedbackRouter';
+import { inviteRouter } from './routes/inviteRouter';
+import { requestRouter } from './routes/requestRouter';
+import { userRouter } from './routes/userRouter';
 
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3003;
 
-const bootstrapServer = async () => {
-  const server = new ApolloServer({ typeDefs, resolvers });
+app.use(cors());
+app.use(express.json());
 
-  await server.start();
-
-  app.use(cors({ origin: 'http://localhost:3000' }));
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  app.use('/graphql', expressMiddleware(server));
-
-
-  if (process.env.NODE_ENV !== 'development') {
-    app.use(express.static(path.join(__dirname, 'dist')));
-  }
-
-
-  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    if (err.name === 'UnauthorizedError') {
-      res.status(401).send('Invalid or missing token');
-    }
-  });
-
-  if (process.env.NODE_ENV !== 'development') {
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-    });
-  }
-
-
-  app.listen(port, () => {
-    console.log(`🚀 Express ready at http://localhost:${port}`);
-    console.log(`🚀 Graphql ready at http://localhost:${port}/graphql`);
-  });
-
+if (process.env.NODE_ENV !== 'development') {
+  app.use(express.static(path.join(__dirname, 'dist')));
 }
 
-bootstrapServer();
+app.use('/api/users', userRouter);
+app.use('/api/articles', articleRouter);
+app.use('/api/requests', requestRouter);
+app.use('/api/feedbacks', feedbackRouter);
+app.use('/api/calendar', calendarRouter);
+app.use('/api/invites', inviteRouter);
+app.use('/auth', authRouter);
+
+
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  if (err.name === 'UnauthorizedError') {
+    res.status(401).send('Invalid or missing token');
+  }
+});
+
+if (process.env.NODE_ENV !== 'development') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
+
+app.listen(port, () => {
+  console.log(`🚀 Express ready at http://localhost:${port}`);
+});
+

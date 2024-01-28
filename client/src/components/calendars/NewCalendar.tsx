@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Modal, Input, Button, Spin } from 'antd';
-import { createCalendar } from '@/services/calendars/CalendarService';
+import { createCalendar } from '@/services/CalendarService';
 import { useMutation } from 'react-query';
 import userStore from '@/stores/userStore';
-import { Calendar, CalendarCreateInput } from '@/types';
+import { Calendar, CreateCalendarInput } from '@/types';
+import { INITIAL_CALENDAR_DATA } from '@/utils/constants';
 
 interface NewCalendarProps {
   open: boolean;
@@ -15,11 +16,7 @@ interface NewCalendarProps {
 
 const NewCalendar = ({ open, handleClose, calendars, setCalendars, refetchCalendars }: NewCalendarProps) => {
   const [loading, setLoading] = useState(false);
-  const [newCalendar, setNewCalendar] = useState<CalendarCreateInput>({
-    name: '',
-    description: '',
-    creatorId: ''
-  });
+  const [newCalendar, setNewCalendar] = useState<CreateCalendarInput>(INITIAL_CALENDAR_DATA);
 
   const createCalendarMutation = useMutation(createCalendar, {
     onMutate: () => {

@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { Form, Input, Button, Spin, Typography } from 'antd';
 import { observer } from 'mobx-react-lite';
 import userStore from '@/stores/userStore';
-import { fetchUserFeedbacks } from '@/services/feedbacks/FeedbackService';
+import { fetchUserFeedbacks } from '@/services/FeedbackService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
-import { loginUser } from '@/services/users/UserService';
+import { loginUser } from '@/services/UserService';
 import { MailOutlined } from '@ant-design/icons';
 import { useLocation } from 'react-router-dom';
 import { AuthField } from '../fields/authFields';
-import { forgotPassword } from '@/services/auth/AuthService';
+import { forgotPassword } from '@/services/AuthService';
 
 interface LoginFormProps {
   fields: AuthField[];
@@ -73,8 +73,16 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
         setIsLoading(false);
         navigate('/calendar');
       }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      // 403 = email is not validated
+      if (error.response && error.response.status === 403) {
+        toast.error('Your account has not been validated. Please check your email.', {
+          autoClose: 2500,
+          pauseOnFocusLoss: false
+        });
+        return;
+      }
       toast.error('Login failed. Please check your credentials and try again.', {
         autoClose: 2500,
         pauseOnFocusLoss: false

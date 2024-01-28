@@ -1,10 +1,16 @@
 import { LockOutlined } from '@ant-design/icons';
 import { Input, Button, Space } from 'antd';
 import { useState } from 'react';
-import { changePassword } from '../../services/users/UserService';
+import { changePassword } from '../../services/UserService';
 import { toast } from 'react-toastify';
 
-const PasswordChange = ({ userId, onSuccess, onCancel }) => {
+interface PasswordChangeProps {
+  userId: string;
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+const PasswordChange = ({ userId, onSuccess, onCancel }: PasswordChangeProps) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,7 +24,7 @@ const PasswordChange = ({ userId, onSuccess, onCancel }) => {
       await changePassword(userId, currentPassword, newPassword);
       onSuccess();
       toast.success('Password updated successfully!', { autoClose: 2000, pauseOnFocusLoss: false });
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Error updating password. ${error.data} Please try again.`, {
         autoClose: 2000,
         pauseOnFocusLoss: false
@@ -27,9 +33,7 @@ const PasswordChange = ({ userId, onSuccess, onCancel }) => {
   };
 
   return (
-    <Space
-      direction='vertical'
-      style={{ width: '100%' }}>
+    <Space direction='vertical' style={{ width: '100%' }}>
       <Input.Password
         autoFocus
         placeholder='Current Password'
@@ -51,16 +55,10 @@ const PasswordChange = ({ userId, onSuccess, onCancel }) => {
       />
       <div className='text-center my-2'>
         <Space>
-          <Button
-            type='primary'
-            ghost
-            className='submit-blue-button'
-            onClick={handleChangePassword}>
+          <Button type='primary' ghost className='submit-blue-button' onClick={handleChangePassword}>
             Submit
           </Button>
-          <Button
-            type='default'
-            onClick={onCancel}>
+          <Button type='default' onClick={onCancel}>
             Cancel
           </Button>
         </Space>

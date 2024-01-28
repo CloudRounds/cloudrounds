@@ -1,7 +1,7 @@
 import { Article, Calendar } from '@/types';
 
 export const getEmptyCalendars = (localArticles: Article[], userCalendarObjects: Calendar[]) => {
-  const articleCalendars = localArticles.map(a => a.calendar.name);
+  const articleCalendars = localArticles.map(a => a.calendar?.name);
   const userCalendarNames = userCalendarObjects.map(p => p.name);
   const emptyCalendars = userCalendarNames.filter(p => !articleCalendars.includes(p));
   return emptyCalendars;
@@ -16,12 +16,20 @@ export const getCalendarsAfterUpdate = (
 ): string[] => {
 
   const getArticleCalendarName = (article: Article) => {
-    return typeof article.calendar === 'string' ? article.calendar : article.calendar.name;
+    return typeof article.calendar === 'string' ? article.calendar : article.calendar?.name;
   };
 
-  const oldCalendarName = articles.find(a => a.id === updatedArticle.id)?.calendar.name;
-  const newCalendarName = calendars.find(c => updatedArticle.calendar.id === c.id)?.name;
+  const article = articles.find(a => a.id === updatedArticle.id)
 
+  let oldCalendarName = '';
+  if (article) {
+    const calendar = calendars.find(c => c.id === article.calendarId)
+    if (calendar) {
+      oldCalendarName = calendar.name;
+    }
+  }
+
+  const newCalendarName = calendars.find(c => updatedArticle.calendarId === c.id)?.name;
 
   const oldCalendarStillInUse = updatedArticles.some(article => getArticleCalendarName(article) === oldCalendarName);
   let newSelectedCalendars = selectedCalendars.slice();
@@ -44,7 +52,7 @@ export const getCalendarsAfterCreate = (
   selectedCalendars: string[]
 ): string[] => {
   let newSelectedCalendars = selectedCalendars.slice();
-  const newCalendarId = typeof newArticle.calendar === 'string' ? newArticle.calendar : newArticle.calendar.id;
+  const newCalendarId = typeof newArticle.calendar === 'string' ? newArticle.calendar : newArticle.calendarId;
   const newCalendarName = calendars.find(p => p.id === newCalendarId)?.name;
 
   if (newCalendarName && !newSelectedCalendars.includes(newCalendarName)) {
@@ -61,17 +69,17 @@ export const getCalendarsAfterDelete = (
 ): string[] => {
   const deletedArticleCalendarId = typeof deletedArticle.calendar === 'string'
     ? deletedArticle.calendar
-    : deletedArticle.calendar.id;
+    : deletedArticle.calendarId;
 
   const isCalendarStillUsed = articles.some(article => {
-    const articleCalendarId = typeof article.calendar === 'string' ? article.calendar : article.calendar.id;
+    const articleCalendarId = typeof article.calendar === 'string' ? article.calendar : article.calendarId;
     return articleCalendarId === deletedArticleCalendarId && article.id !== deletedArticle.id;
   });
 
   if (!isCalendarStillUsed) {
     const deletedArticleCalendarName = typeof deletedArticle.calendar === 'string'
       ? deletedArticle.calendar
-      : deletedArticle.calendar.name;
+      : deletedArticle.calendar?.name;
 
     return selectedCalendars.filter(calendarName => calendarName !== deletedArticleCalendarName);
   }
@@ -105,8 +113,11 @@ export const filterArticlesForList = (
       }
     })
     .filter(article => {
-      const calendarName = typeof article.calendar === 'string' ? article.calendar : article.calendar.name;
-      return selectedCalendars.includes('Show All') || selectedCalendars.includes(calendarName);
+      const calendarName = typeof article.calendar === 'string' ? article.calendar : article.calendar?.name;
+      if (calendarName) {
+        return selectedCalendars.includes('Show All') || selectedCalendars.includes(calendarName);
+      }
+      return selectedCalendars.includes('Show All');
     })
     .filter(isArticleAfterCurrentDate);
 };

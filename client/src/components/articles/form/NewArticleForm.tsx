@@ -1,6 +1,6 @@
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { createArticle, updateArticle } from '@/services/articles/ArticleService';
-import { createCalendar, fetchCalendars } from '@/services/calendars/CalendarService';
+import { createArticle, updateArticle } from '@/services/ArticleService';
+import { createCalendar, fetchCalendars } from '@/services/CalendarService';
 import { initialArticleData } from '@/utils/constants';
 import { extractTimesFromDuration } from '@/utils/dates';
 import { DeleteOutlined } from '@ant-design/icons';
@@ -11,7 +11,7 @@ import { useQuery } from 'react-query';
 import NewCalendarDialog, { NewCalendar } from '../actions/NewCalendarDialog';
 import './NewArticleForm.css';
 import TimeRangePicker from './TimeRangePicker';
-import { User, Article, Calendar, ArticleCreateInput, CalendarCreateInput } from '@/types';
+import { User, Article, Calendar, CreateArticleInput, CreateCalendarInput } from '@/types';
 
 const { Option } = Select;
 
@@ -42,19 +42,19 @@ const NewArticleForm = ({
   const [allowedCalendars, setAllowedCalendars] = useState<Calendar[] | null>(null);
   const [showAddCalendarModal, setShowAddCalendarModal] = useState(false);
   const [newCalendar, setNewCalendar] = useState<NewCalendar>({ name: '', description: '' });
-  const [article, setArticle] = useState<Article | ArticleCreateInput>(initialArticleData);
+  const [article, setArticle] = useState<Article | CreateArticleInput>(initialArticleData);
 
   const [date, setDate] = useState(dayjs());
   const [timeRange, setTimeRange] = useState<TimeRange>(() => {
     if (selectedArticle) {
-      const [startTime, endTime] = extractTimesFromDuration(selectedArticle.duration);
+      const [startTime, endTime] = extractTimesFromDuration(selectedArticle.duration || '');
       return [startTime, endTime];
     } else {
       return ['', ''];
     }
   });
 
-  const [articleCalendar, setArticleCalendar] = useState<Calendar | null | CalendarCreateInput>(
+  const [articleCalendar, setArticleCalendar] = useState<Calendar | null | CreateCalendarInput>(
     (selectedArticle && selectedArticle.calendar) || null
   );
 
@@ -69,8 +69,8 @@ const NewArticleForm = ({
 
   const filterCalendarsForUser = () => {
     const canWriteCalendars = calendars?.filter(calendar => {
-      const canWriteMemberIds = calendar.canWriteMembers.map(member => member.id);
-      return canWriteMemberIds.includes(user?.id || '');
+      const canWriteMemberIds = calendar.canWriteMembers?.map(member => member?.id);
+      return canWriteMemberIds?.includes(user?.id || '');
     });
 
     return canWriteCalendars;
@@ -94,7 +94,7 @@ const NewArticleForm = ({
     if (selectedArticle) {
       setArticle(selectedArticle);
       setArticleCalendar(selectedArticle.calendar);
-      const [startTime, endTime] = extractTimesFromDuration(selectedArticle.duration);
+      const [startTime, endTime] = extractTimesFromDuration(selectedArticle.duration || '');
       setTimeRange([startTime, endTime]);
       setDate(dayjs(selectedArticle.date));
     } else {

@@ -1,0 +1,628 @@
+scalar DateTime
+scalar String
+scalar Boolean
+scalar Int
+scalar ID
+
+interface Node {
+  id: ID!
+}
+
+type Query {
+  articles(first: Int, after: String): ArticleConnection
+  calendars(first: Int, after: String): CalendarConnection
+  calendarsByUser(userId: String!, first: Int, after: String): CalendarConnection
+  calendar(id: ID!): Calendar
+  favorites(userId: ID!, first: Int, after: String): FavoriteConnection
+  favorites(first: Int, after: String): FavoriteConnection
+  favoriteById(id: ID!): Favorite
+  feedbacks(first: Int, after: String): FeedbackConnection
+  invites(first: Int, after: String): InviteConnection
+  invite(id: ID!): Invite
+  node(id: ID!): Node
+  requests(first: Int, after: String): RequestConnection
+  users(first: Int, after: String): UserConnection
+  userById(id: ID!): User
+  userByUsername(username: String!): User
+  userByToken(token: String!): User
+}
+
+type Mutation {
+  addEmailMemberToCalendar(input: AddEmailMemberToCalendarInput!): AddEmailMemberToCalendarPayload
+  addFavorite(input: AddFavoriteInput!): AddFavoritePayload
+  changePassword(input: ChangePasswordInput!): ChangePasswordPayload
+  createArticle(input: CreateArticleInput!): CreateArticlePayload
+  createBulkRequests(input: CreateBulkRequestsInput!): CreateBulkRequestsPayload
+  createCalendar(input: CreateCalendarInput!): CreateCalendarPayload
+  createFeedback(input: CreateFeedbackInput!): CreateFeedbackPayload
+  createInvite(input: CreateInviteInput!): CreateInvitePayload
+  createRequest(input: CreateRequestInput!): CreateRequestPayload
+  deleteArticle(input: DeleteArticleInput!): DeleteArticlePayload
+  deleteCalendar(input: DeleteCalendarInput!): DeleteCalendarPayload
+  deleteFeedback(input: DeleteFeedbackInput!): DeleteFeedbackPayload
+  deleteInvite(input: DeleteInviteInput!): DeleteInvitePayload
+  deleteRequest(input: DeleteRequestInput!): DeleteRequestPayload
+  deleteUser(input: DeleteUserInput!): DeleteUserPayload
+  forgotPassword(input: ForgotPasswordInput!): ForgotPasswordPayload
+  loginUser(input: LoginUserInput!): LoginUserPayload
+  registerUser(input: RegisterUserInput!): RegisterUserPayload
+  registerWithToken(input: RegisterWithTokenInput!): RegisterWithTokenPayload
+  removeFavorite(input: RemoveFavoriteInput!): RemoveFavoritePayload
+  removeUserFromCalendar(input: RemoveUserFromCalendarInput!): RemoveUserFromCalendarPayload
+  resetPassword(input: ResetPasswordInput!): ResetPasswordPayload
+  toggleAttendance(input: ToggleAttendanceInput!): ToggleAttendancePayload
+  toggleFavorite(input: ToggleFavoriteInput!): ToggleFavoritePayload
+  updateArticle(input: UpdateArticleInput!): UpdateArticlePayload
+  updateCalendar(input: UpdateCalendarInput!): UpdateCalendarPayload
+  updateFeedback(input: UpdateFeedbackInput!): UpdateFeedbackPayload
+  updateRequestStatus(input: UpdateRequestStatusInput!): UpdateRequestStatusPayload
+  updateUser(input: UpdateUserInput!): UpdateUserPayload
+  verifyEmail(input: VerifyEmailInput!): VerifyEmailPayload
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+input ForgotPasswordInput {
+  email: String!
+  clientMutationId: String
+}
+
+type ForgotPasswordPayload {
+  message: String!
+  clientMutationId: String
+}
+
+input ResetPasswordInput {
+  resetToken: String!
+  newPassword: String!
+  clientMutationId: String
+}
+
+type ResetPasswordPayload {
+  message: String!
+  clientMutationId: String
+}
+
+input VerifyEmailInput {
+  token: String!
+  clientMutationId: String
+}
+
+type VerifyEmailPayload {
+  message: String!
+  clientMutationId: String
+}
+
+type User implements Node {
+  id: ID!
+  username: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+  university: String!
+  isAdmin: Boolean!
+  createdCalendars: CalendarConnection
+  canReadCalendars: CalendarConnection
+  canWriteCalendars: CalendarConnection
+  organizedArticles: ArticleConnection
+  favorites: FavoriteConnection
+  feedbacks: FeedbackConnection
+  requests: RequestConnection
+  attended: ArticleConnection
+  resetToken: String
+  resetTokenExpiry: Int
+  registerToken: String
+  registerTokenExpiry: Int
+  emailValidated: Boolean!
+  createdAt: DateTime!
+}
+
+type UserEdge {
+  node: User
+  cursor: String!
+}
+
+type UserConnection {
+  edges: [UserEdge]
+  pageInfo: PageInfo
+}
+
+input LoginUserInput {
+  username: String!
+  password: String!
+  clientMutationId: String
+}
+
+type LoginUserPayload {
+  message: String!
+  token: String!
+  user: User!
+  clientMutationId: String
+}
+
+input RegisterUserInput {
+  userData: UserData!
+  clientMutationId: String
+}
+
+type RegisterUserPayload {
+  user: User!
+  clientMutationId: String
+}
+
+input UpdateUserInput {
+  id: ID!
+  updates: UserUpdateInput!
+  clientMutationId: String
+}
+
+type UpdateUserPayload {
+  user: User!
+  clientMutationId: String
+}
+
+input ChangePasswordInput {
+  userId: ID!
+  currentPassword: String!
+  newPassword: String!
+  clientMutationId: String
+}
+
+type ChangePasswordPayload {
+  message: String!
+  clientMutationId: String
+}
+
+input ToggleAttendanceInput {
+  userId: ID!
+  articleId: ID!
+  isAttending: Boolean!
+  clientMutationId: String
+}
+
+type ToggleAttendancePayload {
+  message: String!
+  attended: [Article!]!
+  clientMutationId: String
+}
+
+input ToggleFavoriteInput {
+  userId: ID!
+  articleId: ID!
+  isFavorite: Boolean!
+  clientMutationId: String
+}
+
+type ToggleFavoritePayload {
+  message: String!
+  favorites: [Favorite!]!
+  clientMutationId: String
+}
+
+input DeleteUserInput {
+  id: ID!
+  clientMutationId: String
+}
+
+type DeleteUserPayload {
+  message: String!
+  clientMutationId: String
+}
+
+input UserData {
+  username: String!
+  email: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  university: String!
+  isAdmin: Boolean
+  registerToken: String
+  registerTokenExpiry: Int
+  emailValidated: Boolean
+}
+
+input UserUpdateInput {
+  username: String!
+  email: String!
+  firstName: String!
+  lastName: String!
+  university: String!
+  isAdmin: Boolean
+}
+
+type Article implements Node {
+  id: ID!
+  title: String!
+  eventLink: String
+  date: DateTime!
+  duration: String
+  organizerId: String!
+  organizer: User!
+  meetingType: String
+  meetingId: String
+  passcode: String
+  speaker: String
+  location: String
+  additionalDetails: String
+  feedbacks: [Feedback!]!
+  calendarId: String!
+  calendar: Calendar!
+  favorites: [Favorite!]!
+  attendees: [User!]!
+  createdAt: DateTime!
+}
+
+type ArticleEdge {
+  node: Article
+  cursor: String!
+}
+
+type ArticleConnection {
+  edges: [ArticleEdge]
+  pageInfo: PageInfo
+}
+
+input CreateArticleInput {
+  title: String!
+  eventLink: String
+  date: DateTime!
+  duration: String
+  organizerId: String!
+  meetingType: String
+  meetingId: String
+  passcode: String
+  speaker: String
+  location: String
+  additionalDetails: String
+  calendarId: String!
+  clientMutationId: String
+}
+
+type CreateArticlePayload {
+  article: Article
+  clientMutationId: String
+}
+
+input UpdateArticleInput {
+  id: ID!
+  articleInput: CreateArticleInput!
+  clientMutationId: String
+}
+
+type UpdateArticlePayload {
+  article: Article
+  clientMutationId: String
+}
+
+input DeleteArticleInput {
+  id: ID!
+  clientMutationId: String
+}
+
+type DeleteArticlePayload {
+  deletedArticleId: ID
+  clientMutationId: String
+}
+
+type Calendar implements Node {
+  id: ID!
+  name: String!
+  description: String
+  creatorId: String!
+  creator: User
+  canReadMembers: [User]
+  canWriteMembers: [User]
+  articles: ArticleConnection
+  invites: [Invite]
+  requests: [Request]
+  emailMembers: [EmailMember]
+  createdAt: DateTime!
+}
+
+type CalendarEdge {
+  node: Calendar
+  cursor: String!
+}
+
+type CalendarConnection {
+  edges: [CalendarEdge]
+  pageInfo: PageInfo
+}
+
+input CreateCalendarInput {
+  name: String!
+  description: String
+  creatorId: String!
+  clientMutationId: String
+}
+
+type CreateCalendarPayload {
+  calendar: Calendar
+  clientMutationId: String
+}
+
+input UpdateCalendarInput {
+  id: ID!
+  name: String!
+  description: String
+  creatorId: String!
+  clientMutationId: String
+}
+
+type UpdateCalendarPayload {
+  calendar: Calendar
+  clientMutationId: String
+}
+
+input DeleteCalendarInput {
+  id: ID!
+  clientMutationId: String
+}
+
+type DeleteCalendarPayload {
+  deletedCalendarId: ID
+  clientMutationId: String
+}
+
+input AddEmailMemberToCalendarInput {
+  calendarId: ID!
+  email: String!
+  clientMutationId: String
+}
+
+type AddEmailMemberToCalendarPayload {
+  calendar: Calendar
+  clientMutationId: String
+}
+
+input RemoveUserFromCalendarInput {
+  userId: ID!
+  calendarId: ID!
+  clientMutationId: String
+}
+
+type RemoveUserFromCalendarPayload {
+  calendar: Calendar
+  clientMutationId: String
+}
+
+type EmailMember implements Node {
+  id: ID!
+  email: String!
+  calendarId: String!
+  calendar: Calendar!
+  createdAt: DateTime!
+}
+
+type Request implements Node {
+  id: ID!
+  calendarId: String!
+  calendar: Calendar!
+  userId: String!
+  user: User!
+  yearOfStudy: String
+  status: String!
+  message: String
+  email: String
+  createdAt: DateTime!
+}
+
+type RequestEdge {
+  node: Request
+  cursor: String!
+}
+
+type RequestConnection {
+  edges: [RequestEdge]
+  pageInfo: PageInfo
+}
+
+input CreateRequestInput {
+  calendarId: String!
+  userId: String!
+  clientMutationId: String
+}
+
+type CreateRequestPayload {
+  request: Request
+  clientMutationId: String
+}
+
+input CreateBulkRequestsInput {
+  userIds: [String!]!
+  purposeId: String!
+  calendarId: String!
+  clientMutationId: String
+}
+
+type CreateBulkRequestsPayload {
+  requests: [Request]
+  clientMutationId: String
+}
+
+input UpdateRequestStatusInput {
+  requestId: ID!
+  calendarId: ID!
+  status: String!
+  clientMutationId: String
+}
+
+type UpdateRequestStatusPayload {
+  status: String!
+  updatedRequest: Request
+  clientMutationId: String
+}
+
+input DeleteRequestInput {
+  requestId: ID!
+  clientMutationId: String
+}
+
+type DeleteRequestPayload {
+  deletedRequestId: ID
+  clientMutationId: String
+}
+
+type Invite implements Node {
+  id: ID!
+  email: String!
+  calendarId: String!
+  calendarName: String!
+  token: String!
+  expirationTime: DateTime!
+  createdAt: DateTime!
+  creator: String
+  calendar: Calendar!
+}
+
+type InviteEdge {
+  node: Invite
+  cursor: String!
+}
+
+type InviteConnection {
+  edges: [InviteEdge]
+  pageInfo: PageInfo
+}
+
+input CreateInviteInput {
+  email: String!
+  calendarId: String!
+  calendarName: String!
+  token: String!
+  expirationTime: DateTime!
+  creator: String
+  clientMutationId: String
+}
+
+type CreateInvitePayload {
+  invite: Invite
+  clientMutationId: String
+}
+
+input RegisterWithTokenInput {
+  token: String!
+  username: String!
+  email: String!
+  password: String!
+  university: String!
+  firstName: String!
+  lastName: String!
+  clientMutationId: String
+}
+
+type RegisterWithTokenPayload {
+  message: String!
+  token: String!
+  user: User!
+  clientMutationId: String
+}
+
+input DeleteInviteInput {
+  token: String!
+  clientMutationId: String
+}
+
+type DeleteInvitePayload {
+  deletedInviteId: ID
+  clientMutationId: String
+}
+
+type Feedback implements Node {
+  id: ID!
+  articleId: String!
+  article: Article!
+  userId: String!
+  user: User!
+  feedback: String!
+  createdAt: DateTime!
+}
+
+type FeedbackEdge {
+  node: Feedback
+  cursor: String!
+}
+
+type FeedbackConnection {
+  edges: [FeedbackEdge]
+  pageInfo: PageInfo
+}
+
+input CreateFeedbackInput {
+  articleId: String!
+  userId: String!
+  feedback: String!
+  clientMutationId: String
+}
+
+type CreateFeedbackPayload {
+  feedback: Feedback
+  clientMutationId: String
+}
+
+input UpdateFeedbackInput {
+  feedbackId: ID!
+  feedback: String!
+  clientMutationId: String
+}
+
+type UpdateFeedbackPayload {
+  feedback: Feedback
+  clientMutationId: String
+}
+
+input DeleteFeedbackInput {
+  feedbackId: ID!
+  clientMutationId: String
+}
+
+type DeleteFeedbackPayload {
+  deletedFeedbackId: ID
+  clientMutationId: String
+}
+
+type Favorite implements Node {
+  id: ID!
+  userId: String!
+  user: User!
+  articleId: String!
+  article: Article!
+  createdAt: DateTime!
+}
+
+type FavoriteEdge {
+  node: Favorite
+  cursor: String!
+}
+
+type FavoriteConnection {
+  edges: [FavoriteEdge]
+  pageInfo: PageInfo
+}
+
+input AddFavoriteInput {
+  userId: ID!
+  articleId: ID!
+  clientMutationId: String
+}
+
+type AddFavoritePayload {
+  favorite: Favorite
+  clientMutationId: String
+}
+
+input RemoveFavoriteInput {
+  id: ID!
+  clientMutationId: String
+}
+
+type RemoveFavoritePayload {
+  deletedFavoriteId: ID
+  clientMutationId: String
+}

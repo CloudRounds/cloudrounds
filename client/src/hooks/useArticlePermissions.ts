@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
-import { fetchArticles } from '@/services/articles/ArticleService';
-import { fetchCalendars } from '@/services/calendars/CalendarService';
+import { fetchArticles } from '@/services/ArticleService';
+import { fetchCalendars } from '@/services/CalendarService';
 import { User, Article, Calendar } from '@/types';
 
 const useArticlePermissions = () => {

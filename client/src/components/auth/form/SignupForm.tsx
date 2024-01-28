@@ -1,12 +1,12 @@
 import { Form, Input, Button, Select, Spin, AutoComplete } from 'antd';
-import { createUser } from '@/services/users/UserService';
+import { createUser } from '@/services/UserService';
 import { observer } from 'mobx-react-lite';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import { getDomainSuggestions, generateEmailSuggestions, AuthField } from '../fields/authFields';
 import { Rule } from 'antd/es/form';
-import { getInviteByToken, registerWithToken } from '@/services/invites/InviteService';
+import { getInviteByToken, registerWithToken } from '@/services/InviteService';
 
 const { Option } = Select;
 
