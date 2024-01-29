@@ -1,21 +1,26 @@
 import { useResetRecoilState } from 'recoil';
-import { articlesState, calendarsState, submittedRequestsState, feedbacksState, favoritesState, userState } from '@/appState';
+import { articlesState, calendarsState, userRequestsState, feedbacksState, favoritesState, userState, requestsFetchedState, usersFetchedState } from '@/appState';
 
 export const useResetAppState = () => {
   const resetUser = useResetRecoilState(userState);
   const resetArticles = useResetRecoilState(articlesState);
   const resetCalendars = useResetRecoilState(calendarsState);
-  const resetSubmittedRequests = useResetRecoilState(submittedRequestsState);
+  const resetUserRequests = useResetRecoilState(userRequestsState);
   const resetFeedbacks = useResetRecoilState(feedbacksState);
   const resetFavorites = useResetRecoilState(favoritesState);
+  const resetFetchedRequestsState = useResetRecoilState(requestsFetchedState);
+  const resetFetchedUsersState = useResetRecoilState(usersFetchedState);
+
 
   const resetAll = () => {
     resetUser();
     resetArticles();
     resetCalendars();
-    resetSubmittedRequests();
+    resetUserRequests();
     resetFeedbacks();
     resetFavorites();
+    resetFetchedRequestsState();
+    resetFetchedUsersState();
     localStorage.removeItem('CloudRoundsToken');
     localStorage.removeItem('CloudRoundsUser');
   };

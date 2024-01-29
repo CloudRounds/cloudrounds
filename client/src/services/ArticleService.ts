@@ -1,4 +1,3 @@
-import userStore from '@/stores/userStore';
 import { Article, CreateArticleInput } from '@/types';
 import apiClient from '@/utils/apiClient';
 import { compareDates } from '@/utils/dates';
@@ -6,7 +5,6 @@ import { compareDates } from '@/utils/dates';
 export const fetchArticles = async () => {
   try {
     const response = await apiClient.get('/articles');
-    userStore.setArticles(response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching articles:', error);
@@ -35,8 +33,6 @@ export const createArticle = async (article: CreateArticleInput) => {
 export const deleteArticle = async (articleId: string) => {
   try {
     await apiClient.delete(`/articles/${articleId}`);
-    // if needed – update the userStore state after deletion
-    // userStore.setArticles(userStore.articles.filter(article => article.id !== articleId));
   } catch (error) {
     console.error('Error deleting article:', error);
   }

@@ -1,7 +1,6 @@
 import { userState } from '@/appState';
 import { useRequestData } from '@/hooks/useRequestData';
 import { deleteRequest, updateRequestStatus } from '@/services/RequestService';
-import userStore from '@/stores/userStore';
 import { Calendar, Request, User } from '@/types';
 import {
   CheckCircleOutlined,
@@ -25,7 +24,7 @@ const RequestsList = () => {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { requests, allowedRequests, setAllowedRequests, isLoading: isQueryLoading, refetch } = useRequestData();
+  const { requests, setRequests, userRequests, setUserRequests, isLoading: isQueryLoading, refetch } = useRequestData();
   const [showUserRequests, setShowUserRequests] = useState(true);
   const [isStatusUpdating, setIsStatusUpdating] = useState<string | null>(null);
 
@@ -71,16 +70,16 @@ const RequestsList = () => {
     },
     {
       onSuccess: (data, variables) => {
-        const updatedRequests = allowedRequests.map(request => {
+        const updatedRequests = requests.map(request => {
           if (request.id === variables.requestId) {
             return { ...request, status: variables.status, isApproving: false };
           }
           return request;
         });
 
-        setAllowedRequests(updatedRequests);
+        setRequests(updatedRequests);
 
-        userStore.setSubmittedRequests(updatedRequests.filter(r => r.user?.id === user?.id));
+        setUserRequests(updatedRequests.filter(r => r.user?.id === user?.id));
         refetch();
         setIsStatusUpdating(null);
         handleClose();
@@ -129,7 +128,7 @@ const RequestsList = () => {
 
   const displayedRequests = showUserRequests
     ? requests.filter((req: Request) => req.user?.id === user?.id)
-    : allowedRequests.filter((req: Request) => req.user?.id !== user?.id);
+    : userRequests.filter((req: Request) => req.user?.id !== user?.id);
 
   const columns = [
     {
@@ -272,7 +271,7 @@ const RequestsList = () => {
           className='w-full overflow-x-auto'
         />
         <Pagination
-          total={allowedRequests.length}
+          total={userRequests.length}
           pageSize={rowsPerPage}
           current={page}
           onChange={handleChangePage}

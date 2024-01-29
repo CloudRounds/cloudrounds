@@ -45,10 +45,8 @@ export const usersFetchedState = atom<boolean>({
   default: false
 });
 
-
-
-export const submittedRequestsState = atom<Request[]>({
-  key: 'submittedRequestsState',
+export const userRequestsState = atom<Request[]>({
+  key: 'userRequestsState',
   default: [],
 });
 

@@ -16,7 +16,7 @@ import {
 import { Badge, Col, Modal, Pagination, Row } from 'antd';
 import { useEffect, useState } from 'react';
 import { useMutation } from 'react-query';
-import { useRecoilState, useSetRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 import ArticleCard from './ArticleCard';
 import ActionBar from './actions/ActionBar';
 import ArticleCalendar from './calendar/ArticleCalendar';
@@ -35,8 +35,7 @@ const ArticleList = () => {
   const [isUpdateLoading, setIsUpdateLoading] = useState(false);
 
   // Recoil for fetching and setting articles
-  const [localArticles, setLocalArticles] = useRecoilState(articlesState);
-  const setArticles = useSetRecoilState(articlesState);
+  const [articles, setArticles] = useRecoilState(articlesState);
 
   const { userCalendars, allowedArticles, canReadCalendars, isArticlesLoading, isCalendarsLoading } =
     useArticlePermissions();
@@ -52,7 +51,7 @@ const ArticleList = () => {
     if (isArticlesLoading) return;
 
     const sortedArticles = sortArticles(allowedArticles);
-    setLocalArticles(sortedArticles);
+    setArticles(sortedArticles);
 
     const organizers: string[] = [
       ...new Set(sortedArticles.map((article: Article) => article.organizer?.username))
@@ -70,7 +69,7 @@ const ArticleList = () => {
 
   const deleteMutation = useMutation(deleteArticle, {
     onSuccess: (data, variables) => {
-      const updatedArticles = localArticles.filter(article => article.id !== variables);
+      const updatedArticles = articles.filter(article => article.id !== variables);
       setArticles(updatedArticles);
 
       if (!selectedArticle) return;
@@ -108,11 +107,11 @@ const ArticleList = () => {
   const handleArticleUpdate = async (updatedArticle: Article) => {
     setIsUpdateLoading(true);
 
-    const updatedArticles = localArticles.map(article => (article.id === updatedArticle.id ? updatedArticle : article));
+    const updatedArticles = articles.map(article => (article.id === updatedArticle.id ? updatedArticle : article));
     setArticles(sortArticles(updatedArticles));
 
     const newSelectedCalendars = getCalendarsAfterUpdate(
-      localArticles,
+      articles,
       userCalendars || [],
       updatedArticle,
       updatedArticles,
@@ -126,7 +125,7 @@ const ArticleList = () => {
   const handleCreateArticle = async (newArticle: Article) => {
     setIsUpdateLoading(true);
 
-    const allArticles = [...localArticles, newArticle];
+    const allArticles = [...articles, newArticle];
     setArticles(sortArticles(allArticles));
 
     const newSelectedCalendars = getCalendarsAfterCreate(userCalendars || [], newArticle, selectedCalendars);
@@ -136,7 +135,7 @@ const ArticleList = () => {
   };
 
   const handleEdit = (articleId: string) => {
-    setSelectedArticle(localArticles.find(article => article.id === articleId) || null);
+    setSelectedArticle(articles.find(article => article.id === articleId) || null);
   };
 
   const handleFavorite = async (articleId: string) => {
@@ -158,9 +157,9 @@ const ArticleList = () => {
     );
   }
 
-  const filteredArticles = filterArticlesForList(localArticles, organizerFilter, selectedCalendars);
+  const filteredArticles = filterArticlesForList(articles, organizerFilter, selectedCalendars);
   const currentArticles = getArticlesForPage(currentPage, articlesPerPage, filteredArticles);
-  const calendarsWithoutArticles = userCalendars ? getEmptyCalendars(localArticles, userCalendars) : [];
+  const calendarsWithoutArticles = userCalendars ? getEmptyCalendars(articles, userCalendars) : [];
 
   return (
     <div style={{ background: '#e0e7ff' }}>
