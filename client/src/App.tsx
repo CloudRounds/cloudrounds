@@ -1,7 +1,5 @@
-// import axios from 'axios';
-import { observer } from 'mobx-react-lite';
-import { Suspense, lazy, useEffect, useState } from 'react';
-import { Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
+import { Suspense, lazy, useEffect } from 'react';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { Spin } from 'antd';
 import { fetchCurrentUser } from './services/UserService';
@@ -12,28 +10,19 @@ import Navbar from './components/home/Navbar';
 import 'react-toastify/dist/ReactToastify.css';
 import ResetPassword from './components/auth/form/ResetPassword';
 import EmailVerification from './components/auth/form/EmailVerification';
-import { User } from './types';
+import { useSetRecoilState } from 'recoil';
+import { userState } from './appState';
 
-const PurposesList = lazy(() => import('./components/calendars/CalendarsList'));
+const CalendarsList = lazy(() => import('./components/calendars/CalendarsList'));
 const RequestsList = lazy(() => import('./components/requests/RequestsList'));
 const ArticleList = lazy(() => import('./components/articles/ArticleList'));
 const OlderArticles = lazy(() => import('./components/articles/OlderArticles'));
 const UserSettings = lazy(() => import('./components/user/UserSettings'));
 const Admin = lazy(() => import('./components/admin/Admin'));
 
-const App = observer(() => {
+const App = () => {
   const token = localStorage.getItem('CloudRoundsToken');
-  let parsedUser: User | null = null;
-  try {
-    const localUserData = localStorage.getItem('CloudRoundsUser');
-    if (localUserData) {
-      parsedUser = JSON.parse(localUserData) as User;
-    }
-  } catch (error) {
-    console.error('Error parsing user data from localStorage', error);
-  }
-
-  const [user, setUser] = useState<User | null>(parsedUser);
+  const setUser = useSetRecoilState(userState);
 
   const { data: fetchedUser, isLoading } = useQuery('userData', fetchCurrentUser, {
     enabled: !!token
@@ -47,37 +36,27 @@ const App = observer(() => {
     if (fetchedUser) {
       localStorage.setItem('CloudRoundsUser', JSON.stringify(fetchedUser));
       setUser(fetchedUser);
-    } else {
-      localStorage.removeItem('CloudRoundsUser');
-      setUser(null);
     }
   }, [isLoading, fetchedUser]);
 
   useEffect(() => {
-    if (!token || !user) {
+    if (!token) {
       localStorage.removeItem('CloudRoundsUser');
       localStorage.removeItem('CloudRoundsToken');
+      setUser(null);
     }
-  }, [user, token]);
-
-  const NavbarWithLocation = () => {
-    const location = useLocation();
-    if (location.pathname !== '/') {
-      return <Navbar />;
-    }
-    return null;
-  };
+  }, [token]);
 
   return (
     <>
       <Router>
-        <NavbarWithLocation />
+        <Navbar />
         <Suspense fallback={<Spin />}>
           <Routes>
             <Route path='/' element={<Home />} />
             <Route path='/admin' element={<Admin />} />
             <Route path='/calendar' element={<ArticleList />} />
-            <Route path='/manage' element={<PurposesList />} />
+            <Route path='/manage' element={<CalendarsList />} />
             <Route path='/past-events' element={<OlderArticles />} />
             <Route path='/requests' element={<RequestsList />} />
             <Route path='/login' element={<AuthPage />} />
@@ -92,6 +71,6 @@ const App = observer(() => {
       <ToastContainer />
     </>
   );
-});
+};
 
 export default App;

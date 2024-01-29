@@ -1,20 +1,21 @@
 import CloudLogo from '@/assets/images/logo.png';
-import userStore from '@/stores/userStore';
 import { navlinks as links, sideMenuLinks } from '@/utils/constants';
 import { LogoutOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
 import { Avatar, Drawer, Dropdown, List, Typography } from 'antd';
-import { observer } from 'mobx-react';
+
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 import { User } from '@/types';
 import { SvgIconProps } from '@mui/material';
+import { useUser } from '@/hooks/useUser';
+import { useResetAppState } from '@/hooks/useResetAppState';
 
 const { Text } = Typography;
 
-const Navbar = observer(() => {
-  const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = localUser ? (JSON.parse(localUser) as User) : null;
+const Navbar = () => {
+  const user = useUser();
+  const resetAppState = useResetAppState();
 
   const navbarRef = useRef(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -39,16 +40,7 @@ const Navbar = observer(() => {
   };
 
   const handleLogout = () => {
-    userStore.setUser(null);
-    userStore.setArticles([]);
-    userStore.setSubmittedRequests([]);
-    userStore.setFeedbacks([]);
-    userStore.setCalendars([]);
-    userStore.setCanRead([]);
-    userStore.setCanWrite([]);
-    localStorage.removeItem('CloudRoundsToken');
-    localStorage.removeItem('CloudRoundsUser');
-
+    resetAppState();
     navigate('/login');
   };
 
@@ -214,6 +206,6 @@ const Navbar = observer(() => {
       </div>
     </nav>
   );
-});
+};
 
 export default Navbar;

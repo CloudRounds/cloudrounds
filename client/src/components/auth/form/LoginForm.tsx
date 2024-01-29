@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Form, Input, Button, Spin, Typography } from 'antd';
-import { observer } from 'mobx-react-lite';
-import userStore from '@/stores/userStore';
-import { fetchUserFeedbacks } from '@/services/FeedbackService';
+import { Form, Input, Button, Spin, Typography, Modal } from 'antd';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import { loginUser } from '@/services/UserService';
 import { MailOutlined } from '@ant-design/icons';
 import { useLocation } from 'react-router-dom';
 import { AuthField } from '../fields/authFields';
-import { forgotPassword } from '@/services/AuthService';
+import { forgotPassword, resendVerificationEmail } from '@/services/AuthService';
+import { favoritesState, userState } from '@/appState';
+import { useSetRecoilState } from 'recoil';
 
 interface LoginFormProps {
   fields: AuthField[];
@@ -23,10 +22,12 @@ interface Credentials {
   password: string;
 }
 
-const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPassword }: LoginFormProps) => {
+const LoginForm = ({ fields, appName, isForgotPassword, setIsForgotPassword }: LoginFormProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
+  const setUser = useSetRecoilState(userState);
+  const setFavorites = useSetRecoilState(favoritesState);
 
   const initialCredentials: Credentials = {
     username: '',
@@ -37,6 +38,9 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
   const [fieldErrors, setFieldErrors] = useState(initialCredentials);
   const [emailResetField, setEmailResetField] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [showResendEmail, setShowResendEmail] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [resendEmailInput, setResendEmailInput] = useState('');
 
   useEffect(() => {
     const query = new URLSearchParams(location.search);
@@ -57,36 +61,40 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
         autoClose: 2500,
         pauseOnFocusLoss: false
       });
+      setIsLoading(false);
       return;
     }
 
     try {
       const response = await loginUser(credentials.username, credentials.password);
-      userStore.setUser(response.user);
-      localStorage.setItem('CloudRoundsToken', response.token);
-      localStorage.setItem('CloudRoundsUser', JSON.stringify(response.user));
-
-      const feedbacks = await fetchUserFeedbacks(response.user.id);
-      userStore.setFeedbacks(feedbacks);
-
-      setTimeout(() => {
-        setIsLoading(false);
-        navigate('/calendar');
-      }, 1000);
+      if (response && response.user) {
+        setUser(response.user);
+        setFavorites(response.user.favorites);
+        localStorage.setItem('CloudRoundsToken', response.token);
+        localStorage.setItem('CloudRoundsUser', JSON.stringify(response.user));
+        setTimeout(() => {
+          setIsLoading(false);
+          navigate('/calendar');
+        }, 1000);
+      } else {
+        toast.error('Unexpected error. Please try again.');
+      }
     } catch (error: any) {
       console.error('Login error:', error);
-      // 403 = email is not validated
       if (error.response && error.response.status === 403) {
         toast.error('Your account has not been validated. Please check your email.', {
           autoClose: 2500,
           pauseOnFocusLoss: false
         });
+        setShowResendEmail(true);
         return;
       }
       toast.error('Login failed. Please check your credentials and try again.', {
         autoClose: 2500,
         pauseOnFocusLoss: false
       });
+      setIsLoading(false);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -115,6 +123,26 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
       });
     } finally {
       setIsSendingEmail(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    try {
+      setIsSendingEmail(true);
+      await resendVerificationEmail(resendEmailInput);
+      toast.success('Verification email resent. Please check your email.', {
+        autoClose: 2500,
+        pauseOnFocusLoss: false
+      });
+    } catch (error) {
+      console.error('Error resending verification email:', error);
+      toast.error('Error resending verification email. Please try again later.', {
+        autoClose: 2500,
+        pauseOnFocusLoss: false
+      });
+    } finally {
+      setIsSendingEmail(false);
+      setIsModalVisible(false);
     }
   };
 
@@ -223,12 +251,51 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
                 </div>
               ) : (
                 <div className='pb-4 sm:pb-8 w-full text-center'>
+                  {showResendEmail && (
+                    <div className='justify-center mt-5'>
+                      <div>
+                        <Typography.Text type='secondary'>
+                          Email not verified. Check your inbox and spam folder or click below to resend verification.
+                        </Typography.Text>
+                      </div>
+                      <div>
+                        <Button onClick={() => setIsModalVisible(true)} loading={isSendingEmail} className='mt-4'>
+                          Resend Verification Email
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  <Modal
+                    title='Resend Verification Email'
+                    open={isModalVisible}
+                    onCancel={() => setIsModalVisible(false)}
+                    footer={null}>
+                    <Form onFinish={handleResendEmail}>
+                      <Form.Item
+                        name='email'
+                        rules={[
+                          { required: true, message: 'Please input your email!' },
+                          { type: 'email', message: 'Please enter a valid email!' }
+                        ]}>
+                        <Input
+                          value={resendEmailInput}
+                          onChange={e => setResendEmailInput(e.target.value)}
+                          placeholder='Enter your email'
+                          className='px-4 py-2 border rounded-md focus:ring focus:ring-opacity-50'
+                        />
+                      </Form.Item>
+                      <Form.Item className='flex w-full justify-center'>
+                        <Button type='primary' htmlType='submit' loading={isSendingEmail} className='login-button'>
+                          Resend Email
+                        </Button>
+                      </Form.Item>
+                    </Form>
+                  </Modal>
                   <div className='flex justify-center mt-8'>
                     <Button type='primary' htmlType='submit' className='login-button'>
                       Login
                     </Button>
                   </div>
-
                   <div className='flex justify-center mt-5 cursor-pointer' onClick={() => navigate('/register')}>
                     <Typography.Text className='text-gray-500 underline hover:text-blue-500'>
                       New to {appName}? Create account
@@ -242,6 +309,6 @@ const LoginForm = observer(({ fields, appName, isForgotPassword, setIsForgotPass
       )}
     </>
   );
-});
+};
 
 export default LoginForm;

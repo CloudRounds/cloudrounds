@@ -1,87 +1,77 @@
+import { articlesState, favoritesState } from '@/appState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import useArticlePermissions from '@/hooks/useArticlePermissions';
+import { useUser } from '@/hooks/useUser';
 import { deleteArticle, sortArticles } from '@/services/ArticleService';
-import { toggleFavorite, getFavorites } from '@/services/UserService';
+import { toggleFavorite } from '@/services/UserService';
+import { Article } from '@/types';
 import {
-  getEmptyCalendars,
+  filterArticlesForList,
+  getArticlesForPage,
   getCalendarsAfterCreate,
   getCalendarsAfterDelete,
   getCalendarsAfterUpdate,
-  filterArticlesForList,
-  getArticlesForPage
+  getEmptyCalendars
 } from '@/utils/articleHelpers';
-import { Col, Modal, Pagination, Row } from 'antd';
-import { observer } from 'mobx-react';
+import { Badge, Col, Modal, Pagination, Row } from 'antd';
 import { useEffect, useState } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation } from 'react-query';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import ArticleCard from './ArticleCard';
 import ActionBar from './actions/ActionBar';
 import ArticleCalendar from './calendar/ArticleCalendar';
 import NewArticleForm from './form/NewArticleForm';
-import ArticleCard from './ArticleCard';
-import { Badge } from 'antd';
-import { Article, User } from '@/types';
 
-const ArticleList = observer(() => {
-  const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = JSON.parse(localUser || '{}') as User;
+const ArticleList = () => {
+  const user = useUser();
+  const [favorites, setFavorites] = useRecoilState(favoritesState);
+  const favoriteArticles = favorites.map(f => f.articleId);
 
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
   const [selectedOrganizers, setSelectedOrganizers] = useState<string[]>([]);
   const [organizerFilter, setOrganizerFilter] = useState<string[]>([]);
-
   const [openNewArticleModal, setOpenNewArticleModal] = useState(false);
-  const [localArticles, setLocalArticles] = useState<Article[]>([]);
   const [isUpdateLoading, setIsUpdateLoading] = useState(false);
-  const [favorites, setFavorites] = useState<string[] | null>(null);
 
-  const { userCalendars, allowedArticles, canReadCalendars, isLoading } = useArticlePermissions();
+  // Recoil for fetching and setting articles
+  const [localArticles, setLocalArticles] = useRecoilState(articlesState);
+  const setArticles = useSetRecoilState(articlesState);
+
+  const { userCalendars, allowedArticles, canReadCalendars, isArticlesLoading, isCalendarsLoading } =
+    useArticlePermissions();
+
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 5;
-
-  const { data: favoritesData, isLoading: isFavoritesLoading } = useQuery(['favorites', user.id], () =>
-    getFavorites(user.id)
-  );
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isArticlesLoading) return;
 
     const sortedArticles = sortArticles(allowedArticles);
     setLocalArticles(sortedArticles);
 
     const organizers: string[] = [
-      ...new Set(
-        sortedArticles.map((article: Article) => {
-          if (typeof article.organizer === 'object' && article.organizer !== null) {
-            return article.organizer.username;
-          }
-          return typeof article.organizer === 'string' ? article.organizer : null;
-        })
-      )
+      ...new Set(sortedArticles.map((article: Article) => article.organizer?.username))
     ].filter((organizer): organizer is string => organizer !== null);
 
     setSelectedOrganizers(organizers);
-  }, [isLoading, allowedArticles]);
+  }, [isArticlesLoading, allowedArticles]);
 
   useEffect(() => {
+    if (isCalendarsLoading) return;
     if (canReadCalendars.length > 0 && selectedCalendars.length === 0) {
       setSelectedCalendars(canReadCalendars.map(p => p.name));
     }
   }, [canReadCalendars]);
 
-  useEffect(() => {
-    if (isFavoritesLoading) return;
-    setFavorites(favoritesData);
-  }, [isFavoritesLoading]);
-
   const deleteMutation = useMutation(deleteArticle, {
     onSuccess: (data, variables) => {
       const updatedArticles = localArticles.filter(article => article.id !== variables);
-      setLocalArticles(updatedArticles);
+      setArticles(updatedArticles);
 
       if (!selectedArticle) return;
 
@@ -119,7 +109,7 @@ const ArticleList = observer(() => {
     setIsUpdateLoading(true);
 
     const updatedArticles = localArticles.map(article => (article.id === updatedArticle.id ? updatedArticle : article));
-    setLocalArticles(sortArticles(updatedArticles));
+    setArticles(sortArticles(updatedArticles));
 
     const newSelectedCalendars = getCalendarsAfterUpdate(
       localArticles,
@@ -137,7 +127,7 @@ const ArticleList = observer(() => {
     setIsUpdateLoading(true);
 
     const allArticles = [...localArticles, newArticle];
-    setLocalArticles(sortArticles(allArticles));
+    setArticles(sortArticles(allArticles));
 
     const newSelectedCalendars = getCalendarsAfterCreate(userCalendars || [], newArticle, selectedCalendars);
 
@@ -151,9 +141,7 @@ const ArticleList = observer(() => {
 
   const handleFavorite = async (articleId: string) => {
     try {
-      const isCurrentlyFavorite = favorites ? favorites.includes(articleId) : false;
-      const isFavorite = !isCurrentlyFavorite;
-
+      const isFavorite = favoriteArticles.includes(articleId);
       const data = await toggleFavorite(user.id, articleId, isFavorite);
 
       setFavorites(data);
@@ -162,7 +150,7 @@ const ArticleList = observer(() => {
     }
   };
 
-  if (isLoading || isUpdateLoading || isFavoritesLoading) {
+  if (isArticlesLoading || isArticlesLoading || isUpdateLoading) {
     return (
       <div className='text-center justify-center'>
         <LoadingSpinner />
@@ -222,7 +210,7 @@ const ArticleList = observer(() => {
                 isOrganizer={article.organizer?.username === user.username}
                 onFavorite={() => handleFavorite(article.id)}
                 onEdit={() => handleEdit(article.id)}
-                isFavorite={(favorites && favorites.includes(article.id)) || false}
+                isFavorite={favoriteArticles.includes(article.id)}
               />
             ))}
             {filteredArticles.length > 4 && (
@@ -247,6 +235,6 @@ const ArticleList = observer(() => {
       />
     </div>
   );
-});
+};
 
 export default ArticleList;

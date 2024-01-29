@@ -5,7 +5,7 @@ import { toggleAttending } from '@/services/UserService';
 import { formatDate } from '@/utils/dates';
 import { EditOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { Button, Card, Checkbox, Input, Layout, Modal, Pagination, Spin, Table, Typography } from 'antd';
-import { observer } from 'mobx-react';
+
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import calendarIcons from '../ui/CalendarIcons';
@@ -13,7 +13,7 @@ import { Article, Feedback, User } from '@/types';
 
 const { TextArea } = Input;
 
-const OlderArticles = observer(() => {
+const OlderArticles = () => {
   const localUser = localStorage.getItem('CloudRoundsUser');
   const user = JSON.parse(localUser || '{}') as User;
 
@@ -34,7 +34,7 @@ const OlderArticles = observer(() => {
     }
   );
 
-  const { allowedArticles, isLoading } = useArticlePermissions();
+  const { allowedArticles, isArticlesLoading, isCalendarsLoading } = useArticlePermissions();
 
   const sortedArticles = sortArticlesDescending(allowedArticles);
 
@@ -128,7 +128,7 @@ const OlderArticles = observer(() => {
     });
   };
 
-  if (isLoading || isFeedbacksQueryLoading) return <Spin />;
+  if (isArticlesLoading || isCalendarsLoading || isFeedbacksQueryLoading) return <Spin />;
 
   const renderFeedback = (article: Article) => {
     const feedbackObj = getFeedback(article.id);
@@ -251,6 +251,6 @@ const OlderArticles = observer(() => {
       </Modal>
     </Layout>
   );
-});
+};
 
 export default OlderArticles;

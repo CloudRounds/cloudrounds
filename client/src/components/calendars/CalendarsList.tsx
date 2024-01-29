@@ -1,21 +1,22 @@
-import { observer } from 'mobx-react';
-import { useEffect, useState } from 'react';
-import { Button, Input, Modal, Spin, Table } from 'antd';
-import useSettingsPermissions from '@/hooks/useSettingsPermissions';
+import { calendarsState, canReadCalendarsState, userState } from '@/appState';
+import { INITIAL_CALENDAR_DATA } from '@/appState/initialStates';
 import { deleteCalendar, updateCalendar } from '@/services/CalendarService';
+import { Calendar, CreateCalendarInput } from '@/types';
+import { Button, Input, Modal, Table } from 'antd';
+import { useEffect, useState } from 'react';
+import { FcCalendar } from 'react-icons/fc';
+import { UseMutationResult, useMutation } from 'react-query';
+import { toast } from 'react-toastify';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { removeUserFromCalendar } from '../../services/CalendarService';
 import EditMemberList from './EditMemberList';
 import NewCalendar from './NewCalendar';
-import { UseMutationResult, useMutation } from 'react-query';
 import { getColumns, getMemberColumns } from './components/columns';
-import { removeUserFromCalendar } from '../../services/CalendarService';
-import { toast } from 'react-toastify';
-import { FcCalendar } from 'react-icons/fc';
-import { Calendar, CreateCalendarInput, User } from '@/types';
-import { INITIAL_CALENDAR_DATA } from '@/utils/constants';
 
-const CalendarsList = observer(() => {
-  const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = localUser ? (JSON.parse(localUser) as User) : null;
+const CalendarsList = () => {
+  const user = useRecoilValue(userState);
+  const [calendars, setCalendars] = useRecoilState(calendarsState);
+  const canReadCalendars = useRecoilValue(canReadCalendarsState);
 
   const [open, setOpen] = useState<boolean>(false);
   const [openMemberList, setOpenMemberList] = useState<boolean>(false);
@@ -26,18 +27,12 @@ const CalendarsList = observer(() => {
   const [newCalendar, setNewCalendar] = useState<CreateCalendarInput>(INITIAL_CALENDAR_DATA);
   const [selectedCalendar, setSelectedCalendar] = useState<Calendar | null>(null);
 
-  const [calendars, setCalendars] = useState<Calendar[]>([]);
   const [memberCalendars, setMemberCalendars] = useState<Calendar[]>([]);
 
-  const { canWriteCalendars, canReadCalendars, isLoading, refetchCalendars } = useSettingsPermissions(user);
-
   useEffect(() => {
-    if (!isLoading) {
-      setCalendars(canWriteCalendars);
-      const canRead = canReadCalendars?.filter(calendar => calendar.creator && calendar.creator.id !== user?.id) || [];
-      setMemberCalendars(canRead);
-    }
-  }, [isLoading, canWriteCalendars, canReadCalendars]);
+    const canRead = canReadCalendars?.filter(calendar => calendar.creator && calendar.creator.id !== user?.id) || [];
+    setMemberCalendars(canRead);
+  }, [canReadCalendars]);
 
   const handleSave = async () => {
     if (!selectedCalendar) {
@@ -46,9 +41,8 @@ const CalendarsList = observer(() => {
     }
 
     try {
-      const data = await updateCalendar(selectedCalendar.id, newCalendar);
-      console.log(data.updatedCalendar);
-      setCalendars(data.calendars);
+      const updatedCalendar = await updateCalendar(selectedCalendar.id, newCalendar);
+      setCalendars(prevCalendars => prevCalendars.map(cal => (cal.id === updatedCalendar.id ? updatedCalendar : cal)));
       handleClose();
       toast.success(`Calendar ${selectedCalendar.name} updated.`);
     } catch (error) {
@@ -74,7 +68,6 @@ const CalendarsList = observer(() => {
         try {
           if (!user) return;
           await removeUserFromCalendar(calendar.name, user.id);
-          await refetchCalendars();
           setMemberCalendars(prevCalendars => prevCalendars.filter(p => p.id !== calendar.id));
           toast.success(`Successfully left calendar.`, {
             autoClose: 1500,
@@ -124,7 +117,6 @@ const CalendarsList = observer(() => {
       async onOk() {
         try {
           await deleteCalendarMutation.mutateAsync(calendarId);
-          await refetchCalendars();
           setCalendars(prevCalendars => prevCalendars.filter(calendar => calendar.id !== calendarId));
 
           console.log(`Calendar deleted`);
@@ -138,9 +130,6 @@ const CalendarsList = observer(() => {
     });
   };
 
-  if (isLoading) {
-    return <Spin />;
-  }
   const createdCalendars = calendars?.filter(calendar => calendar.creator && calendar.creator.id === user?.id) || [];
   const columns = getColumns(handleOpen, handleOpenMemberList, handleDelete);
   const memberColumns = getMemberColumns(handleLeave);
@@ -191,22 +180,14 @@ const CalendarsList = observer(() => {
         )}
       </Modal>
 
-      <NewCalendar
-        open={openNewCalendar}
-        calendars={calendars}
-        handleClose={() => setOpenNewCalendar(false)}
-        setCalendars={setCalendars}
-        refetchCalendars={refetchCalendars}
-      />
+      <NewCalendar open={openNewCalendar} handleClose={() => setOpenNewCalendar(false)} />
       <EditMemberList
         open={openMemberList}
         handleClose={() => setOpenMemberList(false)}
         selectedCalendar={selectedCalendar}
-        setSelectedCalendar={setSelectedCalendar}
-        refetchCalendars={refetchCalendars}
       />
     </div>
   );
-});
+};
 
 export default CalendarsList;

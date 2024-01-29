@@ -1,45 +1,45 @@
-import useSettingsPermissions from '@/hooks/useSettingsPermissions';
 import { deleteUser, updateUser } from '@/services/UserService';
-import { Calendar, CreateUserInput, TempUserValues, User, UserStringValues, UserWithPassword } from '@/types';
+import { CreateUserInput, TempUserValues, User, UserStringValues } from '@/types';
 import { UNIVERSITY_CHOICES } from '@/utils/constants';
 import { CheckOutlined, CloseOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Divider, Input, Layout, List, Modal, Select, Space, Spin, Typography } from 'antd';
-import { observer } from 'mobx-react';
+
+import { canReadCalendarsState, canWriteCalendarsState, userState } from '@/appState';
+import { isUser } from '@/types/isSomeType';
 import { useEffect, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import AttendedArticles from './AttendedArticles';
 import PasswordChange from './PasswordChange';
-import { isUser } from '@/types/isSomeType';
 
 type EditingField = keyof User | keyof TempUserValues | keyof CreateUserInput | 'pasword';
 
-const UserSettings = observer(() => {
-  const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = JSON.parse(localUser || '{}') as UserWithPassword;
+const UserSettings = () => {
+  const [user, setUser] = useRecoilState(userState);
+  const canReadCalendars = useRecoilValue(canReadCalendarsState);
+  const canWriteCalendars = useRecoilValue(canWriteCalendarsState);
 
   const [open, setOpen] = useState(false);
   const [isAttendedModalOpen, setIsAttendedModalOpen] = useState(false);
 
   const [editingField, setEditingField] = useState<EditingField | null>(null);
   const [tempValues, setTempValues] = useState<TempUserValues>({
-    username: user.username,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    canReadCalendars: [],
-    canWriteCalendars: [],
-    university: user.university
+    username: user?.username || '',
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
+    canReadCalendars: canReadCalendars.map(calendar => calendar.name),
+    canWriteCalendars: canWriteCalendars.map(calendar => calendar.name),
+    university: user?.university || ''
   });
 
   const [showPasswordChange, setShowPasswordChange] = useState(false);
 
-  const { canWriteCalendars, canReadCalendars, isLoading } = useSettingsPermissions(null);
-
   const mutation = useMutation(updateUser, {
     onSuccess: data => {
       if (data && data.user) {
-        localStorage.setItem('CloudRoundsUser', JSON.stringify(data.user));
+        setUser(data.user);
         setTempValues({ ...tempValues, ...data.user });
         toast.success('Field updated successfully!', { autoClose: 2000, pauseOnFocusLoss: false });
       }
@@ -53,27 +53,29 @@ const UserSettings = observer(() => {
   });
 
   useEffect(() => {
-    if (!isLoading) {
+    if (user) {
       setTempValues({
-        ...tempValues,
-        canReadCalendars: user.canReadCalendars.map(calendar => calendar.name),
-        canWriteCalendars: user.canWriteCalendars.map(calendar => calendar.name)
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        canReadCalendars: canReadCalendars.map(calendar => calendar.name),
+        canWriteCalendars: canWriteCalendars.map(calendar => calendar.name),
+        university: user.university
       });
     }
-  }, [isLoading, user]);
+  }, [user, canReadCalendars, canWriteCalendars]);
 
   const handleFieldUpdate = async (
     field: keyof TempUserValues | keyof UserStringValues,
     newValue: string | string[] | undefined
   ) => {
-    if (isUser(user) && newValue) {
-      const updatedUser: Partial<User> = { ...user, [field]: newValue };
-      mutation.mutate(updatedUser as User);
-    }
+    const updatedUser: Partial<User> = { ...user, [field]: newValue };
+    mutation.mutate(updatedUser as User);
   };
 
   const handleEditToggle = (field: keyof TempUserValues | 'password') => {
-    if (isUser(user)) {
+    if (user && isUser(user)) {
       setEditingField(field);
       setTempValues(prevValues => ({ ...prevValues, [field]: user[field as keyof User] }));
     }
@@ -108,7 +110,7 @@ const UserSettings = observer(() => {
 
   const handleDeleteAccount = async () => {
     try {
-      if (isUser(user)) {
+      if (user && isUser(user)) {
         await deleteUser(user.id);
         toast.success('Account deleted successfully!', { autoClose: 2000, pauseOnFocusLoss: false });
       }
@@ -124,6 +126,10 @@ const UserSettings = observer(() => {
   const handleClose = () => {
     setOpen(false);
   };
+
+  if (!user) {
+    return <Spin />;
+  }
 
   const renderField = (label: string, field: keyof TempUserValues | 'password', choices: any[] | null = null) => (
     <div style={{ width: editingField === field ? '70%' : '100%', marginBottom: '1rem' }}>
@@ -141,7 +147,7 @@ const UserSettings = observer(() => {
               </Select>
             ) : editingField === 'password' ? (
               <PasswordChange
-                userId={user.id}
+                userId={user?.id}
                 onSuccess={() => {
                   setShowPasswordChange(false);
                   setEditingField(null);
@@ -163,7 +169,7 @@ const UserSettings = observer(() => {
             {field === 'password' ? (
               <Typography.Text>••••••••</Typography.Text>
             ) : (
-              <Typography.Text>{user.password}</Typography.Text>
+              <Typography.Text>{user[field].toString()}</Typography.Text>
             )}
             <Button
               icon={<EditOutlined />}
@@ -176,12 +182,6 @@ const UserSettings = observer(() => {
       </div>
     </div>
   );
-
-  if (isLoading || !user) {
-    return <Spin />;
-  }
-
-  const initials = user ? user.firstName[0].toUpperCase() + user.lastName[0].toUpperCase() : '';
 
   return (
     <Layout className='p-4 bg-indigo-100	 rounded-lg text-left mb-4'>
@@ -289,6 +289,6 @@ const UserSettings = observer(() => {
       </div>
     </Layout>
   );
-});
+};
 
 export default UserSettings;

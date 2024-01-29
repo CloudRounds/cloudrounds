@@ -5,6 +5,7 @@ import * as jwt from 'jsonwebtoken';
 
 import { sendEmail } from '../middleware/mailer';
 import { db } from '../lib/db';
+import { Prisma } from '@prisma/client';
 
 const URL_HOST = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://cloudrounds.com';
 
@@ -124,4 +125,39 @@ router.get('/session-check', (req: Request, res: Response) => {
   }
 });
 
+router.post('/resend-verification-email', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).send('Email is required');
+  }
+
+  const registerToken = crypto.randomBytes(20).toString('hex');
+  const registerTokenExpiry = new Date(Date.now() + 3600000) // 1 hour
+
+  try {
+    const updatedUser = await db.user.update({
+      where: { email },
+      data: {
+        registerToken,
+        registerTokenExpiry
+      }
+    });
+
+    const subject = 'Validate Email';
+    const text = `You are receiving this email because you (or someone else) have signed up to CloudRounds.\n\n
+      Please click on the following link, or paste this into your browser to complete the process within one hour of receiving it:\n\n
+      ${URL_HOST}/verify-email/${registerToken}\n\n`;
+
+    await sendEmail(subject, text, updatedUser.email);
+    res.status(200).json({ message: 'Verification email sent successfully' });
+  } catch (error) {
+    console.error('Error in resending verification email:', error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      res.status(404).json({ message: 'User with the provided email does not exist' });
+    } else {
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  }
+});
 export const authRouter = router;

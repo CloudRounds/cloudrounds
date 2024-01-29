@@ -26,9 +26,9 @@ app.use('/api/users', userRouter);
 app.use('/api/articles', articleRouter);
 app.use('/api/requests', requestRouter);
 app.use('/api/feedbacks', feedbackRouter);
-app.use('/api/calendar', calendarRouter);
+app.use('/api/calendars', calendarRouter);
 app.use('/api/invites', inviteRouter);
-app.use('/auth', authRouter);
+app.use('/api/auth', authRouter);
 
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

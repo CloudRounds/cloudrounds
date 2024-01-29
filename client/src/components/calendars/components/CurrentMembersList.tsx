@@ -1,18 +1,18 @@
 import { removeUserFromCalendar } from '@/services/CalendarService';
-import { Calendar, User } from '@/types';
+import { Calendar, CalendarMember } from '@/types';
 import { HourglassOutlined, UserDeleteOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import { List, Modal } from 'antd';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
 interface CurrentMembersListProps {
-  members: User[];
+  members: CalendarMember[];
   hasPendingRequest: (userId: string, calendar: Calendar) => boolean;
   selectedCalendar: Calendar;
   setTargetKeys: (updater: (prev: string[]) => string[]) => void;
   deltaTargetKeys: string[];
   setDeltaTargetKeys: (updater: (prev: string[]) => string[]) => void;
-  handleRemovePendingUser: (user: User) => void;
+  handleRemovePendingUser: (user: CalendarMember) => void;
 }
 
 const CurrentMembersList = ({
@@ -29,9 +29,9 @@ const CurrentMembersList = ({
     setDeltaTargetKeys(prev => prev.filter(key => key !== userId));
   };
 
-  const [hoveredUser, setHoveredUser] = useState<User | null>(null);
+  const [hoveredUser, setHoveredUser] = useState<CalendarMember | null>(null);
 
-  const handleRemoveUser = async (user: User) => {
+  const handleRemoveUser = async (user: CalendarMember) => {
     Modal.confirm({
       title: 'Are you sure you want to remove this member?',
       content: `This will remove ${user.username} from ${selectedCalendar.name}.`,
@@ -58,16 +58,16 @@ const CurrentMembersList = ({
     });
   };
 
-  const handleClickPending = async (item: User) => {
+  const handleClickPending = async (item: CalendarMember) => {
     handleRemovePendingUser(item);
   };
 
-  const subscribers = members.filter(member => member.id !== selectedCalendar.creator.id);
+  const subscribers = members.filter(member => member.id !== selectedCalendar.creatorId);
   const halfLength = Math.ceil(subscribers.length / 2);
   const firstHalfSubscribers = subscribers.slice(0, halfLength);
   const secondHalfSubscribers = subscribers.slice(halfLength);
 
-  const renderListItem = (item: User) => {
+  const renderListItem = (item: CalendarMember) => {
     const isRegisteredUser = typeof item === 'object';
 
     return (

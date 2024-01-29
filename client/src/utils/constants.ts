@@ -1,4 +1,3 @@
-import { Article, Calendar, CreateArticleInput, CreateCalendarInput, InitialUserData } from '@/types';
 import { EventAvailable, History, Key, PeopleAlt, Settings } from '@mui/icons-material';
 import { SvgIconTypeMap } from '@mui/material';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
@@ -200,42 +199,3 @@ homeLinks.forEach(link => {
   };
 });
 
-export const initialArticleData: CreateArticleInput | Article = {
-  title: '',
-  eventLink: '',
-  date: new Date(),
-  duration: '',
-  meetingId: '',
-  passcode: '',
-  speaker: '',
-  additionalDetails: '',
-  location: '',
-  meetingType: 'Virtual',
-  calendarId: '',
-  organizerId: '',
-  attendees: [],
-  favorites: [],
-  feedbacks: [],
-};
-
-export const INITIAL_CALENDAR_DATA: CreateCalendarInput | Calendar = {
-  name: '',
-  description: '',
-  creatorId: '',
-  canReadMembers: [],
-  canWriteMembers: [],
-  articles: [],
-  emailMembers: [],
-  invites: [],
-  requests: []
-};
-
-export const INITIAL_USER_DATA: InitialUserData = {
-  firstName: '',
-  lastName: '',
-  username: '',
-  email: '',
-  university: '',
-  canReadCalendars: [],
-  canWriteCalendars: [],
-};

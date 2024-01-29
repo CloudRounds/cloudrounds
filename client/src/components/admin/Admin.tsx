@@ -153,7 +153,7 @@ const Admin = () => {
 
   return (
     <div>
-      <Table dataSource={calendars} columns={columns} rowKey='_id' />
+      <Table dataSource={calendars} columns={columns} rowKey='id' />
       {selectedCalendar && (
         <Modal
           title={`Edit Permissions for ${selectedCalendar.name}`}

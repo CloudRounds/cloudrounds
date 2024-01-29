@@ -1,6 +1,5 @@
 import { Form, Input, Button, Select, Spin, AutoComplete } from 'antd';
 import { createUser } from '@/services/UserService';
-import { observer } from 'mobx-react-lite';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
@@ -15,7 +14,7 @@ interface SignupFormProps {
   setIsSignUp: (isSignUp: boolean) => void;
 }
 
-const SignupForm: React.FC<SignupFormProps> = observer(({ fields, setIsSignUp }) => {
+const SignupForm: React.FC<SignupFormProps> = ({ fields, setIsSignUp }) => {
   const [emailSuggestions, setEmailSuggestions] = useState<string[]>([]);
   const [selectedUniversity, setSelectedUniversity] = useState('');
 
@@ -167,6 +166,6 @@ const SignupForm: React.FC<SignupFormProps> = observer(({ fields, setIsSignUp })
       </div>
     </Form>
   );
-});
+};
 
 export default SignupForm;

@@ -3,6 +3,7 @@ export interface User {
   username: string;
   firstName: string;
   lastName: string;
+  password?: string;
   email: string;
   university: string;
   isAdmin: boolean;
@@ -74,8 +75,18 @@ export interface EmailMember {
   id: string;
   email: string;
   calendarId: string;
-  calendar: Calendar;
-  createdAt: Date;
+  calendar?: Calendar;
+  createdAt?: Date;
+}
+
+export interface CalendarMember {
+  id: string;
+  email: string;
+  calendarId?: string;
+  username?: string;
+  userId?: string;
+  calendar?: Calendar;
+  createdAt?: Date;
 }
 
 export interface Calendar {
@@ -83,8 +94,8 @@ export interface Calendar {
   name: string;
   description?: string;
   creatorId: string;
-  createdAt: Date;
-  creator: User;
+  createdAt?: Date;
+  creator?: User;
   canReadMembers: User[];
   canWriteMembers: User[];
   articles: Article[];
@@ -130,6 +141,9 @@ export type InitialUserData = Omit<User, 'id' | 'createdAt' | 'isAdmin' | 'passw
 export type CreateCalendarInput = Omit<Calendar, 'id' | 'createdAt' | 'creator'> & {
   creatorId: string;
 };
+
+export type CreateEmailMember = Omit<EmailMember, 'id'>;
+
 
 export interface TempUserValues {
   username: string;

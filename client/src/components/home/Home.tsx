@@ -1,11 +1,10 @@
 import { Typography, Card, Row, Col } from 'antd';
 import { homeLinks } from '@/utils/constants';
-import { observer } from 'mobx-react';
-import { User } from '@/types';
 
-const Home = observer(() => {
-  const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = localUser ? (JSON.parse(localUser) as User) : null;
+import { useUser } from '@/hooks/useUser';
+
+const Home = () => {
+  const user = useUser();
 
   return (
     <div className='mt-8'>
@@ -49,6 +48,6 @@ const Home = observer(() => {
       )}
     </div>
   );
-});
+};
 
 export default Home;

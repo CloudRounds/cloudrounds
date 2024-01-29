@@ -2,31 +2,27 @@ import { useState } from 'react';
 import { Modal, Input, Button, Spin } from 'antd';
 import { createCalendar } from '@/services/CalendarService';
 import { useMutation } from 'react-query';
-import userStore from '@/stores/userStore';
 import { Calendar, CreateCalendarInput } from '@/types';
-import { INITIAL_CALENDAR_DATA } from '@/utils/constants';
+import { calendarsState } from '@/appState';
+import { useSetRecoilState } from 'recoil';
+import { INITIAL_CALENDAR_DATA } from '@/appState/initialStates';
 
 interface NewCalendarProps {
   open: boolean;
   handleClose: () => void;
-  calendars: Calendar[];
-  setCalendars: (calendars: Calendar[]) => void;
-  refetchCalendars: () => void;
 }
 
-const NewCalendar = ({ open, handleClose, calendars, setCalendars, refetchCalendars }: NewCalendarProps) => {
+const NewCalendar = ({ open, handleClose }: NewCalendarProps) => {
   const [loading, setLoading] = useState(false);
   const [newCalendar, setNewCalendar] = useState<CreateCalendarInput>(INITIAL_CALENDAR_DATA);
+  const setCalendars = useSetRecoilState(calendarsState);
 
   const createCalendarMutation = useMutation(createCalendar, {
     onMutate: () => {
       setLoading(true);
     },
-    onSuccess: async (newCalendar: Calendar) => {
-      refetchCalendars();
-      const newCalendars = [...calendars, newCalendar];
-      userStore.setCalendars(newCalendars);
-      setCalendars(newCalendars);
+    onSuccess: (newCalendar: Calendar) => {
+      setCalendars(prevCalendars => [...prevCalendars, newCalendar]);
       setLoading(false);
       handleClose();
     },

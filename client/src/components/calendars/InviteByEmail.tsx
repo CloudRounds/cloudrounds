@@ -1,36 +1,36 @@
 import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { useQuery } from 'react-query';
+import { v4 as uuidv4 } from 'uuid';
 
 import { createInvite } from '@/services/InviteService';
 import { fetchUsers } from '@/services/UserService';
 
-import { Modal, Button, Input, Form, Spin } from 'antd';
-import { toast } from 'react-toastify';
-import { Calendar, User } from '@/types';
+import { calendarsState } from '@/appState';
 import { addEmailMemberToCalendar } from '@/services/CalendarService';
+import { Calendar, User } from '@/types';
+import { Button, Form, Input, Modal, Spin } from 'antd';
+import { toast } from 'react-toastify';
+import { useSetRecoilState } from 'recoil';
 
 interface InviteByEmailProps {
   selectedCalendar: Calendar | null;
-  setSelectedCalendar: (calendar: Calendar) => void;
   isEmailModalOpen: boolean;
   setEmailModalOpen: (isEmailModalOpen: boolean) => void;
   createRequestMutation: any;
-  refetchCalendars: () => void;
 }
 
 const InviteByEmail = ({
   selectedCalendar,
-  setSelectedCalendar,
   isEmailModalOpen,
   setEmailModalOpen,
-  createRequestMutation,
-  refetchCalendars
+  createRequestMutation
 }: InviteByEmailProps) => {
   const [emailInput, setEmailInput] = useState('');
   const [form] = Form.useForm();
 
   const { data: users, isLoading: isLoadingUsers } = useQuery('users', fetchUsers);
+  const setCalendars = useSetRecoilState(calendarsState);
+
   const [isSending, setIsSending] = useState(false);
 
   const handleCloseEmailModal = () => {
@@ -45,8 +45,26 @@ const InviteByEmail = ({
     };
     await createRequestMutation.mutateAsync(request);
 
-    refetchCalendars();
     setIsSending(false);
+  };
+
+  const updateCalendarWithEmailMember = (calendarId: string, email: string) => {
+    const newMember = {
+      id: `${email}-calendar-${calendarId}`,
+      calendarId,
+      email
+    };
+    setCalendars(prevCalendars =>
+      prevCalendars.map(calendar => {
+        if (calendar.id === calendarId) {
+          return {
+            ...calendar,
+            emailMembers: [...calendar.emailMembers, newMember]
+          };
+        }
+        return calendar;
+      })
+    );
   };
 
   const handleSubmit = async () => {
@@ -64,7 +82,7 @@ const InviteByEmail = ({
       if (!selectedCalendar) {
         return;
       }
-      const fullName = `${selectedCalendar.creator.firstName} ${selectedCalendar.creator.lastName}`;
+      const fullName = `${selectedCalendar.creator?.firstName} ${selectedCalendar.creator?.lastName}`;
       const inviteData = {
         email: emailInput,
         creator: fullName,
@@ -77,6 +95,7 @@ const InviteByEmail = ({
       try {
         await createInvite(inviteData);
         await addEmailMemberToCalendar(selectedCalendar.id, emailInput);
+        updateCalendarWithEmailMember(selectedCalendar.id, emailInput);
         toast.success('Invite sent successfully!');
       } catch (error) {
         toast.error('Error sending invite. Please try again.');

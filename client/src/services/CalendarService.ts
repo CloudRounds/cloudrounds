@@ -2,7 +2,8 @@ import { Calendar, CreateCalendarInput } from '@/types';
 import apiClient from '@/utils/apiClient';
 
 
-export const fetchCalendars = async (userId: string) => {
+export const fetchCalendars = async (userId: string | undefined) => {
+  if (!userId) return [];
   try {
     const response = await apiClient.get(`/calendars/user/${userId}`);
     return response.data;

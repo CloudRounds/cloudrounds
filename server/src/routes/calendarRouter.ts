@@ -61,6 +61,7 @@ router.get('/:calendarId', async (req: Request, res: Response) => {
   }
 });
 
+
 router.post('/new', jwtMiddleware, async (req: Request, res: Response) => {
   try {
     const calendarData = req.body;
@@ -181,6 +182,7 @@ router.delete('/calendar/:calendarId/user/:userId', jwtMiddleware, async (req: R
   }
 });
 
+
 router.delete('/calendar/:calendarId', jwtMiddleware, async (req: Request, res: Response) => {
   try {
     const { calendarId } = req.params;
@@ -199,6 +201,7 @@ router.delete('/calendar/:calendarId', jwtMiddleware, async (req: Request, res: 
     res.status(500).send('Internal Server Error');
   }
 });
+
 
 
 export const calendarRouter = router;

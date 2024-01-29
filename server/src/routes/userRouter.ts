@@ -21,9 +21,22 @@ router.get('/', jwtMiddleware, async (req: Request, res: Response) => {
     const users = await db.user.findMany({
       select: {
         password: false,
+        id: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+        email: true,
+        university: true,
+        isAdmin: true,
+        emailValidated: true,
         calendars: true,
+        canReadCalendars: true,
+        canWriteCalendars: true,
+        organizedArticles: true,
         attended: true,
         favorites: true,
+        requests: true,
+        feedbacks: true
       },
     });
     res.status(200).json(users);
@@ -49,9 +62,22 @@ router.get('/me', jwtMiddleware, async (req: Request, res: Response) => {
       where: { username },
       select: {
         password: false,
+        id: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+        email: true,
+        university: true,
+        isAdmin: true,
+        emailValidated: true,
         calendars: true,
+        canReadCalendars: true,
+        canWriteCalendars: true,
+        organizedArticles: true,
         attended: true,
         favorites: true,
+        requests: true,
+        feedbacks: true
       },
     });
     if (!user) {
@@ -227,42 +253,6 @@ router.post('/register', async (req: Request, res: Response) => {
     res.status(500).send(err.message);
   }
 });
-
-router.post('/register/resend-verification-email', (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).send('Email is required');
-  }
-
-  const registerToken = crypto.randomBytes(20).toString('hex');
-  const registerTokenExpiry = new Date(Date.now() + 3600000) // 1 hour
-
-  db.user.update({
-    where: { email },
-    data: { registerToken, registerTokenExpiry }
-  }).then(user => {
-    if (!user) {
-      return res.status(404).send('User not found');
-    }
-
-    const subject = 'Validate Email';
-    const text = `You are receiving this email because you signed up to CloudRounds.\n\n
-        Please click on the following link, or paste this into your browser to complete the process within one hour of receiving it:\n\n
-        ${URL_HOST}/verify-email/${registerToken}\n\n`;
-
-    const to = user.email;
-
-    sendEmail(subject, text, to).then(() => {
-      res.status(200).json({ message: 'Verification email sent' });
-    }).catch(error => {
-      console.error('Error while sending validation email:', error);
-      res.status(500).send('Error while sending validation email');
-    });
-  }).catch(err => {
-    res.status(500).send(err);
-  });
-})
 
 // change user password (from user settings)
 router.put('/change-password', jwtMiddleware, async (req: Request, res: Response) => {

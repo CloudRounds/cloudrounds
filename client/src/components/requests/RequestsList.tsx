@@ -1,4 +1,5 @@
-import useRequestPermissions from '@/hooks/useRequestPermissions';
+import { userState } from '@/appState';
+import { useRequestData } from '@/hooks/useRequestData';
 import { deleteRequest, updateRequestStatus } from '@/services/RequestService';
 import userStore from '@/stores/userStore';
 import { Calendar, Request, User } from '@/types';
@@ -10,29 +11,23 @@ import {
   MoreOutlined
 } from '@ant-design/icons';
 import { Button, Dropdown, Layout, Modal, Pagination, Spin, Table, Typography } from 'antd';
-import { observer } from 'mobx-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
+import { useRecoilValue } from 'recoil';
 
-const RequestsList = observer(() => {
-  const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = localUser ? (JSON.parse(localUser) as User) : null;
+const RequestsList = () => {
+  const user = useRecoilValue(userState);
+
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [localRequests, setLocalRequests] = useState<Request[]>([]);
 
-  const { requests, allowedRequests, isLoading: isQueryLoading, refetch } = useRequestPermissions();
+  const { requests, allowedRequests, setAllowedRequests, isLoading: isQueryLoading, refetch } = useRequestData();
   const [showUserRequests, setShowUserRequests] = useState(true);
   const [isStatusUpdating, setIsStatusUpdating] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (isQueryLoading) return;
-    setLocalRequests(allowedRequests);
-  }, [isQueryLoading, allowedRequests]);
 
   const deleteMutation = useMutation(deleteRequest, {
     onSuccess: () => {
@@ -76,14 +71,14 @@ const RequestsList = observer(() => {
     },
     {
       onSuccess: (data, variables) => {
-        const updatedRequests = localRequests.map(request => {
+        const updatedRequests = allowedRequests.map(request => {
           if (request.id === variables.requestId) {
             return { ...request, status: variables.status, isApproving: false };
           }
           return request;
         });
 
-        setLocalRequests(updatedRequests);
+        setAllowedRequests(updatedRequests);
 
         userStore.setSubmittedRequests(updatedRequests.filter(r => r.user?.id === user?.id));
         refetch();
@@ -134,7 +129,7 @@ const RequestsList = observer(() => {
 
   const displayedRequests = showUserRequests
     ? requests.filter((req: Request) => req.user?.id === user?.id)
-    : localRequests.filter((req: Request) => req.user?.id !== user?.id);
+    : allowedRequests.filter((req: Request) => req.user?.id !== user?.id);
 
   const columns = [
     {
@@ -277,7 +272,7 @@ const RequestsList = observer(() => {
           className='w-full overflow-x-auto'
         />
         <Pagination
-          total={localRequests.length}
+          total={allowedRequests.length}
           pageSize={rowsPerPage}
           current={page}
           onChange={handleChangePage}
@@ -288,6 +283,6 @@ const RequestsList = observer(() => {
       </div>
     </Layout>
   );
-});
+};
 
 export default RequestsList;

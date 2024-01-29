@@ -39,3 +39,12 @@ export const sessionCheck = async () => {
     throw error;
   }
 };
+
+export const resendVerificationEmail = async (email: string) => {
+  try {
+    const response = await apiClient.post(`/auth/resend-verification-email`, { email });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

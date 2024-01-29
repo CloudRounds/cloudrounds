@@ -1,21 +1,20 @@
-import { useState, useEffect } from 'react';
-import { Modal, Button, Spin, Pagination, AutoComplete } from 'antd';
-import { useQuery, useMutation } from 'react-query';
+import { requestsFetchedState, requestsState, usersFetchedState, usersState } from '@/appState';
+import { createBulkRequests, createRequest, deleteRequest, fetchRequests } from '@/services/RequestService';
 import { fetchUsers } from '@/services/UserService';
-import { fetchRequests, createRequest, createBulkRequests } from '@/services/RequestService';
+import { Calendar, CalendarMember, User } from '@/types';
+import { AutoComplete, Button, Modal, Pagination, Spin } from 'antd';
+import { useEffect, useState } from 'react';
+import { RiAdminFill } from 'react-icons/ri';
+import { useMutation, useQuery } from 'react-query';
 import { toast } from 'react-toastify';
+import { useRecoilState } from 'recoil';
 import InviteByEmail from './InviteByEmail';
 import CurrentMembersList from './components/CurrentMembersList';
-import { RiAdminFill } from 'react-icons/ri';
-import { deleteRequest } from '@/services/RequestService';
-import { Calendar, User, Request } from '@/types';
 
 interface EditMemberListProps {
   open: boolean;
   handleClose: () => void;
-  refetchCalendars: () => void;
   selectedCalendar: Calendar | null;
-  setSelectedCalendar: (calendar: Calendar) => void;
 }
 
 interface UserOption {
@@ -23,21 +22,31 @@ interface UserOption {
   value: string;
 }
 
-const EditMemberList = ({
-  open,
-  handleClose,
-  refetchCalendars,
-  selectedCalendar,
-  setSelectedCalendar
-}: EditMemberListProps) => {
-  const { data: users, isLoading: isLoadingUsers } = useQuery('users', fetchUsers);
-  const {
-    data: fetchedRequests,
-    isLoading: isRequestsLoading,
-    refetch: refetchRequests
-  } = useQuery('requests', fetchRequests);
+const EditMemberList = ({ open, handleClose, selectedCalendar }: EditMemberListProps) => {
+  const [requests, setRequests] = useRecoilState(requestsState);
+  const [users, setUsers] = useRecoilState(usersState);
 
-  const [requests, setRequests] = useState<Request[]>([]);
+  const [fetchedUsers, setFetchedUsers] = useRecoilState(usersFetchedState);
+  const [fetchedRequests, setFetchedRequests] = useRecoilState(requestsFetchedState);
+
+  const { isLoading: isLoadingUsers } = useQuery('users', fetchUsers, {
+    enabled: !fetchedUsers,
+    onSuccess: data => {
+      setUsers(data);
+      setFetchedUsers(true);
+    }
+  });
+
+  const { isLoading: isRequestsLoading } = useQuery('requests', fetchRequests, {
+    enabled: !fetchedRequests,
+    onSuccess: data => {
+      setRequests(data);
+      setFetchedRequests(true);
+    }
+  });
+
+  const isLoading = isLoadingUsers || isRequestsLoading;
+
   const [searchValue, setSearchValue] = useState<string>('');
   const [targetKeys, setTargetKeys] = useState<string[]>([]);
   const [deltaTargetKeys, setDeltaTargetKeys] = useState<string[]>([]);
@@ -74,12 +83,6 @@ const EditMemberList = ({
     }
   }, [selectedCalendar]);
 
-  useEffect(() => {
-    if (fetchedRequests) {
-      setRequests(fetchedRequests);
-    }
-  }, [fetchedRequests]);
-
   const onSelect = (userId: string) => {
     setTargetKeys(prevKeys => [...prevKeys, userId]);
     setDeltaTargetKeys(prev => [...prev, userId]);
@@ -88,27 +91,29 @@ const EditMemberList = ({
 
   const onSearch = (search: string) => {
     if (!selectedCalendar) return;
-
     setSearchValue(search);
-    const availablemembers = users
+
+    const availableMembers = users
       .filter((u: User) => !targetKeys.includes(u.id))
       .filter((u: User) => !hasPendingRequest(u.id, selectedCalendar));
     const value = search.toLowerCase();
 
-    const filteredUsers = availablemembers
-      .filter((user: User) => {
-        return (
-          (user.username.substring(0, user.email.indexOf('@')).toLowerCase().includes(value) && value.length >= 3) ||
-          (user.email.substring(0, user.email.indexOf('@')).includes(value) && value.length >= 5)
-        );
-      })
-      .slice(0, 5)
-      .map((user: User) => ({
-        ...user,
-        value: user.id,
-        label: `${user.username} (${user.email})`
-      }));
-    setOptions(filteredUsers);
+    if (availableMembers && availableMembers.length === 0) {
+      const filteredUsers = availableMembers
+        .filter((user: User) => {
+          return (
+            (user.username.substring(0, user.email.indexOf('@')).toLowerCase().includes(value) && value.length >= 3) ||
+            (user.email.substring(0, user.email.indexOf('@')).includes(value) && value.length >= 5)
+          );
+        })
+        .slice(0, 5)
+        .map((user: User) => ({
+          ...user,
+          value: user.id,
+          label: `${user.username} (${user.email})`
+        }));
+      setOptions(filteredUsers);
+    }
   };
 
   const createBulkRequestMutation = useMutation(
@@ -137,7 +142,6 @@ const EditMemberList = ({
     try {
       await createBulkRequestMutation.mutateAsync({ userIds: deltaTargetKeys, calendarId: selectedCalendar.id });
       setDeltaTargetKeys([]);
-      refetchCalendars();
     } catch (error: any) {
       toast.error(`Error creating requests: ${error.message}`);
       console.error('Error creating requests:', error);
@@ -147,7 +151,7 @@ const EditMemberList = ({
     }
   };
 
-  const handleRemovePendingUser = async (user: User) => {
+  const handleRemovePendingUser = async (user: CalendarMember) => {
     if (!selectedCalendar) return;
     const calendarRequests = requests.filter(r => r.userId === user.id);
     const request = calendarRequests.find(r => r.calendar?.name === selectedCalendar.name);
@@ -167,7 +171,6 @@ const EditMemberList = ({
           });
           setRequests(prevRequests => prevRequests.filter(req => req.id !== request.id));
           setTargetKeys(prevKeys => prevKeys.filter(key => key !== user.id));
-          await refetchRequests();
         } catch (error) {
           toast.error(`Error while removing ${user.username} from ${selectedCalendar.name}.`, {
             autoClose: 1500,
@@ -186,7 +189,7 @@ const EditMemberList = ({
     setCurrentPage(1);
   };
 
-  if (isLoadingUsers) {
+  if (isLoading) {
     return <Spin />;
   }
 
@@ -205,7 +208,7 @@ const EditMemberList = ({
   };
 
   if (!selectedCalendar) return;
-  const currentMembers = users.filter(
+  const currentMembers: CalendarMember[] = users.filter(
     (user: User) => targetKeys.includes(user.id) || hasPendingRequest(user.id, selectedCalendar)
   );
 
@@ -273,11 +276,9 @@ const EditMemberList = ({
         />
         <InviteByEmail
           selectedCalendar={selectedCalendar}
-          setSelectedCalendar={setSelectedCalendar}
           isEmailModalOpen={isEmailModalOpen}
           setEmailModalOpen={setEmailModalOpen}
           createRequestMutation={createRequestMutation}
-          refetchCalendars={refetchCalendars}
         />
       </div>
 
@@ -308,7 +309,7 @@ const EditMemberList = ({
               right: '2px'
             }}></div>
           <div className='text-blue-400 text-xs mr-1 italic'>
-            {selectedCalendar?.creator.username}
+            {selectedCalendar?.creator?.username}
             {/* <i style={{ fontSize: '11px', padding: 0, margin: 0 }}>{`(${creator && creator.email})`}</i> */}
           </div>
           <RiAdminFill className='text-blue-400 mr-2 text-sm' />

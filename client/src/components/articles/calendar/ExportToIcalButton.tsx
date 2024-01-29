@@ -5,8 +5,6 @@ import dayjs from 'dayjs';
 import { Dropdown, Menu } from 'antd';
 import React, { useState } from 'react';
 
-
-
 const ExportButton = ({ article, text, fontSize }) => {
   const [visible, setVisible] = useState(false);
 
@@ -17,28 +15,18 @@ const ExportButton = ({ article, text, fontSize }) => {
 
   const menu = (
     <Menu onClick={handleMenuClick}>
-      <Menu.Item key="ical" icon={<AppleOutlined />}>
+      <Menu.Item key='ical' icon={<AppleOutlined />}>
         iCal
       </Menu.Item>
-      <Menu.Item key="gmail" icon={<GoogleOutlined />}>
+      <Menu.Item key='gmail' icon={<GoogleOutlined />}>
         GCal
       </Menu.Item>
     </Menu>
   );
-    
-  const createIcsFile = (event) => {
-    const {
-      title,
-      date,
-      duration,
-      location,
-      additional_details,
-      speaker,
-      organizer,
-      meeting_id,
-      passcode,
-      event_link,
-    } = event;
+
+  const createIcsFile = event => {
+    const { title, date, duration, location, additional_details, speaker, organizer, meetingId, passcode, event_link } =
+      event;
     const [startTime, endTime] = extractTimesFromDuration(duration);
 
     const startDate = dayjs(date).hour(startTime.hour()).minute(startTime.minute());
@@ -58,8 +46,8 @@ const ExportButton = ({ article, text, fontSize }) => {
       description += `Organized by: ${organizer.firstName} ${organizer.lastName}\n`;
     }
 
-    if (meeting_id) {
-      description += `Meeting ID: ${meeting_id}\n`;
+    if (meetingId) {
+      description += `Meeting ID: ${meetingId}\n`;
     }
 
     if (passcode) {
@@ -68,15 +56,9 @@ const ExportButton = ({ article, text, fontSize }) => {
 
     const eventObject = {
       title: title || 'Untitled Event',
-      start: [
-        startDate.year(),
-        startDate.month() + 1,
-        startDate.date(),
-        startDate.hour(),
-        startDate.minute(),
-      ],
+      start: [startDate.year(), startDate.month() + 1, startDate.date(), startDate.hour(), startDate.minute()],
       end: [endDate.year(), endDate.month() + 1, endDate.date(), endDate.hour(), endDate.minute()],
-      location,
+      location
     };
 
     // Include url property only if event_link is not empty
@@ -104,7 +86,7 @@ const ExportButton = ({ article, text, fontSize }) => {
   };
 
   // URL validation function
-  const isValidUrl = (url) => {
+  const isValidUrl = url => {
     try {
       new URL(url);
       return true;
@@ -113,68 +95,55 @@ const ExportButton = ({ article, text, fontSize }) => {
     }
   };
 
-const createGmailLink = (event) => {
-  const {
-    title,
-    date,
-    duration,
-    location,
-    additional_details,
-    speaker,
-    organizer,
-    meeting_id,
-    passcode,
-    event_link,
-  } = event;
-  const [startTime, endTime] = extractTimesFromDuration(duration);
+  const createGmailLink = event => {
+    const { title, date, duration, location, additional_details, speaker, organizer, meetingId, passcode, event_link } =
+      event;
+    const [startTime, endTime] = extractTimesFromDuration(duration);
 
-  const startDate = dayjs(date).hour(startTime.hour()).minute(startTime.minute());
-  const endDate = dayjs(date).hour(endTime.hour()).minute(endTime.minute());
+    const startDate = dayjs(date).hour(startTime.hour()).minute(startTime.minute());
+    const endDate = dayjs(date).hour(endTime.hour()).minute(endTime.minute());
 
-  let description = '';
-    
+    let description = '';
+
     if (event_link) {
-    description += `${event_link}\n`;
-  }
-    
+      description += `${event_link}\n`;
+    }
 
-  if (additional_details) {
-    description += `Details: ${additional_details}\n`;
-  }
+    if (additional_details) {
+      description += `Details: ${additional_details}\n`;
+    }
 
-  if (speaker) {
-    description += `Speaker: ${speaker}\n`;
-  }
+    if (speaker) {
+      description += `Speaker: ${speaker}\n`;
+    }
 
-  if (organizer) {
-    description += `Organized by: ${organizer.firstName} ${organizer.lastName}\n`;
-  }
+    if (organizer) {
+      description += `Organized by: ${organizer.firstName} ${organizer.lastName}\n`;
+    }
 
-  if (meeting_id) {
-    description += `Meeting ID: ${meeting_id}\n`;
-  }
+    if (meetingId) {
+      description += `Meeting ID: ${meetingId}\n`;
+    }
 
-  if (passcode) {
-    description += `Passcode: ${passcode}\n`;
-  }
+    if (passcode) {
+      description += `Passcode: ${passcode}\n`;
+    }
 
-    
     let gmailLink = `https://mail.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-    title || 'Untitled Event'
-  )}&dates=${startDate.format('YYYYMMDDTHHmmss')}%2F${endDate.format('YYYYMMDDTHHmmss')}&details=${encodeURIComponent(
-    description
-  )}&location=${encodeURIComponent(location)}`;
+      title || 'Untitled Event'
+    )}&dates=${startDate.format('YYYYMMDDTHHmmss')}%2F${endDate.format('YYYYMMDDTHHmmss')}&details=${encodeURIComponent(
+      description
+    )}&location=${encodeURIComponent(location)}`;
 
-// Include url property only if event_link is not empty and is a valid URL
-  if (event_link && isValidUrl(event_link)) {
-    gmailLink += `&url=${encodeURIComponent(event_link)}`;
-  }
+    // Include url property only if event_link is not empty and is a valid URL
+    if (event_link && isValidUrl(event_link)) {
+      gmailLink += `&url=${encodeURIComponent(event_link)}`;
+    }
 
-  return gmailLink;
-};
+    return gmailLink;
+  };
 
-
-  const openGmailLink = (event) => {
+  const openGmailLink = event => {
     const gmailLink = createGmailLink(event);
     window.open(gmailLink, '_blank');
   };
@@ -188,7 +157,7 @@ const createGmailLink = (event) => {
   };
 
   return (
-    <Dropdown overlay={menu} placement="bottomRight" arrow>
+    <Dropdown overlay={menu} placement='bottomRight' arrow>
       <div className='flex items-center basic-btn red-full px-2 py-[3px] hover:bg-purple-100 rounded-md'>
         <CalendarOutlined className='text-md text-[#f47d7f]' />
         <p className='ml-1 text-[#f47d7f]' style={{ fontWeight: 700, fontFamily: 'sans-serif', fontSize: '12px' }}>
@@ -198,6 +167,5 @@ const createGmailLink = (event) => {
     </Dropdown>
   );
 };
-
 
 export default ExportButton;

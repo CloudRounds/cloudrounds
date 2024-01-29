@@ -25,7 +25,7 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }: A
 
   const isMeetingInfoPresent = () => {
     if (article.meetingType === 'Hybrid' || article.meetingType === 'Virtual') {
-      return article.event_link || article.meeting_id;
+      return article.event_link || article.meetingId;
     }
     return false;
   };

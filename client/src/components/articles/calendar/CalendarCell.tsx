@@ -146,7 +146,7 @@ const CalendarCell = ({ day, month, year, events, setSelected }) => {
             <div className='flex items-center mb-5'>
               <LockOutlined className='mr-2' />
               <span>
-                Meeting ID: {article.meeting_id || 'None'} | Passcode: {article.passcode || 'None'}
+                Meeting ID: {article.meetingId || 'None'} | Passcode: {article.passcode || 'None'}
               </span>
 
               {isHybridMeeting && (

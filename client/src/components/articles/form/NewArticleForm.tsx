@@ -1,17 +1,18 @@
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { articlesState, calendarsState, canWriteCalendarsState } from '@/appState';
+import { INITIAL_ARTICLE_DATA } from '@/appState/initialStates';
+import { useUser } from '@/hooks/useUser';
 import { createArticle, updateArticle } from '@/services/ArticleService';
-import { createCalendar, fetchCalendars } from '@/services/CalendarService';
-import { initialArticleData } from '@/utils/constants';
+import { createCalendar } from '@/services/CalendarService';
+import { Article, Calendar, CreateArticleInput, CreateCalendarInput } from '@/types';
 import { extractTimesFromDuration } from '@/utils/dates';
 import { DeleteOutlined } from '@ant-design/icons';
 import { Button, Col, DatePicker, Form, Input, Modal, Row, Select, message } from 'antd';
 import dayjs, { Dayjs, isDayjs } from 'dayjs';
 import { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import NewCalendarDialog, { NewCalendar } from '../actions/NewCalendarDialog';
 import './NewArticleForm.css';
 import TimeRangePicker from './TimeRangePicker';
-import { User, Article, Calendar, CreateArticleInput, CreateCalendarInput } from '@/types';
 
 const { Option } = Select;
 
@@ -33,16 +34,17 @@ const NewArticleForm = ({
   selectedArticle,
   setSelectedArticle,
   onDelete,
-  onArticleUpdate,
-  onCreateArticle
+  onCreateArticle,
+  onArticleUpdate
 }: NewArticleFormProps) => {
-  const localUser = localStorage.getItem('CloudRoundsUser');
-  const user = localUser ? (JSON.parse(localUser) as User) : null;
+  const user = useUser();
+  const setArticles = useSetRecoilState(articlesState);
+  const setCalendars = useSetRecoilState(calendarsState);
+  const allowedCalendars = useRecoilValue(canWriteCalendarsState);
 
-  const [allowedCalendars, setAllowedCalendars] = useState<Calendar[] | null>(null);
   const [showAddCalendarModal, setShowAddCalendarModal] = useState(false);
   const [newCalendar, setNewCalendar] = useState<NewCalendar>({ name: '', description: '' });
-  const [article, setArticle] = useState<Article | CreateArticleInput>(initialArticleData);
+  const [article, setArticle] = useState<Article | CreateArticleInput>(INITIAL_ARTICLE_DATA);
 
   const [date, setDate] = useState(dayjs());
   const [timeRange, setTimeRange] = useState<TimeRange>(() => {
@@ -58,53 +60,22 @@ const NewArticleForm = ({
     (selectedArticle && selectedArticle.calendar) || null
   );
 
-  // Fetch calendars
-  const {
-    data: calendars,
-    isLoading: loadingCalendars,
-    refetch: refetchCalendars
-  } = useQuery<Calendar[], Error>(['userCalendars', user?.id], () => fetchCalendars(user?.id || ''), {
-    enabled: !!user
-  });
-
-  const filterCalendarsForUser = () => {
-    const canWriteCalendars = calendars?.filter(calendar => {
-      const canWriteMemberIds = calendar.canWriteMembers?.map(member => member?.id);
-      return canWriteMemberIds?.includes(user?.id || '');
-    });
-
-    return canWriteCalendars;
-  };
-
-  useEffect(() => {
-    if (loadingCalendars) {
-      return;
-    }
-    const canWrite = filterCalendarsForUser();
-
-    if (canWrite) {
-      setAllowedCalendars(canWrite || []);
-      if (canWrite.length > 0) {
-        setArticle(prevArticle => ({ ...prevArticle, calendar: canWrite[0].id.toString() }));
-      }
-    }
-  }, [loadingCalendars]);
-
   useEffect(() => {
     if (selectedArticle) {
       setArticle(selectedArticle);
-      setArticleCalendar(selectedArticle.calendar);
+      setArticleCalendar(selectedArticle.calendar || null);
       const [startTime, endTime] = extractTimesFromDuration(selectedArticle.duration || '');
       setTimeRange([startTime, endTime]);
       setDate(dayjs(selectedArticle.date));
     } else {
       setArticleCalendar(null);
-      setArticle(initialArticleData);
+      setArticle(INITIAL_ARTICLE_DATA);
       setTimeRange(['', '']);
       setDate(dayjs());
     }
   }, [selectedArticle]);
 
+  // SAVE UPDATED ARTICLE
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     const [start, end] = timeRange;
     const startTimeFormatted = isDayjs(start) && start.format('h:mm A');
@@ -117,10 +88,12 @@ const NewArticleForm = ({
 
     const calendarId = (articleCalendar as Calendar).id;
 
+    const articleDate = date ? (date instanceof Date ? date : date.toDate()) : article.date;
+
     const payload: Article = {
       ...(article as Article),
       id: (article as Article).id,
-      date: date ? date.format() : article.date,
+      date: articleDate,
       duration: `${startTimeFormatted} - ${endTimeFormatted}`,
       organizerId: user?.id || '',
       calendarId: calendarId,
@@ -135,20 +108,7 @@ const NewArticleForm = ({
 
     try {
       const updatedArticle = await updateArticle(payload);
-      onArticleUpdate(updatedArticle);
-      setSelectedArticle(null);
-    } catch (error) {
-      console.error(error);
-      setSelectedArticle(null);
-    }
-
-    if (!payload.title || payload.title.trim() === '') {
-      message.error('Title cannot be empty');
-      return;
-    }
-
-    try {
-      const updatedArticle = await updateArticle(payload);
+      setArticles(prev => prev.map(a => (a.id === updatedArticle.id ? updatedArticle : a)));
       onArticleUpdate(updatedArticle);
       setSelectedArticle(null);
     } catch (error) {
@@ -157,6 +117,7 @@ const NewArticleForm = ({
     }
   };
 
+  // SUBMIT NEW ARTICLE
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     const [start, end] = timeRange;
 
@@ -170,9 +131,11 @@ const NewArticleForm = ({
 
     const calendarId = (articleCalendar as Calendar).id;
 
+    const articleDate = date ? (date instanceof Date ? date : date.toDate()) : article.date;
+
     const payload = {
       ...article,
-      date: date ? date : article.date,
+      date: articleDate,
       duration: `${startTimeFormatted} - ${endTimeFormatted}`,
       organizer: user?.id,
       calendar: calendarId,
@@ -186,6 +149,7 @@ const NewArticleForm = ({
 
     try {
       const newArticle = await createArticle(payload);
+      setArticles(prev => [...prev, newArticle]);
       onCreateArticle(newArticle);
       onClose();
     } catch (error) {
@@ -197,19 +161,23 @@ const NewArticleForm = ({
     const calendar = {
       name: newCalendar.name,
       description: newCalendar.description,
-      canReadMembers: [] as string[],
-      canWriteMembers: [] as string[],
-      creatorId: user?.id || ''
+      canReadMembers: [],
+      canWriteMembers: [],
+      creatorId: user?.id || '',
+      articles: [],
+      emailMembers: [],
+      invites: [],
+      requests: []
     };
     const createdCalendar = await createCalendar(calendar);
-    setAllowedCalendars([...(allowedCalendars || []), createdCalendar]);
+    setCalendars(prevCalendars => [...prevCalendars, createdCalendar]);
     setNewCalendar({ name: '', description: '' });
-    refetchCalendars();
     setShowAddCalendarModal(false);
   };
 
   if (!user || !allowedCalendars) {
-    return <LoadingSpinner />;
+    // return <LoadingSpinner />;
+    return null;
   }
 
   const onModalClose = () => {
@@ -217,7 +185,7 @@ const NewArticleForm = ({
     setArticleCalendar(null);
     setTimeRange(['', '']);
     setDate(dayjs());
-    setArticle(initialArticleData);
+    setArticle(INITIAL_ARTICLE_DATA);
     onClose();
   };
 
@@ -284,7 +252,10 @@ const NewArticleForm = ({
                   value={date ? dayjs(date) : null}
                   onChange={dateValue => {
                     setDate(dateValue ? dayjs(dateValue) : dayjs(new Date()));
-                    setArticle({ ...article, date: dayjs(dateValue) });
+                    setArticle({
+                      ...article,
+                      date: date ? (date instanceof Date ? date : date.toDate()) : article.date
+                    });
                   }}
                   disabledDate={current => current && current.isBefore(dayjs(), 'day')}
                 />
