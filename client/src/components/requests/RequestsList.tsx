@@ -1,4 +1,4 @@
-import { userState } from '@/appState';
+import { userRequestsState, userState } from '@/appState';
 import { useRequestData } from '@/hooks/useRequestData';
 import { deleteRequest, updateRequestStatus } from '@/services/RequestService';
 import { Calendar, Request, User } from '@/types';
@@ -9,10 +9,10 @@ import {
   HourglassOutlined,
   MoreOutlined
 } from '@ant-design/icons';
-import { Button, Dropdown, Layout, Modal, Pagination, Spin, Table, Typography } from 'antd';
+import { Button, Card, Dropdown, Layout, Modal, Pagination, Spin, Table, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 const ButtonGroup = Button.Group;
 
 const RequestsList = () => {
@@ -24,7 +24,7 @@ const RequestsList = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [userRequests, setUserRequests] = useState<Request[]>([]);
+  const [userRequests, setUserRequests] = useRecoilState(userRequestsState);
   const { requests, setRequests, isLoading: isQueryLoading, refetch } = useRequestData();
   const [showUserRequests, setShowUserRequests] = useState(true);
   const [isStatusUpdating, setIsStatusUpdating] = useState<string | null>(null);
@@ -140,8 +140,8 @@ const RequestsList = () => {
   }
 
   const displayedRequests = showUserRequests
-    ? requests.filter((req: Request) => req.user?.id === user?.id)
-    : userRequests.filter((req: Request) => req.user?.id !== user?.id);
+    ? userRequests
+    : requests.filter(r => r.userId !== user?.id && r.calendar?.creatorId === user?.id);
 
   const columns = [
     {
@@ -264,40 +264,44 @@ const RequestsList = () => {
   ];
 
   return (
-    <Layout className='w-full mx-auto h-screen'>
-      <div className='w-full bg-white p-6 min-h-[280px] text-center full-width-mobile'>
-        <ButtonGroup>
-          <Button onClick={toggleView} className='mb-5' disabled={showUserRequests}>
-            Invitations Sent
-          </Button>
-          <Button onClick={toggleView} className='mb-5' disabled={!showUserRequests}>
-            Invitations Received
-          </Button>
-        </ButtonGroup>
-        <hr className='my-5' />
-        <Typography.Title level={2} className='mb-5'>
-          {!showUserRequests ? 'Invitations Received' : 'Invitations Sent'}
-        </Typography.Title>
-        <Table
-          dataSource={
-            rowsPerPage > 0 ? displayedRequests.slice((page - 1) * rowsPerPage, page * rowsPerPage) : displayedRequests
-          }
-          pagination={false}
-          rowKey={record => record.id}
-          columns={columns}
-          scroll={{ x: 'max-content' }}
-          className='w-full overflow-x-auto'
-        />
-        <Pagination
-          total={userRequests.length}
-          pageSize={rowsPerPage}
-          current={page}
-          onChange={handleChangePage}
-          showSizeChanger
-          pageSizeOptions={['25', '50', '100']}
-          className='mt-5'
-        />
-      </div>
+    <Layout>
+      <Card bordered={false} className='w-full text-center'>
+        <div className='w-full bg-white p-6 min-h-[280px] text-center full-width-mobile'>
+          <ButtonGroup>
+            <Button onClick={toggleView} className='mb-5' disabled={!showUserRequests}>
+              Invitations Sent
+            </Button>
+            <Button onClick={toggleView} className='mb-5' disabled={showUserRequests}>
+              Invitations Received
+            </Button>
+          </ButtonGroup>
+          <hr className='my-5' />
+          <Typography.Title level={2} className='mb-5'>
+            {showUserRequests ? 'Invitations Received' : 'Invitations Sent'}
+          </Typography.Title>
+          <Table
+            dataSource={
+              rowsPerPage > 0
+                ? displayedRequests.slice((page - 1) * rowsPerPage, page * rowsPerPage)
+                : displayedRequests
+            }
+            pagination={false}
+            rowKey={record => record.id}
+            columns={columns}
+            scroll={{ x: 'max-content' }}
+            className='w-full overflow-x-auto'
+          />
+          <Pagination
+            total={userRequests.length}
+            pageSize={rowsPerPage}
+            current={page}
+            onChange={handleChangePage}
+            showSizeChanger
+            pageSizeOptions={['25', '50', '100']}
+            className='mt-5'
+          />
+        </div>
+      </Card>
     </Layout>
   );
 };

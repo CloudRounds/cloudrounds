@@ -165,12 +165,10 @@ const OlderArticles = () => {
           Previous Events
         </Typography.Title>
         <Table
-          className='mt-8'
+          className='mt-8 w-full overflow-x-auto'
           dataSource={filteredArticles.slice(page * rowsPerPage, (page + 1) * rowsPerPage)}
           pagination={false}
-          rowKey={record => record.id}
-          scroll={{ x: 'max-content' }}
-          style={{ overflowX: 'auto' }}>
+          rowKey={record => record.id}>
           <Table.Column
             title='Calendar'
             dataIndex='calendar'
@@ -181,7 +179,7 @@ const OlderArticles = () => {
                 {calendar && calendar.name && <span style={{ marginLeft: '8px' }}>{calendar.name}</span>}
               </div>
             )}
-            width='20%' // Initial width for larger screens
+            width='20%'
           />
           <Table.Column
             title='Article Title'
