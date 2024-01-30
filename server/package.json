@@ -10,7 +10,8 @@
     "dev:all": "concurrently \"npm run dev\" \"cd ../client && npm run dev\"",
     "build": "npx tsc",
     "build:ui": "cd ../client && npm run build && cp -r dist ../server",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "codegen": "graphql-codegen --config codegen.yml"
   },
   "author": "",
   "license": "ISC",
