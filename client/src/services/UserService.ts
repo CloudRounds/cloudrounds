@@ -100,7 +100,6 @@ export const toggleAttending = async (userId: string, articleId: string, isAtten
 
 export const toggleFavorite = async (userId: string, articleId: string, isFavorite: boolean) => {
   try {
-    console.log('Toggling favorite for user:', userId)
     const response = await apiClient.put('/users/toggle-favorite', { userId, articleId, isFavorite });
     return response.data;
   } catch (error) {

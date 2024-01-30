@@ -72,6 +72,11 @@ export const favoritesState = atom<Article[] | null>({
   default: null,
 });
 
+export const attendedState = atom<Article[] | null>({
+  key: 'attendedState',
+  default: null,
+});
+
 export const canReadCalendarsState = selector({
   key: 'canReadCalendarsState',
   get: ({ get }) => {
