@@ -1,4 +1,4 @@
-import { lazy, useEffect } from 'react';
+import { lazy } from 'react';
 import IntroContent from '../../content/IntroContent.json';
 import MiddleBlockContent from '../../content/MiddleBlockContent.json';
 import AboutContent from '../../content/AboutContent.json';
@@ -7,29 +7,17 @@ import ProductContent from '../../content/ProductContent.json';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { Styles } from '../../styles/styles';
-import { useLocation, useNavigate } from 'react-router';
 
-const Contact = lazy(() => import('../../components/ContactForm'));
+// const Contact = lazy(() => import('../../components/ContactForm'));
 const MiddleBlock = lazy(() => import('../../components/MiddleBlock'));
 const Container = lazy(() => import('../../common/Container'));
 const ScrollToTop = lazy(() => import('../../common/ScrollToTop'));
 const ContentBlock = lazy(() => import('../../components/ContentBlock'));
 
 const Home = () => {
-  const token = localStorage.getItem('CloudRoundsToken');
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   if (token && location.pathname === '/') {
-  //     navigate('/calendar');
-  //   }
-  // }, [token, navigate]);
-
   return (
     <div className='landing-page'>
       <Styles />
-      <Header />
       <Container>
         <ScrollToTop />
         <ContentBlock
@@ -40,11 +28,7 @@ const Home = () => {
           icon='developer.svg'
           id='intro'
         />
-        <MiddleBlock
-          title={MiddleBlockContent.title}
-          content={MiddleBlockContent.text}
-          button={MiddleBlockContent.button}
-        />
+        <MiddleBlock title={MiddleBlockContent.title} content={MiddleBlockContent.text} />
         <ContentBlock
           direction='left'
           title={AboutContent.title}

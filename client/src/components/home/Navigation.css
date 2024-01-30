@@ -1,0 +1,112 @@
+.logoContainer {
+  display: flex;
+  align-items: center;
+}
+
+.navContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  --vscode-sash-size: 4px;
+  text-decoration-skip-ink: auto;
+  -webkit-font-smoothing: antialiased;
+  font-size: inherit;
+  font-style: normal;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  box-sizing: inherit;
+  transition: opacity 0.3s ease 0s;
+  opacity: 1;
+  margin: 0px 2px;
+  flex-grow: 1;
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Lato';
+  position: sticky;
+  top: 0;
+  background-color: inherit;
+  z-index: 1000;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 6px;
+}
+
+.logo {
+  width: 62px;
+  align-self: center;
+}
+
+.logoContainer .title {
+  font-size: larger;
+  font-family: 'Motiva Sans Bold', serif;
+  color: #37428b;
+  line-height: 1.18;
+}
+
+.githubTitle {
+  font-size: 14px;
+  font-weight: 400;
+  margin-left: 10px;
+  color: #596095;
+}
+
+.separator {
+  height: 30px;
+  width: 1px;
+  background-color: #e1dbdb;
+  margin-left: 1.2em;
+}
+
+.authButtons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.6;
+  margin-right: 10px;
+}
+
+.link {
+  color: #344563 !important;
+  background-color: transparent;
+}
+
+.link:after {
+  transition: 150ms ease-in-out all;
+  content: '';
+  display: block;
+  width: 100%;
+  height: 2px;
+  position: absolute;
+  bottom: 0;
+  background-color: transparent;
+  left: 0;
+}
+
+.link:hover {
+  color: #344563 !important;
+  background-color: transparent;
+  border-radius: 0px;
+}
+
+.link:hover:after {
+  background-color: #2b4869;
+}
+
+.link .authText {
+  font-size: 14px;
+  font-weight: 400;
+  margin-left: 5px;
+  font-family: 'Lato';
+  color: #343857;
+}
+
+.link:hover.link:after {
+  background-color: #2b4869;
+}
+
+.sideMenu button {
+  font-family: 'Lato';
+}

@@ -6,12 +6,12 @@ import { fetchCurrentUser } from './services/UserService';
 import AuthPage from './components/auth/AuthPage';
 import { useQuery } from 'react-query';
 import Home from './components/landing/pages/Home';
-import Navbar from './components/home/Navbar';
 import 'react-toastify/dist/ReactToastify.css';
 import ResetPassword from './components/auth/form/ResetPassword';
 import EmailVerification from './components/auth/form/EmailVerification';
 import { useSetRecoilState } from 'recoil';
 import { userState } from './appState';
+import NavbarWrapper from './components/home/NavbarWrapper';
 
 const CalendarsList = lazy(() => import('./components/calendars/CalendarsList'));
 const RequestsList = lazy(() => import('./components/requests/RequestsList'));
@@ -23,7 +23,6 @@ const Admin = lazy(() => import('./components/admin/Admin'));
 const App = () => {
   const token = localStorage.getItem('CloudRoundsToken');
   const setUser = useSetRecoilState(userState);
-
   const { data: fetchedUser, isLoading } = useQuery('userData', fetchCurrentUser, {
     enabled: !!token
   });
@@ -50,7 +49,7 @@ const App = () => {
   return (
     <>
       <Router>
-        <Navbar />
+        <NavbarWrapper />
         <Suspense fallback={<Spin />}>
           <Routes>
             <Route path='/' element={<Home />} />

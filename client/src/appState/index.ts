@@ -1,5 +1,5 @@
 import { Article, Calendar, Favorite, Feedback, Request, User } from '@/types';
-import { atom, atomFamily, selector } from 'recoil';
+import { atom, selector } from 'recoil';
 import { INITIAL_ARTICLE_DATA, INITIAL_CALENDAR_DATA } from './initialStates';
 
 export const defaultArticleValue = (id: string) => {
@@ -9,6 +9,18 @@ export const defaultArticleValue = (id: string) => {
 export const defaultCalendarValue = (id: string) => {
   return { ...INITIAL_CALENDAR_DATA, id };
 };
+
+export const authState = atom<{
+  isLoggedIn: boolean;
+  userData: User | null;
+}>({
+  key: 'authState',
+  default: {
+    isLoggedIn: false,
+    userData: null,
+  },
+});
+
 
 export const userState = atom<User | null>({
   key: 'userState',
@@ -88,7 +100,7 @@ export const canWriteCalendarsState = selector({
   },
 });
 
-export const attendedState = atomFamily<Article, string>({
-  key: 'attendedState',
-  default: (id) => defaultArticleValue(id),
-});
+// export const attendedState = atomFamily<Article, string>({
+//   key: 'attendedState',
+//   default: (id) => defaultArticleValue(id),
+// });

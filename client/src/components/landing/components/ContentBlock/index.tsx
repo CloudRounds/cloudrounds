@@ -13,12 +13,18 @@ import {
   ButtonWrapper
 } from './styles';
 
+interface SectionItem {
+  title: string;
+  content: string;
+  icon: string;
+}
+
 interface ContentBlockProps {
   icon: string;
   title: string;
   content: string;
-  section: string;
-  button: any;
+  section?: Array<SectionItem>;
+  button?: any;
   id: string;
   direction: FadeProps['direction'];
 }
@@ -33,30 +39,12 @@ const ContentBlock = ({ icon, title, content, section, button, id, direction }: 
 
   return (
     <ContentSection>
-      <Fade
-        direction={direction}
-        triggerOnce>
-        <StyledRow
-          justify='space-between'
-          align='middle'
-          id={id}
-          direction={direction}>
-          <Col
-            lg={11}
-            md={11}
-            sm={12}
-            xs={24}>
-            <SvgIcon
-              src={icon}
-              width='100%'
-              height='100%'
-            />
+      <Fade direction={direction} triggerOnce>
+        <StyledRow justify='space-between' align='middle' id={id} direction={direction}>
+          <Col lg={11} md={11} sm={12} xs={24}>
+            <SvgIcon src={icon} width='100%' height='100%' />
           </Col>
-          <Col
-            lg={11}
-            md={11}
-            sm={11}
-            xs={24}>
+          <Col lg={11} md={11} sm={11} xs={24}>
             <ContentWrapper>
               <h1>{title}</h1>
               <Content>{content}</Content>
@@ -65,10 +53,7 @@ const ContentBlock = ({ icon, title, content, section, button, id, direction }: 
                   {typeof button === 'object' &&
                     button.map((item: any, id: string) => {
                       return (
-                        <Button
-                          key={id}
-                          color={item.color}
-                          onClick={() => scrollTo('about')}>
+                        <Button key={id} color={item.color} onClick={() => scrollTo('about')}>
                           {item.title}
                         </Button>
                       );
@@ -80,14 +65,8 @@ const ContentBlock = ({ icon, title, content, section, button, id, direction }: 
                     {Array.isArray(section) &&
                       section.map((item: any, id: number | string) => {
                         return (
-                          <Col
-                            key={id}
-                            span={11}>
-                            <SvgIcon
-                              src={item.icon}
-                              width='60px'
-                              height='60px'
-                            />
+                          <Col key={id} span={11}>
+                            <SvgIcon src={item.icon} width='60px' height='60px' />
                             <MinTitle>{item.title}</MinTitle>
                             <MinPara>{item.content}</MinPara>
                           </Col>
