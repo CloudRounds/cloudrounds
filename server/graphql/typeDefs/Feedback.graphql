@@ -1,0 +1,62 @@
+type Feedback implements Node {
+  id: ID!
+  articleId: String!
+  article: Article!
+  userId: String!
+  user: User!
+  feedback: String!
+  createdAt: DateTime!
+}
+
+type FeedbackEdge {
+  node: Feedback
+  cursor: String!
+}
+
+type FeedbackConnection {
+  edges: [FeedbackEdge]
+  pageInfo: PageInfo
+}
+
+type Query {
+  feedbacks(first: Int, after: String): FeedbackConnection
+}
+
+type Mutation {
+  createFeedback(input: CreateFeedbackInput!): CreateFeedbackPayload
+  updateFeedback(input: UpdateFeedbackInput!): UpdateFeedbackPayload
+  deleteFeedback(input: DeleteFeedbackInput!): DeleteFeedbackPayload
+}
+
+input CreateFeedbackInput {
+  articleId: String!
+  userId: String!
+  feedback: String!
+  clientMutationId: String
+}
+
+type CreateFeedbackPayload {
+  feedback: Feedback
+  clientMutationId: String
+}
+
+input UpdateFeedbackInput {
+  feedbackId: ID!
+  feedback: String!
+  clientMutationId: String
+}
+
+type UpdateFeedbackPayload {
+  feedback: Feedback
+  clientMutationId: String
+}
+
+input DeleteFeedbackInput {
+  feedbackId: ID!
+  clientMutationId: String
+}
+
+type DeleteFeedbackPayload {
+  deletedFeedbackId: ID
+  clientMutationId: String
+}

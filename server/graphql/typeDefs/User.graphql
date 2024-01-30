@@ -1,0 +1,155 @@
+type User implements Node {
+  id: ID!
+  username: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+  university: String!
+  isAdmin: Boolean!
+  createdCalendars: CalendarConnection
+  canReadCalendars: CalendarConnection
+  canWriteCalendars: CalendarConnection
+  organizedArticles: ArticleConnection
+  favorites: FavoriteConnection
+  feedbacks: FeedbackConnection
+  requests: RequestConnection
+  attended: ArticleConnection
+  resetToken: String
+  resetTokenExpiry: Int
+  registerToken: String
+  registerTokenExpiry: Int
+  emailValidated: Boolean!
+  createdAt: DateTime!
+}
+
+type UserEdge {
+  node: User
+  cursor: String!
+}
+
+type UserConnection {
+  edges: [UserEdge]
+  pageInfo: PageInfo
+}
+
+type Query {
+  users(first: Int, after: String): UserConnection
+  userById(id: ID!): User
+  userByUsername(username: String!): User
+  userByToken(token: String!): User
+  favorites(userId: ID!, first: Int, after: String): FavoriteConnection
+}
+
+type Mutation {
+  loginUser(input: LoginUserInput!): LoginUserPayload
+  registerUser(input: RegisterUserInput!): RegisterUserPayload
+  updateUser(input: UpdateUserInput!): UpdateUserPayload
+  changePassword(input: ChangePasswordInput!): ChangePasswordPayload
+  toggleAttendance(input: ToggleAttendanceInput!): ToggleAttendancePayload
+  toggleFavorite(input: ToggleFavoriteInput!): ToggleFavoritePayload
+  deleteUser(input: DeleteUserInput!): DeleteUserPayload
+}
+
+input LoginUserInput {
+  username: String!
+  password: String!
+  clientMutationId: String
+}
+
+type LoginUserPayload {
+  message: String!
+  token: String!
+  user: User!
+  clientMutationId: String
+}
+
+input RegisterUserInput {
+  userData: UserData!
+  clientMutationId: String
+}
+
+type RegisterUserPayload {
+  user: User!
+  clientMutationId: String
+}
+
+input UpdateUserInput {
+  id: ID!
+  updates: UserUpdateInput!
+  clientMutationId: String
+}
+
+type UpdateUserPayload {
+  user: User!
+  clientMutationId: String
+}
+
+input ChangePasswordInput {
+  userId: ID!
+  currentPassword: String!
+  newPassword: String!
+  clientMutationId: String
+}
+
+type ChangePasswordPayload {
+  message: String!
+  clientMutationId: String
+}
+
+input ToggleAttendanceInput {
+  userId: ID!
+  articleId: ID!
+  isAttending: Boolean!
+  clientMutationId: String
+}
+
+type ToggleAttendancePayload {
+  message: String!
+  attended: [Article!]!
+  clientMutationId: String
+}
+
+input ToggleFavoriteInput {
+  userId: ID!
+  articleId: ID!
+  isFavorite: Boolean!
+  clientMutationId: String
+}
+
+type ToggleFavoritePayload {
+  message: String!
+  favorites: [Favorite!]!
+  clientMutationId: String
+}
+
+input DeleteUserInput {
+  id: ID!
+  clientMutationId: String
+}
+
+type DeleteUserPayload {
+  message: String!
+  clientMutationId: String
+}
+
+input UserData {
+  username: String!
+  email: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  university: String!
+  isAdmin: Boolean
+  registerToken: String
+  registerTokenExpiry: Int
+  emailValidated: Boolean
+}
+
+input UserUpdateInput {
+  username: String!
+  email: String!
+  firstName: String!
+  lastName: String!
+  university: String!
+  isAdmin: Boolean
+}

@@ -1,0 +1,7 @@
+type EmailMember implements Node {
+  id: ID!
+  email: String!
+  calendarId: String!
+  calendar: Calendar!
+  createdAt: DateTime!
+}

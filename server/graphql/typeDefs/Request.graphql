@@ -1,0 +1,79 @@
+type Request implements Node {
+  id: ID!
+  calendarId: String!
+  calendar: Calendar!
+  userId: String!
+  user: User!
+  yearOfStudy: String
+  status: String!
+  message: String
+  email: String
+  createdAt: DateTime!
+}
+
+type RequestEdge {
+  node: Request
+  cursor: String!
+}
+
+type RequestConnection {
+  edges: [RequestEdge]
+  pageInfo: PageInfo
+}
+
+type Query {
+  requests(first: Int, after: String): RequestConnection
+}
+
+type Mutation {
+  createRequest(input: CreateRequestInput!): CreateRequestPayload
+  createBulkRequests(input: CreateBulkRequestsInput!): CreateBulkRequestsPayload
+  updateRequestStatus(input: UpdateRequestStatusInput!): UpdateRequestStatusPayload
+  deleteRequest(input: DeleteRequestInput!): DeleteRequestPayload
+}
+
+input CreateRequestInput {
+  calendarId: String!
+  userId: String!
+  clientMutationId: String
+}
+
+type CreateRequestPayload {
+  request: Request
+  clientMutationId: String
+}
+
+input CreateBulkRequestsInput {
+  userIds: [String!]!
+  purposeId: String!
+  calendarId: String!
+  clientMutationId: String
+}
+
+type CreateBulkRequestsPayload {
+  requests: [Request]
+  clientMutationId: String
+}
+
+input UpdateRequestStatusInput {
+  requestId: ID!
+  calendarId: ID!
+  status: String!
+  clientMutationId: String
+}
+
+type UpdateRequestStatusPayload {
+  status: String!
+  updatedRequest: Request
+  clientMutationId: String
+}
+
+input DeleteRequestInput {
+  requestId: ID!
+  clientMutationId: String
+}
+
+type DeleteRequestPayload {
+  deletedRequestId: ID
+  clientMutationId: String
+}

@@ -1,0 +1,36 @@
+type Mutation {
+  forgotPassword(input: ForgotPasswordInput!): ForgotPasswordPayload
+  resetPassword(input: ResetPasswordInput!): ResetPasswordPayload
+  verifyEmail(input: VerifyEmailInput!): VerifyEmailPayload
+}
+
+input ForgotPasswordInput {
+  email: String!
+  clientMutationId: String
+}
+
+type ForgotPasswordPayload {
+  message: String!
+  clientMutationId: String
+}
+
+input ResetPasswordInput {
+  resetToken: String!
+  newPassword: String!
+  clientMutationId: String
+}
+
+type ResetPasswordPayload {
+  message: String!
+  clientMutationId: String
+}
+
+input VerifyEmailInput {
+  token: String!
+  clientMutationId: String
+}
+
+type VerifyEmailPayload {
+  message: String!
+  clientMutationId: String
+}

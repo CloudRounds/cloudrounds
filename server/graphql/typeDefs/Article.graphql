@@ -1,0 +1,83 @@
+type Article implements Node {
+  id: ID!
+  title: String!
+  eventLink: String
+  date: DateTime!
+  duration: String
+  organizerId: String!
+  organizer: User!
+  meetingType: String
+  meetingId: String
+  passcode: String
+  speaker: String
+  location: String
+  additionalDetails: String
+  feedbacks: [Feedback!]!
+  calendarId: String!
+  calendar: Calendar!
+  favorites: [Favorite!]!
+  attendees: [User!]!
+  createdAt: DateTime!
+}
+
+type ArticleEdge {
+  node: Article
+  cursor: String!
+}
+
+type ArticleConnection {
+  edges: [ArticleEdge]
+  pageInfo: PageInfo
+}
+
+type Query {
+  articles(first: Int, after: String): ArticleConnection
+}
+
+type Mutation {
+  createArticle(input: CreateArticleInput!): CreateArticlePayload
+  updateArticle(input: UpdateArticleInput!): UpdateArticlePayload
+  deleteArticle(input: DeleteArticleInput!): DeleteArticlePayload
+}
+
+input CreateArticleInput {
+  title: String!
+  eventLink: String
+  date: DateTime!
+  duration: String
+  organizerId: String!
+  meetingType: String
+  meetingId: String
+  passcode: String
+  speaker: String
+  location: String
+  additionalDetails: String
+  calendarId: String!
+  clientMutationId: String
+}
+
+type CreateArticlePayload {
+  article: Article
+  clientMutationId: String
+}
+
+input UpdateArticleInput {
+  id: ID!
+  articleInput: CreateArticleInput!
+  clientMutationId: String
+}
+
+type UpdateArticlePayload {
+  article: Article
+  clientMutationId: String
+}
+
+input DeleteArticleInput {
+  id: ID!
+  clientMutationId: String
+}
+
+type DeleteArticlePayload {
+  deletedArticleId: ID
+  clientMutationId: String
+}

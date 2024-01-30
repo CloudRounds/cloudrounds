@@ -1,0 +1,20 @@
+scalar DateTime
+scalar String
+scalar Boolean
+scalar Int
+scalar ID
+
+type Query {
+  node(id: ID!): Node
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+interface Node {
+  id: ID!
+}

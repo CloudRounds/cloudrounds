@@ -1,0 +1,75 @@
+type Invite implements Node {
+  id: ID!
+  email: String!
+  calendarId: String!
+  calendarName: String!
+  token: String!
+  expirationTime: DateTime!
+  createdAt: DateTime!
+  creator: String
+  calendar: Calendar!
+}
+
+type Query {
+  invites(first: Int, after: String): InviteConnection
+  invite(id: ID!): Invite
+}
+
+type InviteEdge {
+  node: Invite
+  cursor: String!
+}
+
+type InviteConnection {
+  edges: [InviteEdge]
+  pageInfo: PageInfo
+}
+
+type Mutation {
+  createInvite(input: CreateInviteInput!): CreateInvitePayload
+  registerWithToken(input: RegisterWithTokenInput!): RegisterWithTokenPayload
+  deleteInvite(input: DeleteInviteInput!): DeleteInvitePayload
+}
+
+input CreateInviteInput {
+  email: String!
+  calendarId: String!
+  calendarName: String!
+  token: String!
+  expirationTime: DateTime!
+  creator: String
+  clientMutationId: String
+}
+
+type CreateInvitePayload {
+  invite: Invite
+  clientMutationId: String
+}
+
+input RegisterWithTokenInput {
+  token: String!
+  username: String!
+  email: String!
+  password: String!
+  university: String!
+  firstName: String!
+  lastName: String!
+  clientMutationId: String
+}
+
+type RegisterWithTokenPayload {
+  message: String!
+  token: String!
+  user: User!
+  clientMutationId: String
+}
+
+input DeleteInviteInput {
+  token: String!
+  clientMutationId: String
+}
+
+type DeleteInvitePayload {
+  deletedInviteId: ID
+  clientMutationId: String
+}

@@ -1,0 +1,49 @@
+type Favorite implements Node {
+  id: ID!
+  userId: String!
+  user: User!
+  articleId: String!
+  article: Article!
+  createdAt: DateTime!
+}
+
+type FavoriteEdge {
+  node: Favorite
+  cursor: String!
+}
+
+type FavoriteConnection {
+  edges: [FavoriteEdge]
+  pageInfo: PageInfo
+}
+
+type Query {
+  favorites(first: Int, after: String): FavoriteConnection
+  favoriteById(id: ID!): Favorite
+}
+
+type Mutation {
+  addFavorite(input: AddFavoriteInput!): AddFavoritePayload
+  removeFavorite(input: RemoveFavoriteInput!): RemoveFavoritePayload
+}
+
+input AddFavoriteInput {
+  userId: ID!
+  articleId: ID!
+  clientMutationId: String
+}
+
+type AddFavoritePayload {
+  favorite: Favorite
+  clientMutationId: String
+}
+
+input RemoveFavoriteInput {
+  id: ID!
+  clientMutationId: String
+}
+
+type RemoveFavoritePayload {
+  deletedFavoriteId: ID
+  clientMutationId: String
+}
