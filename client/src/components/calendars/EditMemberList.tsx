@@ -285,7 +285,7 @@ const EditMemberList = ({ open, handleClose, selectedCalendar }: EditMemberListP
       </div>
 
       <div className='member-row member-current' style={{ width: '100%', position: 'relative', minHeight: '370px' }}>
-        <p className='member-row-title'>Subscribers</p>
+        <p className='member-row-title'>Members</p>
         <CurrentMembersList
           members={paginatedMembers}
           hasPendingRequest={hasPendingRequest}
