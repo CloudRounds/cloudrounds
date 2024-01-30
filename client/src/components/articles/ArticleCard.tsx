@@ -94,7 +94,7 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }: A
                 className={`text-yellow-600 cursor-pointer text-sm p-1`}
                 onClick={event => {
                   event.stopPropagation();
-                  onFavorite(article._id);
+                  onFavorite(article.id);
                 }}
               />
             ) : (
@@ -102,7 +102,7 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }: A
                 className={`hover:text-yellow-600 cursor-pointer text-sm p-1`}
                 onClick={event => {
                   event.stopPropagation();
-                  onFavorite(article._id);
+                  onFavorite(article.id);
                 }}
               />
             )}
@@ -113,7 +113,7 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }: A
                 className='cursor-pointer text-xl hover:text-blue-600 p-1'
                 onClick={(event: React.MouseEvent<SVGElement>) => {
                   event.stopPropagation();
-                  onEdit(article._id);
+                  onEdit(article.id);
                 }}
               />
             )}
