@@ -1,12 +1,10 @@
-import { articlesState, favoritesState } from '@/appState';
+import { articlesState, favoritesState, userState } from '@/appState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import useArticlePermissions from '@/hooks/useArticlePermissions';
-import { useUser } from '@/hooks/useUser';
 import { deleteArticle, sortArticles } from '@/services/ArticleService';
 import { toggleFavorite } from '@/services/UserService';
 import { Article } from '@/types';
 import {
-  filterArticlesForList,
   getArticlesForPage,
   getCalendarsAfterCreate,
   getCalendarsAfterDelete,
@@ -16,18 +14,18 @@ import {
 import { Badge, Col, Modal, Pagination, Row } from 'antd';
 import { useEffect, useState } from 'react';
 import { useMutation } from 'react-query';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useSetRecoilState } from 'recoil';
 import ArticleCard from './ArticleCard';
+import EditArticleForm from './EditArticleForm';
+import NewArticleForm from './NewArticleForm';
 import ActionBar from './actions/ActionBar';
 import ArticleCalendar from './calendar/ArticleCalendar';
-import NewArticleForm from './NewArticleForm';
-import EditArticleForm from './EditArticleForm';
+import { useUser } from '@/hooks/useUser';
 
 const ArticleList = () => {
   const user = useUser();
+  const setUser = useSetRecoilState(userState);
   const [favorites, setFavorites] = useRecoilState(favoritesState);
-  const favoriteArticles = favorites.map(f => f.articleId);
-
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
   const [selectedOrganizers, setSelectedOrganizers] = useState<string[]>([]);
@@ -70,6 +68,12 @@ const ArticleList = () => {
     );
     setFilteredArticles(filtered);
   }, [selectedCalendars, selectedOrganizers]);
+
+  useEffect(() => {
+    if (user.favorites && !favorites) {
+      setFavorites(user.favorites);
+    }
+  }, [user.favorites]);
 
   const deleteMutation = useMutation(deleteArticle, {
     onSuccess: (data, variables) => {
@@ -142,12 +146,20 @@ const ArticleList = () => {
     setSelectedArticle(articles.find(article => article.id === articleId) || null);
   };
 
-  const handleFavorite = async (articleId: string) => {
+  const handleFavorite = async (article: Article) => {
     try {
-      const isFavorite = favoriteArticles.includes(articleId);
-      const data = await toggleFavorite(user.id, articleId, isFavorite);
-
-      setFavorites(data);
+      if (favorites && user) {
+        const isFavorite = favorites.some(f => f.id === article.id);
+        if (isFavorite) {
+          const filteredFavorites = favorites.filter(f => f.id !== article.id);
+          setFavorites(filteredFavorites);
+        } else {
+          setFavorites([...favorites, article]);
+        }
+        const data = await toggleFavorite(user.id, article.id, !isFavorite);
+        setUser(data.user);
+        localStorage.setItem('CloudRoundsUser', JSON.stringify(data.user));
+      }
     } catch (error) {
       console.error('There was an error updating favorite:', error);
     }
@@ -208,10 +220,10 @@ const ArticleList = () => {
               <ArticleCard
                 key={index}
                 article={article}
-                isOrganizer={article.organizer?.username === user.username}
-                onFavorite={() => handleFavorite(article.id)}
+                isOrganizer={article.organizer?.username === user?.username}
+                onFavorite={() => handleFavorite(article)}
                 onEdit={() => handleEdit(article.id)}
-                isFavorite={favoriteArticles.includes(article.id)}
+                favorites={favorites || []}
               />
             ))}
             {currentArticles.length > 4 && (

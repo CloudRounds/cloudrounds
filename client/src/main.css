@@ -6,6 +6,8 @@
 @import url('./assets/css/LoadingSpinner.css');
 @import url('./assets/css/TimeRangePicker.css');
 @import url('./assets/css/NewArticleForm.css');
+@import url('./assets/css/Navbar.css');
+@import url('./assets/css/Navigation.css');
 
 @tailwind base;
 @tailwind components;

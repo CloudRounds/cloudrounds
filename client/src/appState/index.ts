@@ -1,4 +1,4 @@
-import { Article, Calendar, Favorite, Feedback, Request, User } from '@/types';
+import { Article, Calendar, Feedback, Request, User } from '@/types';
 import { atom, selector } from 'recoil';
 import { INITIAL_ARTICLE_DATA, INITIAL_CALENDAR_DATA } from './initialStates';
 
@@ -67,9 +67,9 @@ export const feedbacksState = atom<Feedback[]>({
   default: [],
 });
 
-export const favoritesState = atom<Favorite[]>({
+export const favoritesState = atom<Article[] | null>({
   key: 'favoritesState',
-  default: [],
+  default: null,
 });
 
 export const canReadCalendarsState = selector({

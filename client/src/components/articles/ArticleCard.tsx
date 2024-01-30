@@ -6,18 +6,19 @@ import ExportToIcalButton from './calendar/ExportToIcalButton';
 
 import { EnvironmentOutlined, LinkOutlined } from '@ant-design/icons';
 import calendarIcons from '../ui/CalendarIcons';
+import { Article } from '@/types';
 
 const { Text, Title } = Typography;
 
 interface ArticleCardProps {
   article: any;
   isOrganizer: boolean;
-  onFavorite: (articleId: string) => void;
+  onFavorite: (article: Article) => void;
   onEdit: (articleId: string) => void;
-  isFavorite: boolean;
+  favorites: Article[];
 }
 
-const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }: ArticleCardProps) => {
+const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, favorites }: ArticleCardProps) => {
   const formattedDate = formatDate(article.date);
   const formattedTime = article.duration;
   const isVirtual = article.meetingType === 'Virtual';
@@ -61,6 +62,10 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }: A
 
   const isMeetingJoinable = isMeetingInfoPresent();
 
+  const isFavorite = (articleId: string) => {
+    return favorites.some(favorite => favorite.id === articleId);
+  };
+
   const panels = [
     {
       key: '1',
@@ -89,12 +94,12 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }: A
           </div>
 
           <div className='absolute top-[-2px] right-[5px]'>
-            {isFavorite ? (
+            {isFavorite(article.id) ? (
               <StarFilled
                 className={`text-yellow-600 cursor-pointer text-sm p-1`}
                 onClick={event => {
                   event.stopPropagation();
-                  onFavorite(article._id);
+                  onFavorite(article);
                 }}
               />
             ) : (
@@ -102,7 +107,7 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }: A
                 className={`hover:text-yellow-600 cursor-pointer text-sm p-1`}
                 onClick={event => {
                   event.stopPropagation();
-                  onFavorite(article._id);
+                  onFavorite(article);
                 }}
               />
             )}
@@ -113,7 +118,7 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }: A
                 className='cursor-pointer text-xl hover:text-blue-600 p-1'
                 onClick={(event: React.MouseEvent<SVGElement>) => {
                   event.stopPropagation();
-                  onEdit(article._id);
+                  onEdit(article.id);
                 }}
               />
             )}

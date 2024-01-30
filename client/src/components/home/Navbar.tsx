@@ -5,7 +5,6 @@ import { Avatar, Drawer, Dropdown, List, Typography } from 'antd';
 
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import './Navbar.css';
 import { User } from '@/types';
 import { SvgIconProps } from '@mui/material';
 import { useUser } from '@/hooks/useUser';

@@ -27,7 +27,6 @@ const LoginForm = ({ fields, appName, isForgotPassword, setIsForgotPassword }: L
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const setUser = useSetRecoilState(userState);
-  const setFavorites = useSetRecoilState(favoritesState);
 
   const initialCredentials: Credentials = {
     username: '',
@@ -41,6 +40,7 @@ const LoginForm = ({ fields, appName, isForgotPassword, setIsForgotPassword }: L
   const [showResendEmail, setShowResendEmail] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [resendEmailInput, setResendEmailInput] = useState('');
+  const setFavorites = useSetRecoilState(favoritesState);
 
   useEffect(() => {
     const query = new URLSearchParams(location.search);

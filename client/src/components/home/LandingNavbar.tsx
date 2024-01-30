@@ -3,7 +3,6 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { useNavigate } from 'react-router-dom';
 import CloudLogo from '@/assets/images/logo.png';
 import LoginSvg from './assets/login.svg';
-import './Navigation.css';
 import { useResetAppState } from '@/hooks/useResetAppState';
 import { authState, userState } from '@/appState';
 import { Avatar, Button, Dropdown } from 'antd';
