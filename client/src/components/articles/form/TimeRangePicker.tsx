@@ -1,16 +1,21 @@
 import { ClockCircleOutlined } from '@ant-design/icons';
-import { Button, Modal, Typography, message } from 'antd';
-import dayjs from 'dayjs';
+import { Modal, Typography, message } from 'antd';
+import dayjs, { Dayjs } from 'dayjs';
 import { useEffect, useState } from 'react';
-import './TimeRangePicker.css';
 
 const { Text } = Typography;
 
-const TimeRangePicker = ({ value, onChange, isNewArticleModalOpen }) => {
+interface TimeRangePickerProps {
+  value: [Dayjs | null, Dayjs | null];
+  onChange: (value: [Dayjs | null, Dayjs | null]) => void;
+  isNewArticle: boolean;
+}
+
+const TimeRangePicker = ({ value, onChange, isNewArticle }: TimeRangePickerProps) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectionType, setSelectionType] = useState('Start');
-  const [selectedStartTime, setSelectedStartTime] = useState(null);
-  const [selectedEndTime, setSelectedEndTime] = useState(null);
+  const [selectionType, setSelectionType] = useState<'Start' | 'End'>('Start');
+  const [selectedStartTime, setSelectedStartTime] = useState<Dayjs | null>(null);
+  const [selectedEndTime, setSelectedEndTime] = useState<Dayjs | null>(null);
 
   useEffect(() => {
     return () => {
@@ -18,7 +23,7 @@ const TimeRangePicker = ({ value, onChange, isNewArticleModalOpen }) => {
       setSelectedEndTime(null);
       setSelectionType('Start');
     };
-  }, [onChange, isNewArticleModalOpen]);
+  }, [onChange, isNewArticle]);
 
   const showModal = () => {
     if (selectedEndTime) {
@@ -42,21 +47,21 @@ const TimeRangePicker = ({ value, onChange, isNewArticleModalOpen }) => {
     setIsModalVisible(false);
   };
 
-  const isStartSelected = time => {
+  const isStartSelected = (time: Dayjs) => {
     if (selectedStartTime) {
       const isSameStart = selectedStartTime.format('h:mm A') === time.format('h:mm A');
       if (isSameStart) return true;
     }
   };
 
-  const isEndSelected = time => {
+  const isEndSelected = (time: Dayjs) => {
     if (selectedEndTime) {
       const isSameEnd = selectedEndTime.format('h:mm A') === time.format('h:mm A');
       if (isSameEnd) return true;
     }
   };
 
-  const handleStartTimeClick = time => {
+  const handleStartTimeClick = (time: Dayjs) => {
     if (isStartSelected(time)) {
       setSelectedStartTime(null);
       setSelectionType('Start');
@@ -78,7 +83,7 @@ const TimeRangePicker = ({ value, onChange, isNewArticleModalOpen }) => {
     }
   };
 
-  const handleEndTimeClick = time => {
+  const handleEndTimeClick = (time: Dayjs) => {
     if (isStartSelected(time)) {
       setSelectedStartTime(null);
       setSelectionType('Start');
@@ -100,7 +105,7 @@ const TimeRangePicker = ({ value, onChange, isNewArticleModalOpen }) => {
     }
   };
 
-  const handleTimeSlotClick = time => {
+  const handleTimeSlotClick = (time: Dayjs) => {
     if (selectionType === 'Start') {
       handleStartTimeClick(time);
     } else {

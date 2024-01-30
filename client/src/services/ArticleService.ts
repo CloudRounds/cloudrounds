@@ -1,4 +1,4 @@
-import { Article, CreateArticleInput } from '@/types';
+import { Article } from '@/types';
 import apiClient from '@/utils/apiClient';
 import { compareDates } from '@/utils/dates';
 
@@ -20,7 +20,7 @@ export const updateArticle = async (editedArticle: Article) => {
   }
 };
 
-export const createArticle = async (article: CreateArticleInput) => {
+export const createArticle = async (article: Partial<Article>) => {
   try {
     const response = await apiClient.post('/articles/new', article);
     console.log('Article created:', response.data);
@@ -40,11 +40,11 @@ export const deleteArticle = async (articleId: string) => {
 
 
 export const sortArticles = (articles: Article[]) => {
-  return articles.sort(compareDates);
+  return [...articles].sort(compareDates);
 };
 
 export const sortArticlesDescending = (articles: Article[]) => {
-  return articles.sort((a, b) => {
+  return [...articles].sort((a, b) => {
     return compareDates(b, a);
   });
 };

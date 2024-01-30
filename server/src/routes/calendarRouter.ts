@@ -2,7 +2,12 @@ import express, { Request, Response } from 'express';
 import { db } from '../lib/db';
 import { jwtMiddleware } from '../middleware/permissions';
 
-const router = express();
+import jwt from 'jsonwebtoken';
+const router = express.Router();
+
+interface JwtPayload {
+  userId: string;
+}
 
 // Fetch all calendars
 router.get('/', async (req: Request, res: Response) => {
@@ -61,17 +66,36 @@ router.get('/:calendarId', async (req: Request, res: Response) => {
   }
 });
 
-
 router.post('/new', jwtMiddleware, async (req: Request, res: Response) => {
-  try {
-    const calendarData = req.body;
+  const calendarData = req.body;
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-    if (!calendarData) {
-      return res.status(400).send('Calendar data is missing');
-    }
+  if (!token) {
+    return res.status(401).send('No token provided');
+  }
+
+  if (!calendarData) {
+    return res.status(400).send('Calendar data is missing');
+  }
+
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+    const creatorId = decoded.userId;
+
 
     const newCalendar = await db.calendar.create({
-      data: calendarData,
+      data: {
+        ...calendarData,
+        creatorId: creatorId,
+        canReadMembers: {
+          connect: [{ id: creatorId }],
+        },
+        canWriteMembers: {
+          connect: [{ id: creatorId }],
+        },
+      },
       include: {
         creator: true,
         canReadMembers: true,
@@ -87,28 +111,20 @@ router.post('/new', jwtMiddleware, async (req: Request, res: Response) => {
 });
 
 router.put('/remove-user', jwtMiddleware, async (req: Request, res: Response) => {
-  const { calendarName, userId } = req.body;
+  const { calendarId, userId } = req.body;
 
   try {
-    const calendars = await db.calendar.findMany({
-      where: { name: calendarName },
-    });
-
-    const updatePromises = calendars.map(calendar =>
-      db.calendar.update({
-        where: { id: calendar.id },
-        data: {
-          canReadMembers: {
-            disconnect: { id: userId },
-          },
-          canWriteMembers: {
-            disconnect: { id: userId },
-          },
+    db.calendar.update({
+      where: { id: calendarId },
+      data: {
+        canReadMembers: {
+          disconnect: { id: userId },
         },
-      })
-    );
-
-    await Promise.all(updatePromises);
+        canWriteMembers: {
+          disconnect: { id: userId },
+        },
+      },
+    })
 
     res.status(200).json({ message: 'User removed successfully from calendar' });
   } catch (error) {
@@ -118,11 +134,16 @@ router.put('/remove-user', jwtMiddleware, async (req: Request, res: Response) =>
 
 
 router.put('/update/:id', jwtMiddleware, async (req: Request, res: Response) => {
+  const { name, description } = req.body;
+
   try {
     const calendarId = req.params.id;
     const updatedCalendar = await db.calendar.update({
       where: { id: calendarId },
-      data: req.body,
+      data: {
+        name,
+        description,
+      },
       include: {
         creator: true,
         canReadMembers: true,

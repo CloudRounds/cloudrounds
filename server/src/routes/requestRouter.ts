@@ -96,7 +96,7 @@ router.post('/new', async (req: Request, res: Response) => {
 
 router.put('/:id/status', async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { status, message, email } = req.body;
+  const { status, message, email, calendarId } = req.body;
 
   try {
     const request = await db.request.update({
@@ -105,15 +105,19 @@ router.put('/:id/status', async (req: Request, res: Response) => {
       include: { user: true, calendar: true }
     });
 
+    console.log("STATUS: ", status)
+
     if (status === 'Approved') {
-      await db.calendar.update({
-        where: { id: request.calendarId },
+      const updatedCalendar = await db.calendar.update({
+        where: { id: calendarId },
         data: {
           canReadMembers: {
             connect: { id: request.userId }
           },
         }
       });
+
+      console.log(updatedCalendar);
     }
 
     await sendEmail('Request Status Updated', `The status of your request has been updated to ${status}.`, email);

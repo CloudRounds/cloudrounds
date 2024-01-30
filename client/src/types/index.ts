@@ -1,3 +1,5 @@
+import { Dayjs } from 'dayjs';
+
 export interface User {
   id: string;
   username: string;
@@ -138,12 +140,17 @@ export type CreateUserInput = Omit<User, 'id' | 'createdAt' | 'isAdmin'> & {
 };
 export type InitialUserData = Omit<User, 'id' | 'createdAt' | 'isAdmin' | 'password' | 'attended' | 'favorites' | 'feedbacks' | 'calendars' | 'emailValidated' | 'requests' | 'organizedArticles'>;
 
-export type CreateCalendarInput = Omit<Calendar, 'id' | 'createdAt' | 'creator'> & {
-  creatorId: string;
+export type CreateCalendarInput = {
+  name: string;
+  description?: string;
+  creatorId?: string;
+  createdAt?: Date;
 };
 
 export type CreateEmailMember = Omit<EmailMember, 'id'>;
 
+
+export type TimeRange = [Dayjs | null, Dayjs | null];
 
 export interface TempUserValues {
   username: string;

@@ -55,7 +55,7 @@ router.get('/me', jwtMiddleware, async (req: Request, res: Response) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JwtPayload;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
     const username = decoded.username;
 
     const user = await db.user.findFirst({
@@ -174,9 +174,17 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(401).send('Invalid password');
     }
 
-    const token = jwt.sign({ username: user.username, isAdmin: user.isAdmin }, process.env.JWT_SECRET as string, {
-      expiresIn: '72h'
-    });
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        username: user.username,
+        isAdmin: user.isAdmin
+      },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: '72h'
+      }
+    );
 
     res.cookie('CloudRoundsToken', token, {
       httpOnly: true,
@@ -194,7 +202,6 @@ router.post('/login', async (req: Request, res: Response) => {
 
 // sign up - create a new user
 router.post('/register', async (req: Request, res: Response) => {
-  console.log("EMAIL CREDENTIALS", process.env.EMAIL_HOST_USER, process.env.EMAIL_HOST_PASSWORD)
 
   const { username, email, password, university, firstName, lastName } = req.body;
 

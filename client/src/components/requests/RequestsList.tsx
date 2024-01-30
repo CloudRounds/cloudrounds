@@ -10,9 +10,10 @@ import {
   MoreOutlined
 } from '@ant-design/icons';
 import { Button, Dropdown, Layout, Modal, Pagination, Spin, Table, Typography } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { useRecoilValue } from 'recoil';
+const ButtonGroup = Button.Group;
 
 const RequestsList = () => {
   const user = useRecoilValue(userState);
@@ -23,10 +24,17 @@ const RequestsList = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const { requests, setRequests, userRequests, setUserRequests, isLoading: isQueryLoading, refetch } = useRequestData();
+  const [userRequests, setUserRequests] = useState<Request[]>([]);
+  const { requests, setRequests, isLoading: isQueryLoading, refetch } = useRequestData();
   const [showUserRequests, setShowUserRequests] = useState(true);
   const [isStatusUpdating, setIsStatusUpdating] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isQueryLoading && user) {
+      const requestsForUser = requests.filter(r => r.userId === user.id);
+      setUserRequests(requestsForUser);
+    }
+  }, [isQueryLoading]);
 
   const deleteMutation = useMutation(deleteRequest, {
     onSuccess: () => {
@@ -65,8 +73,13 @@ const RequestsList = () => {
       status: string;
       message: string;
     }) => {
-      const email = user?.email;
-      return updateRequestStatus(requestId, calendarId, status, message, email || '');
+      const requestToUpdate = {
+        status,
+        message,
+        calendarId,
+        email: user?.email || ''
+      };
+      return updateRequestStatus(requestId, requestToUpdate);
     },
     {
       onSuccess: (data, variables) => {
@@ -253,12 +266,17 @@ const RequestsList = () => {
   return (
     <Layout className='w-full mx-auto h-screen'>
       <div className='w-full bg-white p-6 min-h-[280px] text-center full-width-mobile'>
-        <Button onClick={toggleView} className='mb-5'>
-          {!showUserRequests ? 'Incoming Requests' : 'Outgoing Requests'}
-        </Button>
+        <ButtonGroup>
+          <Button onClick={toggleView} className='mb-5' disabled={showUserRequests}>
+            Invitations Sent
+          </Button>
+          <Button onClick={toggleView} className='mb-5' disabled={!showUserRequests}>
+            Invitations Received
+          </Button>
+        </ButtonGroup>
         <hr className='my-5' />
         <Typography.Title level={2} className='mb-5'>
-          {!showUserRequests ? 'Outgoing Requests' : 'Incoming Requests'}
+          {!showUserRequests ? 'Invitations Received' : 'Invitations Sent'}
         </Typography.Title>
         <Table
           dataSource={

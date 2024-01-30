@@ -1,3 +1,4 @@
+import { Request } from '@/types';
 import apiClient from '@/utils/apiClient';
 import { compareDates } from '@/utils/dates';
 
@@ -20,9 +21,9 @@ export const createBulkRequests = async (userIds: string[], calendarId: string) 
   }
 };
 
-export const updateRequestStatus = async (requestId: string, status: string, message: string, calendarId: string, email: string) => {
+export const updateRequestStatus = async (requestId: string, request: Partial<Request>) => {
   try {
-    const response = await apiClient.put(`/requests/${requestId}/status`, { status, message, calendarId, email });
+    const response = await apiClient.put(`/requests/${requestId}/status`, request);
     return response.data;
   } catch (error) {
     console.error('Error updating request status:', error);

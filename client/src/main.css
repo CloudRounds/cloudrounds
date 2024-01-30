@@ -4,6 +4,8 @@
 @import url('./assets/css/ArticleList.css');
 @import url('./assets/css/Calendar.css');
 @import url('./assets/css/LoadingSpinner.css');
+@import url('./assets/css/TimeRangePicker.css');
+@import url('./assets/css/NewArticleForm.css');
 
 @tailwind base;
 @tailwind components;

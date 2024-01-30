@@ -1,4 +1,4 @@
-import { Calendar, CreateCalendarInput } from '@/types';
+import { Calendar } from '@/types';
 import apiClient from '@/utils/apiClient';
 
 
@@ -21,7 +21,7 @@ export const fetchAllCalendars = async () => {
   }
 };
 
-export const updateCalendar = async (calendarId: string, editedCalendar: CreateCalendarInput) => {
+export const updateCalendar = async (calendarId: string, editedCalendar: Partial<Calendar>) => {
   try {
     const response = await apiClient.put(`/calendars/update/${calendarId}`, editedCalendar);
     return response.data;
@@ -30,7 +30,7 @@ export const updateCalendar = async (calendarId: string, editedCalendar: CreateC
   }
 };
 
-export const createCalendar = async (calendar: CreateCalendarInput) => {
+export const createCalendar = async (calendar: Partial<Calendar>) => {
   try {
     const response = await apiClient.post('/calendars/new', calendar);
     return response.data;
@@ -60,7 +60,7 @@ export const addEmailMemberToCalendar = async (calendarId: string, email: string
 
 export const removeUserFromCalendar = async (userId: string, calendarId: string) => {
   try {
-    const response = await apiClient.post('/calendars/remove-user', { userId, calendarId });
+    const response = await apiClient.put('/calendars/remove-user', { userId, calendarId });
     return response.data;
   } catch (error) {
     console.error('Error removing user from calendar:', error);

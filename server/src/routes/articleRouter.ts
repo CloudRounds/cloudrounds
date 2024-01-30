@@ -38,10 +38,25 @@ router.post('/new', jwtMiddleware, async (req: Request, res: Response) => {
 });
 
 router.put('/:id', jwtMiddleware, async (req: Request, res: Response) => {
+  const { title, calendarId, speaker, date, duration, meetingType, meetingId, passcode, eventLink, additionalDetails } = req.body;
+
+  const updatedArticleData = {
+    title,
+    speaker,
+    calendarId,
+    date,
+    duration,
+    meetingType,
+    meetingId,
+    passcode,
+    eventLink,
+    additionalDetails
+  };
+
   try {
     const updatedArticle = await db.article.update({
       where: { id: req.params.id },
-      data: req.body,
+      data: updatedArticleData,
       include: {
         organizer: true,
         calendar: true,

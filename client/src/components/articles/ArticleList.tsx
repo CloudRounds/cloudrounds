@@ -20,7 +20,8 @@ import { useRecoilState } from 'recoil';
 import ArticleCard from './ArticleCard';
 import ActionBar from './actions/ActionBar';
 import ArticleCalendar from './calendar/ArticleCalendar';
-import NewArticleForm from './form/NewArticleForm';
+import NewArticleForm from './NewArticleForm';
+import EditArticleForm from './EditArticleForm';
 
 const ArticleList = () => {
   const user = useUser();
@@ -33,6 +34,7 @@ const ArticleList = () => {
   const [organizerFilter, setOrganizerFilter] = useState<string[]>([]);
   const [openNewArticleModal, setOpenNewArticleModal] = useState(false);
   const [isUpdateLoading, setIsUpdateLoading] = useState(false);
+  const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
 
   // Recoil for fetching and setting articles
   const [articles, setArticles] = useRecoilState(articlesState);
@@ -48,24 +50,26 @@ const ArticleList = () => {
   };
 
   useEffect(() => {
-    if (isArticlesLoading) return;
-
-    const sortedArticles = sortArticles(allowedArticles);
-    setArticles(sortedArticles);
-
+    if (isArticlesLoading || isCalendarsLoading) return;
     const organizers: string[] = [
-      ...new Set(sortedArticles.map((article: Article) => article.organizer?.username))
+      ...new Set(allowedArticles.map((article: Article) => article.organizer?.username))
     ].filter((organizer): organizer is string => organizer !== null);
 
     setSelectedOrganizers(organizers);
-  }, [isArticlesLoading, allowedArticles]);
 
-  useEffect(() => {
-    if (isCalendarsLoading) return;
     if (canReadCalendars.length > 0 && selectedCalendars.length === 0) {
       setSelectedCalendars(canReadCalendars.map(p => p.name));
     }
-  }, [canReadCalendars]);
+  }, [isArticlesLoading, isCalendarsLoading]);
+
+  useEffect(() => {
+    const filtered = allowedArticles.filter(
+      article =>
+        selectedCalendars.includes(article.calendar ? article.calendar.name : '') &&
+        selectedOrganizers.includes(article.organizer ? article.organizer.username : '')
+    );
+    setFilteredArticles(filtered);
+  }, [selectedCalendars, selectedOrganizers]);
 
   const deleteMutation = useMutation(deleteArticle, {
     onSuccess: (data, variables) => {
@@ -108,7 +112,7 @@ const ArticleList = () => {
     setIsUpdateLoading(true);
 
     const updatedArticles = articles.map(article => (article.id === updatedArticle.id ? updatedArticle : article));
-    setArticles(sortArticles(updatedArticles));
+    setArticles(updatedArticles);
 
     const newSelectedCalendars = getCalendarsAfterUpdate(
       articles,
@@ -157,7 +161,6 @@ const ArticleList = () => {
     );
   }
 
-  const filteredArticles = filterArticlesForList(articles, organizerFilter, selectedCalendars);
   const currentArticles = getArticlesForPage(currentPage, articlesPerPage, filteredArticles);
   const calendarsWithoutArticles = userCalendars ? getEmptyCalendars(articles, userCalendars) : [];
 
@@ -177,10 +180,9 @@ const ArticleList = () => {
         <Row gutter={16} className='custom-flex'>
           <Col xs={24} lg={12} className='calendar-col'>
             <div className='max-w-full overflow-x-auto'>
-              <ArticleCalendar articles={filteredArticles} />
+              <ArticleCalendar articles={articles} />
             </div>
           </Col>
-
           <Col
             xs={24}
             lg={12}
@@ -212,7 +214,7 @@ const ArticleList = () => {
                 isFavorite={favoriteArticles.includes(article.id)}
               />
             ))}
-            {filteredArticles.length > 4 && (
+            {currentArticles.length > 4 && (
               <Pagination
                 current={currentPage}
                 total={filteredArticles.length}
@@ -224,12 +226,15 @@ const ArticleList = () => {
         </Row>
       </div>
       <NewArticleForm
-        open={openNewArticleModal || !!selectedArticle}
+        open={openNewArticleModal}
         onClose={toggleNewArticleModal}
-        selectedArticle={selectedArticle}
-        setSelectedArticle={setSelectedArticle}
-        onDelete={handleDelete}
         onCreateArticle={handleCreateArticle}
+      />
+      <EditArticleForm
+        open={!!selectedArticle}
+        article={selectedArticle || null}
+        setArticle={setSelectedArticle}
+        onDelete={handleDelete}
         onArticleUpdate={handleArticleUpdate}
       />
     </div>

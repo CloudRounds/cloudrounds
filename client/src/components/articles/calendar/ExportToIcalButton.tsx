@@ -1,41 +1,53 @@
-import { AppleOutlined, GoogleOutlined, CalendarOutlined } from '@ant-design/icons';
-import { createEvent } from 'ics';
+import { Article } from '@/types';
 import { extractTimesFromDuration } from '@/utils/dates';
-import dayjs from 'dayjs';
+import { AppleOutlined, CalendarOutlined, GoogleOutlined } from '@ant-design/icons';
 import { Dropdown, Menu } from 'antd';
-import React, { useState } from 'react';
+import dayjs from 'dayjs';
+import { EventAttributes, createEvent } from 'ics';
+import { useState } from 'react';
 
-const ExportButton = ({ article, text, fontSize }) => {
-  const [visible, setVisible] = useState(false);
+interface ExportButtonProps {
+  article: any;
+  text?: string;
+  fontSize?: string;
+}
 
-  const handleMenuClick = ({ key }) => {
-    handleExport(article, key);
+const ExportButton = ({ article, text, fontSize }: ExportButtonProps) => {
+  const [visible, setVisible] = useState<boolean>(false);
+
+  const handleMenuClick = (key: string) => {
+    if (key === 'ical') {
+      createIcsFile(article);
+    } else if (key === 'gmail') {
+      openGmailLink(article);
+    }
     setVisible(false);
   };
 
-  const menu = (
-    <Menu onClick={handleMenuClick}>
-      <Menu.Item key='ical' icon={<AppleOutlined />}>
-        iCal
-      </Menu.Item>
-      <Menu.Item key='gmail' icon={<GoogleOutlined />}>
-        GCal
-      </Menu.Item>
-    </Menu>
-  );
+  const menuItems = [
+    {
+      key: 'ical',
+      label: 'iCal',
+      onClick: () => handleMenuClick('ical')
+    },
+    {
+      key: 'gmail',
+      label: 'GCal',
+      onClick: () => handleMenuClick('gmail')
+    }
+  ];
 
-  const createIcsFile = event => {
-    const { title, date, duration, location, additional_details, speaker, organizer, meetingId, passcode, event_link } =
-      event;
-    const [startTime, endTime] = extractTimesFromDuration(duration);
-
-    const startDate = dayjs(date).hour(startTime.hour()).minute(startTime.minute());
-    const endDate = dayjs(date).hour(endTime.hour()).minute(endTime.minute());
+  const fillDescription = (event: Article) => {
+    const { additionalDetails, speaker, organizer, meetingId, passcode, eventLink } = event;
 
     let description = '';
 
-    if (additional_details) {
-      description += `Details: ${additional_details}\n`;
+    if (eventLink) {
+      description += `${eventLink}\n`;
+    }
+
+    if (additionalDetails) {
+      description += `Details: ${additionalDetails}\n`;
     }
 
     if (speaker) {
@@ -54,17 +66,24 @@ const ExportButton = ({ article, text, fontSize }) => {
       description += `Passcode: ${passcode}\n`;
     }
 
-    const eventObject = {
+    return description;
+  };
+
+  const createIcsFile = (event: Article) => {
+    const { title, date, duration, location, eventLink } = event;
+    const [startTime, endTime] = extractTimesFromDuration(duration);
+    const startDate = dayjs(date).hour(startTime.hour()).minute(startTime.minute());
+    const endDate = dayjs(date).hour(endTime.hour()).minute(endTime.minute());
+    const description = fillDescription(event);
+
+    const eventObject: EventAttributes = {
       title: title || 'Untitled Event',
+      description: description,
       start: [startDate.year(), startDate.month() + 1, startDate.date(), startDate.hour(), startDate.minute()],
       end: [endDate.year(), endDate.month() + 1, endDate.date(), endDate.hour(), endDate.minute()],
-      location
+      location: location || '',
+      url: isValidUrl(eventLink) ? eventLink : ''
     };
-
-    // Include url property only if event_link is not empty
-    if (event_link) {
-      eventObject.url = isValidUrl(event_link) ? event_link : '';
-    }
 
     if (description) {
       eventObject.description = description;
@@ -72,7 +91,8 @@ const ExportButton = ({ article, text, fontSize }) => {
 
     createEvent(eventObject, (error, value) => {
       if (error) {
-        console.log(error);
+        console.error('Error creating ICS file:', error);
+        return;
       } else {
         const blob = new Blob([value], { type: 'text/calendar;charset=utf-8;' });
         const link = document.createElement('a');
@@ -86,7 +106,7 @@ const ExportButton = ({ article, text, fontSize }) => {
   };
 
   // URL validation function
-  const isValidUrl = url => {
+  const isValidUrl = (url: string) => {
     try {
       new URL(url);
       return true;
@@ -95,69 +115,42 @@ const ExportButton = ({ article, text, fontSize }) => {
     }
   };
 
-  const createGmailLink = event => {
-    const { title, date, duration, location, additional_details, speaker, organizer, meetingId, passcode, event_link } =
-      event;
+  const createGmailLink = (event: Article) => {
+    const { title, date, duration, location, eventLink } = event;
     const [startTime, endTime] = extractTimesFromDuration(duration);
 
     const startDate = dayjs(date).hour(startTime.hour()).minute(startTime.minute());
     const endDate = dayjs(date).hour(endTime.hour()).minute(endTime.minute());
 
-    let description = '';
-
-    if (event_link) {
-      description += `${event_link}\n`;
-    }
-
-    if (additional_details) {
-      description += `Details: ${additional_details}\n`;
-    }
-
-    if (speaker) {
-      description += `Speaker: ${speaker}\n`;
-    }
-
-    if (organizer) {
-      description += `Organized by: ${organizer.firstName} ${organizer.lastName}\n`;
-    }
-
-    if (meetingId) {
-      description += `Meeting ID: ${meetingId}\n`;
-    }
-
-    if (passcode) {
-      description += `Passcode: ${passcode}\n`;
-    }
+    const description = fillDescription(event);
 
     let gmailLink = `https://mail.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
       title || 'Untitled Event'
     )}&dates=${startDate.format('YYYYMMDDTHHmmss')}%2F${endDate.format('YYYYMMDDTHHmmss')}&details=${encodeURIComponent(
       description
-    )}&location=${encodeURIComponent(location)}`;
+    )}&location=${encodeURIComponent(location || '')}`;
 
     // Include url property only if event_link is not empty and is a valid URL
-    if (event_link && isValidUrl(event_link)) {
-      gmailLink += `&url=${encodeURIComponent(event_link)}`;
+    if (eventLink && isValidUrl(eventLink)) {
+      gmailLink += `&url=${encodeURIComponent(eventLink)}`;
     }
 
     return gmailLink;
   };
 
-  const openGmailLink = event => {
+  const openGmailLink = (event: Article) => {
     const gmailLink = createGmailLink(event);
     window.open(gmailLink, '_blank');
   };
 
-  const handleExport = (event, type) => {
-    if (type === 'ical') {
-      createIcsFile(event);
-    } else if (type === 'gmail') {
-      openGmailLink(event);
-    }
-  };
-
   return (
-    <Dropdown overlay={menu} placement='bottomRight' arrow>
+    <Dropdown
+      menu={{
+        items: menuItems,
+        triggerSubMenuAction: 'click'
+      }}
+      placement='bottomRight'
+      arrow>
       <div className='flex items-center basic-btn red-full px-2 py-[3px] hover:bg-purple-100 rounded-md'>
         <CalendarOutlined className='text-md text-[#f47d7f]' />
         <p className='ml-1 text-[#f47d7f]' style={{ fontWeight: 700, fontFamily: 'sans-serif', fontSize: '12px' }}>

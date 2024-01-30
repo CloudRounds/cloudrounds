@@ -77,11 +77,11 @@ const EditMemberList = ({ open, handleClose, selectedCalendar }: EditMemberListP
   );
 
   useEffect(() => {
-    if (selectedCalendar) {
-      const members = selectedCalendar.canReadMembers.map(u => u.id);
-      setTargetKeys(members);
+    if (selectedCalendar && users) {
+      const memberIds = selectedCalendar.canReadMembers.map(u => u.id);
+      setTargetKeys(memberIds);
     }
-  }, [selectedCalendar]);
+  }, [selectedCalendar, users]);
 
   const onSelect = (userId: string) => {
     setTargetKeys(prevKeys => [...prevKeys, userId]);
@@ -97,14 +97,12 @@ const EditMemberList = ({ open, handleClose, selectedCalendar }: EditMemberListP
       .filter((u: User) => !targetKeys.includes(u.id))
       .filter((u: User) => !hasPendingRequest(u.id, selectedCalendar));
     const value = search.toLowerCase();
-
-    if (availableMembers && availableMembers.length === 0) {
+    if (availableMembers && availableMembers.length > 0) {
       const filteredUsers = availableMembers
         .filter((user: User) => {
-          return (
-            (user.username.substring(0, user.email.indexOf('@')).toLowerCase().includes(value) && value.length >= 3) ||
-            (user.email.substring(0, user.email.indexOf('@')).includes(value) && value.length >= 5)
-          );
+          const matchesUsername = user.username.toLowerCase().includes(value) && value.length >= 3;
+          const matchesEmail = user.email.substring(0, user.email.indexOf('@')).includes(value) && value.length >= 5;
+          return matchesUsername || matchesEmail;
         })
         .slice(0, 5)
         .map((user: User) => ({
@@ -119,9 +117,9 @@ const EditMemberList = ({ open, handleClose, selectedCalendar }: EditMemberListP
   const createBulkRequestMutation = useMutation(
     (args: { userIds: string[]; calendarId: string }) => createBulkRequests(args.userIds, args.calendarId),
     {
-      onSuccess: data => {
-        setRequests(prevRequests => [...prevRequests, ...data.requests]);
-        toast.success(`Requests for ${data.requests.length} users have been created.`, {
+      onSuccess: requests => {
+        setRequests(prevRequests => [...prevRequests, ...requests]);
+        toast.success(`Calendar invite requests successfully created.`, {
           autoClose: 1500,
           pauseOnFocusLoss: false
         });
@@ -189,7 +187,7 @@ const EditMemberList = ({ open, handleClose, selectedCalendar }: EditMemberListP
     setCurrentPage(1);
   };
 
-  if (isLoading) {
+  if (!users || isLoading) {
     return <Spin />;
   }
 
@@ -208,13 +206,17 @@ const EditMemberList = ({ open, handleClose, selectedCalendar }: EditMemberListP
   };
 
   if (!selectedCalendar) return;
+
   const currentMembers: CalendarMember[] = users.filter(
     (user: User) => targetKeys.includes(user.id) || hasPendingRequest(user.id, selectedCalendar)
   );
 
-  const unregisteredEmails = selectedCalendar
-    ? selectedCalendar.emailMembers.filter(emailMember => !users.some((user: User) => user.email === emailMember.email))
-    : [];
+  const unregisteredEmails =
+    selectedCalendar && Array.isArray(selectedCalendar.emailMembers)
+      ? selectedCalendar.emailMembers.filter(
+          emailMember => !users.some((user: User) => user.email === emailMember.email)
+        )
+      : [];
 
   const startIndex = (currentPage - 1) * itemsPerPage;
 

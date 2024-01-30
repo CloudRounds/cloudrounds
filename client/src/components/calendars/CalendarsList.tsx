@@ -1,7 +1,7 @@
 import { calendarsState, canReadCalendarsState, userState } from '@/appState';
 import { INITIAL_CALENDAR_DATA } from '@/appState/initialStates';
 import { deleteCalendar, updateCalendar } from '@/services/CalendarService';
-import { Calendar, CreateCalendarInput } from '@/types';
+import { Calendar } from '@/types';
 import { Button, Input, Modal, Table } from 'antd';
 import { useEffect, useState } from 'react';
 import { FcCalendar } from 'react-icons/fc';
@@ -24,7 +24,7 @@ const CalendarsList = () => {
 
   const [openNewCalendar, setOpenNewCalendar] = useState<boolean>(false);
 
-  const [newCalendar, setNewCalendar] = useState<CreateCalendarInput>(INITIAL_CALENDAR_DATA);
+  const [newCalendar, setNewCalendar] = useState<Partial<Calendar>>(INITIAL_CALENDAR_DATA);
   const [selectedCalendar, setSelectedCalendar] = useState<Calendar | null>(null);
 
   const [memberCalendars, setMemberCalendars] = useState<Calendar[]>([]);
@@ -91,6 +91,7 @@ const CalendarsList = () => {
     if (!passedCalendar) return;
     const calendar = passedCalendar as Calendar;
     setSelectedCalendar(calendar);
+    console.log(calendar);
     setNewCalendar({ ...calendar, name: calendar.name, description: calendar.description, creatorId: user?.id || '' });
     setEditField(field);
     setOpen(true);
@@ -148,7 +149,7 @@ const CalendarsList = () => {
       <Table
         dataSource={createdCalendars}
         columns={columns}
-        rowKey='_id'
+        rowKey='id'
         scroll={{ x: true }}
         className='full-width-mobile overflow-x-auto'
       />
@@ -157,7 +158,7 @@ const CalendarsList = () => {
       <Table
         dataSource={memberCalendars}
         columns={memberColumns}
-        rowKey='_id'
+        rowKey='id'
         scroll={{ x: 'max-content' }}
         className='full-width-mobile overflow-x-auto'
       />

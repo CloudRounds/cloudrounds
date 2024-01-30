@@ -1,9 +1,8 @@
-import purposeIcons from '@/components/ui/CalendarIcons';
+import calendarIcons from '@/components/ui/CalendarIcons';
 import { formatDate } from '@/utils/dates';
 import {
   ClockCircleOutlined,
   CopyOutlined,
-  DownloadOutlined,
   EnvironmentOutlined,
   LeftOutlined,
   LinkOutlined,
@@ -15,7 +14,15 @@ import { Badge, Button, Modal, Typography } from 'antd';
 import React, { useState } from 'react';
 import ExportToIcalButton from './ExportToIcalButton';
 
-const CalendarCell = ({ day, month, year, events, setSelected }) => {
+interface CalendarCellProps {
+  day: number;
+  month: number;
+  year: number;
+  events: any[];
+  setSelected: React.Dispatch<React.SetStateAction<number | null>>;
+}
+
+const CalendarCell = ({ day, month, year, events, setSelected }: CalendarCellProps) => {
   const [open, setOpen] = useState(false);
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
 
@@ -26,7 +33,7 @@ const CalendarCell = ({ day, month, year, events, setSelected }) => {
 
   const isToday = day === currentDay && month === currentMonth && year === currentYear;
 
-  const stopPropagation = e => {
+  const stopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
 
@@ -55,7 +62,7 @@ const CalendarCell = ({ day, month, year, events, setSelected }) => {
 
   const [isCopied, setIsCopied] = useState(false);
 
-  const handleCopyToClipboard = text => {
+  const handleCopyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(
       function () {
         setIsCopied(true);
@@ -93,10 +100,10 @@ const CalendarCell = ({ day, month, year, events, setSelected }) => {
             {article.title}
           </Typography.Title>
 
-          <div className='flex justify-start items-center mb-5 purpose-badge ml-0 mr-auto'>
-            {purposeIcons[article.purpose && article.purpose.name] || purposeIcons.DEFAULT}
+          <div className='flex justify-start items-center mb-5 calendar-badge ml-0 mr-auto'>
+            {calendarIcons[article.calendar && article.calendar.name] || calendarIcons.DEFAULT}
             <p className='ml-2' style={{ fontSize: '13px' }}>
-              {article.purpose && article.purpose.name}
+              {article.calendar && article.calendar.name}
             </p>
           </div>
 

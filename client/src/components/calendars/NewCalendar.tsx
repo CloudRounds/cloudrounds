@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { Modal, Input, Button, Spin } from 'antd';
-import { createCalendar } from '@/services/CalendarService';
-import { useMutation } from 'react-query';
-import { Calendar, CreateCalendarInput } from '@/types';
-import { calendarsState } from '@/appState';
-import { useSetRecoilState } from 'recoil';
+import { calendarsState, userState } from '@/appState';
 import { INITIAL_CALENDAR_DATA } from '@/appState/initialStates';
+import { createCalendar } from '@/services/CalendarService';
+import { Calendar } from '@/types';
+import { Button, Input, Modal, Spin } from 'antd';
+import { useState } from 'react';
+import { useMutation } from 'react-query';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 interface NewCalendarProps {
   open: boolean;
@@ -13,8 +13,12 @@ interface NewCalendarProps {
 }
 
 const NewCalendar = ({ open, handleClose }: NewCalendarProps) => {
+  const user = useRecoilValue(userState);
   const [loading, setLoading] = useState(false);
-  const [newCalendar, setNewCalendar] = useState<CreateCalendarInput>(INITIAL_CALENDAR_DATA);
+  const [newCalendar, setNewCalendar] = useState<Partial<Calendar>>({
+    ...INITIAL_CALENDAR_DATA,
+    creatorId: user?.id || ''
+  });
   const setCalendars = useSetRecoilState(calendarsState);
 
   const createCalendarMutation = useMutation(createCalendar, {
@@ -32,7 +36,7 @@ const NewCalendar = ({ open, handleClose }: NewCalendarProps) => {
   });
 
   const handleSave = async () => {
-    if (!loading) {
+    if (!loading && user) {
       setLoading(true);
       try {
         await createCalendarMutation.mutateAsync(newCalendar);

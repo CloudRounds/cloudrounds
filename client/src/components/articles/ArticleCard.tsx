@@ -5,7 +5,7 @@ import { FaRegEdit } from 'react-icons/fa';
 import ExportToIcalButton from './calendar/ExportToIcalButton';
 
 import { EnvironmentOutlined, LinkOutlined } from '@ant-design/icons';
-import purposeIcons from '../ui/CalendarIcons';
+import calendarIcons from '../ui/CalendarIcons';
 
 const { Text, Title } = Typography;
 
@@ -75,7 +75,7 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }: A
                 justifyContent: 'center',
                 border: '0px solid #5161ce'
               }}>
-              {purposeIcons[article.purpose.name] || purposeIcons.DEFAULT}
+              {calendarIcons[article.calendar.name] || calendarIcons.DEFAULT}
             </Avatar>
 
             <div style={{ flex: 1, marginLeft: '10px' }}>
@@ -185,7 +185,7 @@ const ArticleCard = ({ article, isOrganizer, onFavorite, onEdit, isFavorite }: A
 
           <Col span={24}>
             <p style={{ fontFamily: 'sans-serif', fontWeight: '700' }}>
-              Calendar: <span>{article.purpose.name}</span>
+              Calendar: <span>{article.calendar.name}</span>
             </p>
           </Col>
 

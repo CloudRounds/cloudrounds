@@ -12,7 +12,7 @@ export const ArticleFilters = ({ canReadCalendars, selectedCalendars, setSelecte
   const [searchTerm, setSearchTerm] = useState('');
 
   const allowedCalendars = canReadCalendars.map(calendar => calendar.name);
-  const filteredCalendars = allowedCalendars.filter(p => p.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredCalendars = allowedCalendars.filter(name => name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const handleToggle = (calendar: string) => {
     let newCalendars = [...selectedCalendars];

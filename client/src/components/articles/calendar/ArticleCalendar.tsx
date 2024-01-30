@@ -12,7 +12,7 @@ type Week = {
 
 const ArticleCalendar = ({ articles }: { articles: Article[] }) => {
   const [date, setDate] = useState<Date>(new Date());
-  const [selected, setSelected] = useState<boolean>(false);
+  const [selected, setSelected] = useState<number | null>(null);
   const [scrolling, setScrolling] = useState<boolean>(false);
 
   const changeMonth = (offset: number) => {
@@ -27,7 +27,7 @@ const ArticleCalendar = ({ articles }: { articles: Article[] }) => {
     const newDate = new Date();
     newDate.setHours(0, 0, 0, 0);
     setDate(newDate);
-    setSelected(false);
+    setSelected(null);
   };
 
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
@@ -50,7 +50,7 @@ const ArticleCalendar = ({ articles }: { articles: Article[] }) => {
     // Set a timeout for 0.5 seconds
     setTimeout(() => {
       // Update the selected state after the delay
-      setSelected(false);
+      setSelected(null);
       setScrolling(false); // Set scrolling back to false after the delay
     }, 1500);
   };

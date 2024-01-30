@@ -99,13 +99,13 @@ export const isArticleAfterCurrentDate = (article: Article) => {
 };
 
 export const filterArticlesForList = (
-  localArticles: Article[],
+  articles: Article[],
   organizerFilter: string[],
   selectedCalendars: string[]
 ): Article[] => {
-  return localArticles
+  return articles
     .filter(article => {
-      const organizerUsername = typeof article.organizer === 'string' ? article.organizer : article.organizer?.username;
+      const organizerUsername = article.organizer?.username;
       if (organizerUsername) {
         return organizerFilter.includes(organizerUsername)
       } else {
@@ -113,7 +113,7 @@ export const filterArticlesForList = (
       }
     })
     .filter(article => {
-      const calendarName = typeof article.calendar === 'string' ? article.calendar : article.calendar?.name;
+      const calendarName = article.calendar?.name;
       if (calendarName) {
         return selectedCalendars.includes('Show All') || selectedCalendars.includes(calendarName);
       }

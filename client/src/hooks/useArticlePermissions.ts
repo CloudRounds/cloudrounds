@@ -1,5 +1,5 @@
 import { useQuery } from 'react-query';
-import { fetchArticles } from '@/services/ArticleService';
+import { fetchArticles, sortArticles } from '@/services/ArticleService';
 import { fetchCalendars } from '@/services/CalendarService';
 import { User, Article } from '@/types';
 import { useRecoilState, useRecoilValue } from 'recoil';
@@ -36,8 +36,9 @@ const useArticlePermissions = () => {
   });
 
   const allowedCalendars = calendars.map(c => c.name);
-  const allowedArticles = articles;
-
+  const canReadCalendarIds = canReadCalendars.map(c => c.id)
+  const canReadArticles = articles.filter(a => canReadCalendarIds.includes(a.calendarId));
+  const allowedArticles = sortArticles(canReadArticles)
 
   return {
     allowedArticles,
