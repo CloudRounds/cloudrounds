@@ -76,7 +76,7 @@ const LandingNavbar = () => {
       <div className='authButtons'>
         {auth.isLoggedIn ? (
           <div className='avatarDropdown'>
-            <Dropdown menu={{ items }} overlayStyle={{ top: '52px' }}>
+            <Dropdown menu={{ items }}>
               <Avatar className='cursor-pointer shadow-lg border border-gray-200 bg-white text-gray-800' size='large'>
                 {getInitials(user)}
               </Avatar>
