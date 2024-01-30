@@ -29,8 +29,8 @@ model Article {
   feedbacks         Feedback[]
   calendarId        String
   calendar          Calendar   @relation(name: "CalendarArticles", fields: [calendarId], references: [id])
-  favorites         Favorite[]
   attendees         User[]     @relation("ArticleAttendees")
+  favoritedBy       User[]     @relation("UserFavorites")
 
   @@index([calendarId])
   @@index([organizerId])
@@ -66,7 +66,7 @@ model User {
   canReadCalendars    Calendar[] @relation("CanReadCalendar")
   canWriteCalendars   Calendar[] @relation("CanWriteCalendar")
   organizedArticles   Article[]  @relation("OrganizedArticles")
-  favorites           Favorite[]
+  favorites           Article[]  @relation("UserFavorites")
   resetToken          String?
   resetTokenExpiry    DateTime?
   registerToken       String?
@@ -85,18 +85,6 @@ model Feedback {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   feedback  String
-  createdAt DateTime @default(now())
-
-  @@index([articleId])
-  @@index([userId])
-}
-
-model Favorite {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  articleId String
-  article   Article  @relation(fields: [articleId], references: [id])
   createdAt DateTime @default(now())
 
   @@index([articleId])

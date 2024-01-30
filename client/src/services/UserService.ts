@@ -44,7 +44,7 @@ export const fetchUserByUsername = async (username: string) => {
 
 export const updateUser = async (editedUser: User) => {
   try {
-    const response = await apiClient.put(`/users/${editedUser.id}`, editedUser);
+    const response = await apiClient.put(`/users/user/${editedUser.id}`, editedUser);
     return response.data;
   } catch (error) {
     console.error('Error updating user:', error);
@@ -91,7 +91,7 @@ export const deleteUser = async (userId: string) => {
 
 export const toggleAttending = async (userId: string, articleId: string, isAttending: boolean) => {
   try {
-    const response = await apiClient.post('/users/toggle-attendance', { userId, articleId, isAttending });
+    const response = await apiClient.put('/users/toggle-attendance', { userId, articleId, isAttending });
     return response.data;
   } catch (error) {
     console.error('Error updating attending for user:', error);
@@ -100,7 +100,8 @@ export const toggleAttending = async (userId: string, articleId: string, isAtten
 
 export const toggleFavorite = async (userId: string, articleId: string, isFavorite: boolean) => {
   try {
-    const response = await apiClient.post('/users/toggle-favorite', { userId, articleId, isFavorite });
+    console.log('Toggling favorite for user:', userId)
+    const response = await apiClient.put('/users/toggle-favorite', { userId, articleId, isFavorite });
     return response.data;
   } catch (error) {
     console.error('Error updating favorite for user:', error);

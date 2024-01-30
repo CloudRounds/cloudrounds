@@ -350,8 +350,12 @@ router.get('/favorites/:userId', jwtMiddleware, async (req: Request, res: Respon
 router.put('/toggle-favorite', jwtMiddleware, async (req: Request, res: Response) => {
   const { userId, articleId, isFavorite } = req.body;
 
+  console.log(userId, articleId, isFavorite);
   try {
-    const user = await db.user.findUnique({ where: { id: userId } });
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      include: { favorites: true }
+    });
     if (!user) {
       return res.status(404).send('User not found');
     }
@@ -361,7 +365,7 @@ router.put('/toggle-favorite', jwtMiddleware, async (req: Request, res: Response
         where: { id: userId },
         data: {
           favorites: {
-            connect: { id: articleId },
+            connect: [{ id: articleId }],
           },
         },
       });
@@ -376,7 +380,7 @@ router.put('/toggle-favorite', jwtMiddleware, async (req: Request, res: Response
       });
     }
 
-    res.status(200).json({ message: 'Successfully updated favorites' });
+    res.status(200).json({ message: 'Successfully updated favorites', user });
   } catch (err) {
     res.status(500).send(err);
   }
@@ -384,7 +388,7 @@ router.put('/toggle-favorite', jwtMiddleware, async (req: Request, res: Response
 
 
 // Update user details (from user settings)
-router.put('/:id', jwtMiddleware, async (req: Request, res: Response) => {
+router.put('/user/:id', jwtMiddleware, async (req: Request, res: Response) => {
   const { id } = req.params;
   const updates = req.body
 

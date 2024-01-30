@@ -13,7 +13,7 @@ export interface User {
   canReadCalendars: Calendar[];
   canWriteCalendars: Calendar[];
   organizedArticles: Article[];
-  favorites: Favorite[];
+  favorites: Article[];
   resetToken?: string;
   resetTokenExpiry?: Date;
   registerToken?: string;
@@ -36,15 +36,6 @@ export interface Feedback {
   userId: string;
   user: User;
   feedback: string;
-  createdAt: Date;
-}
-
-export interface Favorite {
-  id: string;
-  userId: string;
-  user: User;
-  articleId: string;
-  article: Article;
   createdAt: Date;
 }
 
@@ -125,14 +116,14 @@ export interface Article extends BaseArticle {
   id: string;
   organizer?: User;
   calendar?: Calendar;
-  favorites?: Favorite[];
+  favoritedBy?: User[];
   attendees?: User[];
   createdAt?: Date;
   feedbacks?: Feedback[];
 }
 
 // Omit id types for creating new records
-export type CreateArticleInput = Omit<Article, 'id' | 'organizer' | 'calendar' | 'favorites' | 'attendees' | 'createdAt' | 'feedbacks'>;
+export type CreateArticleInput = Omit<Article, 'id' | 'organizer' | 'calendar' | 'favoritedBy' | 'attendees' | 'createdAt' | 'feedbacks'>;
 export type CreateRequestInput = Omit<Request, 'id' | 'calendar' | 'user' | 'createdAt'>;
 export type CreateInviteInput = Omit<Invite, 'id' | 'token' | 'createdAt' | 'calendar'>;
 export type CreateUserInput = Omit<User, 'id' | 'createdAt' | 'isAdmin'> & {
