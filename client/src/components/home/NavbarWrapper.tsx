@@ -1,5 +1,4 @@
 import { useLocation } from 'react-router-dom';
-import LandingNavbar from './LandingNavbar';
 import Navbar from './Navbar';
 
 const NavbarWrapper = () => {
@@ -8,7 +7,7 @@ const NavbarWrapper = () => {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   if (isAuthPage) return null;
-  return isLandingPage ? <LandingNavbar /> : <Navbar />;
+  return isLandingPage ? null : <Navbar />;
 };
 
 export default NavbarWrapper;

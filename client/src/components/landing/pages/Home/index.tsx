@@ -18,6 +18,7 @@ const Home = () => {
   return (
     <div className='landing-page'>
       <Styles />
+        <Header />
       <Container>
         <ScrollToTop />
         <ContentBlock
