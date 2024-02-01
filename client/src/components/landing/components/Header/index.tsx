@@ -1,77 +1,95 @@
-import { Row } from 'antd';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Button } from '../../common/Button';
-import Container from '../../common/Container';
-import Logo from '../Logo';
-import { CustomNavLinkSmall, HeaderSection, Span } from './styles';
+import { useEffect } from 'react';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { useNavigate } from 'react-router-dom';
+import CloudLogo from '@/assets/images/logo.png';
+import LoginSvg from './assets/login.svg';
+import { useResetAppState } from '@/hooks/useResetAppState';
+import { authState, userState } from '@/appState';
+import { Avatar, Button, Dropdown } from 'antd';
+import { EventAvailable } from '@mui/icons-material';
+import { LogoutOutlined } from '@ant-design/icons';
+import { User } from '@/types';
+
 
 const Header = () => {
+  const user = useRecoilValue(userState);
+  const [auth, setAuth] = useRecoilState(authState);
+  const resetAppState = useResetAppState();
+
   const navigate = useNavigate();
-  const [visible, setVisibility] = useState(false);
-  const [username, setUsername] = useState(null);
-  const token = localStorage.getItem('CloudRoundsToken');
 
   useEffect(() => {
-    const localUser = localStorage.getItem('CloudRoundsUser');
-    if (localUser) {
-      const parsedUsername = JSON.parse(localUser);
-      if (parsedUsername.username) {
-        setUsername(parsedUsername.username);
-      }
-    }
+    const checkLoginStatus = () => {
+      const accessToken = localStorage.getItem('CloudRoundsToken');
+      setAuth({
+        isLoggedIn: !!accessToken,
+        userData: user || null
+      });
+    };
+
+    checkLoginStatus();
+    window.addEventListener('storage', checkLoginStatus);
+
+    return () => {
+      window.removeEventListener('storage', checkLoginStatus);
+    };
   }, []);
 
-  const toggleButton = () => {
-    setVisibility(!visible);
+  const handleSignOut = () => {
+    resetAppState();
+    setAuth({ isLoggedIn: false, userData: null });
+    navigate('/');
   };
 
-  const MenuItem = () => {
-    const scrollTo = (id: string) => {
-      const element = document.getElementById(id);
-      element?.scrollIntoView({
-        behavior: 'smooth'
-      });
-      setVisibility(false);
-    };
-    return (
-      <>
-        {/* <CustomNavLinkSmall onClick={() => scrollTo('about')}>
-          <Span>About</Span>
-        </CustomNavLinkSmall>
-        <CustomNavLinkSmall onClick={() => scrollTo('mission')}> 
-          <Span>Mission</Span> 
-        </CustomNavLinkSmall>  
-        <CustomNavLinkSmall onClick={() => scrollTo('product')}>
-          <Span>Product</Span>
-        </CustomNavLinkSmall> */}
-        <CustomNavLinkSmall
-          style={{ width: '180px' }}
-          onClick={() => navigate(token ? '/calendar' : '/login')}>
-          <Span>
-            <Button
-              color='primary'
-              onClick={() => {}}>
-              {token ? `Dashboard` : 'Sign Up/Log In'}
-            </Button>
-          </Span>
-        </CustomNavLinkSmall>
-      </>
-    );
+  const handleSignIn = () => {
+    navigate('/login');
+    setAuth({ isLoggedIn: true, userData: auth.userData });
   };
+
+  const getInitials = (user: User | null) => {
+    if (!user) return '';
+    return user.firstName[0].toUpperCase() + user.lastName[0].toUpperCase();
+  };
+
+  const items = [
+    {
+      key: '0',
+      label: 'Dashboard',
+      icon: <EventAvailable />,
+      onClick: () => navigate('/calendar')
+    },
+    {
+      key: '1',
+      label: 'Log Out',
+      icon: <LogoutOutlined />,
+      onClick: () => handleSignOut()
+    }
+  ];
 
   return (
-    <HeaderSection>
-      <Container>
-        <Row justify='space-between'>
-          <Logo />
-          {/* <NotHidden>
-            <MenuItem />
-          </NotHidden> */}
-          <MenuItem /> {/* Render the button directly for mobile devices */}
-        </Row>
-      </Container>
-    </HeaderSection>
+      <div className='navContainer'>
+        <div className='logoContainer'>
+          <img src={CloudLogo} alt='Pennant Logo' className='logo' />
+          <h4 className='title'>CloudRounds</h4>
+          <div className='separator'></div>
+        </div>
+        <div className='authButtons'>
+          {auth.isLoggedIn ? (
+              <div className='avatarDropdown'>
+                <Dropdown menu={{ items }}>
+                  <Avatar className='cursor-pointer shadow-lg border border-gray-200 bg-white text-gray-800' size='large'>
+                    {getInitials(user)}
+                  </Avatar>
+                </Dropdown>
+              </div>
+          ) : (
+              <Button className='flex items-center link px-2 py-5' onClick={handleSignIn}>
+                <img src={LoginSvg} width='22' />
+                <span className='authText'>Sign In</span>
+              </Button>
+          )}
+        </div>
+      </div>
   );
 };
 

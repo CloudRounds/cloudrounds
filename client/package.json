@@ -8,7 +8,7 @@
     "dev": "vite --port 3000",
     "build": "tsc && vite build",
     "build:ui": "npm run build && cp -r dist ../server",
-    "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint src --ext **/*.{js,ts,jsx,tsx,html,vue} --report-unused-disable-directives --max-warnings 0",
     "clean:vite": "rm -rf ./.vite && rm -rf node_modules/.vite",
     "preview": "vite preview"
   },
@@ -47,7 +47,7 @@
     "eslint": "^8.38.0",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.3.4",
+    "eslint-plugin-react-refresh": "^0.3.5",
     "postcss": "^8.4.31",
     "sass": "^1.69.5",
     "tailwindcss": "^3.3.5",
