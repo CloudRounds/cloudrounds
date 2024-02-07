@@ -34,7 +34,7 @@ const UserSettings = () => {
     university: user?.university || ''
   });
 
-  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [, setShowPasswordChange] = useState(false);
 
   const mutation = useMutation(updateUser, {
     onSuccess: data => {
@@ -169,7 +169,7 @@ const UserSettings = () => {
             {field === 'password' ? (
               <Typography.Text>••••••••</Typography.Text>
             ) : (
-              <Typography.Text>{user[field].toString()}</Typography.Text>
+              <Typography.Text>{user[field] ? user[field].toString() : "••••••••"}</Typography.Text>
             )}
             <Button
               icon={<EditOutlined />}

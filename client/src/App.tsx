@@ -1,17 +1,15 @@
-import { Suspense, lazy, useEffect } from 'react';
+import { Spin } from 'antd';
+import { Suspense, lazy } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import { Spin } from 'antd';
-import { fetchCurrentUser } from './services/UserService';
-import AuthPage from './components/auth/AuthPage';
-import { useQuery } from 'react-query';
-import Home from './components/landing/pages/Home';
 import 'react-toastify/dist/ReactToastify.css';
-import ResetPassword from './components/auth/form/ResetPassword';
+import AuthPage from './components/auth/AuthPage';
 import EmailVerification from './components/auth/form/EmailVerification';
-import { useSetRecoilState } from 'recoil';
-import { userState } from './appState';
+import ResetPassword from './components/auth/form/ResetPassword';
 import NavbarWrapper from './components/home/NavbarWrapper';
+import Home from './components/landing/pages/Home';
+import ScheduleViewer from './components/schedule/ScheduleViewer';
+import { useUser } from './hooks/useUser';
 
 const CalendarsList = lazy(() => import('./components/calendars/CalendarsList'));
 const RequestsList = lazy(() => import('./components/requests/RequestsList'));
@@ -21,31 +19,11 @@ const UserSettings = lazy(() => import('./components/user/UserSettings'));
 const Admin = lazy(() => import('./components/admin/Admin'));
 
 const App = () => {
-  const token = localStorage.getItem('CloudRoundsToken');
-  const setUser = useSetRecoilState(userState);
-  const { data: fetchedUser, isLoading } = useQuery('userData', fetchCurrentUser, {
-    enabled: !!token
-  });
+  const { isLoading } = useUser();
 
-  useEffect(() => {
-    if (isLoading) {
-      return;
-    }
-
-    if (fetchedUser) {
-      localStorage.setItem('CloudRoundsUser', JSON.stringify(fetchedUser));
-      setUser(fetchedUser);
-    }
-  }, [isLoading, fetchedUser]);
-
-  useEffect(() => {
-    if (!token) {
-      localStorage.removeItem('CloudRoundsUser');
-      localStorage.removeItem('CloudRoundsToken');
-      setUser(null);
-    }
-  }, [token]);
-
+  if (isLoading) {
+    return <Spin />;
+  }
   return (
     <>
       <Router>
@@ -64,6 +42,7 @@ const App = () => {
             <Route path='/forgot-password' element={<AuthPage />} />
             <Route path='/reset-password/:resetToken' element={<ResetPassword />} />
             <Route path='/settings' element={<UserSettings />} />
+            <Route path='/schedules' element={<ScheduleViewer />} />
           </Routes>
         </Suspense>
       </Router>

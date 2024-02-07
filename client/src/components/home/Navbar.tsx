@@ -13,7 +13,7 @@ import { useResetAppState } from '@/hooks/useResetAppState';
 const { Text } = Typography;
 
 const Navbar = () => {
-  const user = useUser();
+  const { user } = useUser();
   const resetAppState = useResetAppState();
 
   const navbarRef = useRef(null);

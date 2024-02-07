@@ -16,7 +16,7 @@ import calendarIcons from '../ui/CalendarIcons';
 const { TextArea } = Input;
 
 const OlderArticles = () => {
-  const user = useUser();
+  const { user } = useUser();
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [open, setOpen] = useState<boolean>(false);

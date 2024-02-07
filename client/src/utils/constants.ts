@@ -1,6 +1,8 @@
-import { EventAvailable, History, Key, PeopleAlt, Settings } from '@mui/icons-material';
+import { AddTask, AirOutlined, CalendarMonth, EventAvailable, History, Key, PeopleAlt, Schedule, ScheduleSend, ScheduleSharp, Settings, Task } from '@mui/icons-material';
 import { SvgIconTypeMap } from '@mui/material';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
+import { FcParallelTasks } from 'react-icons/fc';
+import { RiRobot2Fill } from 'react-icons/ri';
 
 export interface UniversityChoice {
   value: string;
@@ -126,7 +128,6 @@ export const navlinks: NavLink[] = [
     endpoint: '/manage',
     description: 'Create and manage and view calendar permissions.'
   },
-
   {
     label: 'Calendar',
     Icon: EventAvailable,
@@ -144,7 +145,14 @@ export const navlinks: NavLink[] = [
     Icon: History,
     endpoint: '/past-events',
     description: 'Review past articles and provide optional feedback.'
-  }
+  },
+  {
+    label: 'Schedules',
+    Icon: RiRobot2Fill,
+    endpoint: '/schedules',
+    description: 'View personal calendars and create schedules.'
+  },
+
 ];
 
 export const sideMenuLinks: NavLink[] = [

@@ -4,7 +4,7 @@ import { homeLinks } from '@/utils/constants';
 import { useUser } from '@/hooks/useUser';
 
 const Home = () => {
-  const user = useUser();
+  const { user } = useUser();
 
   return (
     <div className='mt-8'>

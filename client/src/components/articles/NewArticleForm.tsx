@@ -18,7 +18,7 @@ interface NewArticleFormProps {
 }
 
 const NewArticleForm = ({ open, onClose, onCreateArticle }: NewArticleFormProps) => {
-  const user = useUser();
+  const { user } = useUser();
   const setArticles = useSetRecoilState(articlesState);
   const setCalendars = useSetRecoilState(calendarsState);
   const allowedCalendars = useRecoilValue(canWriteCalendarsState);

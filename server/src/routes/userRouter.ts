@@ -11,6 +11,25 @@ import { jwtMiddleware } from '../middleware/permissions';
 const URL_HOST = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://cloudrounds.com';
 const router = express.Router();
 
+const relevantUserFields = {
+  password: false,
+  id: true,
+  firstName: true,
+  lastName: true,
+  username: true,
+  email: true,
+  university: true,
+  isAdmin: true,
+  emailValidated: true,
+  calendars: true,
+  canReadCalendars: true,
+  canWriteCalendars: true,
+  organizedArticles: true,
+  attended: true,
+  favorites: true,
+  requests: true,
+  feedbacks: true
+}
 interface JwtPayload {
   username: string;
 }
@@ -19,25 +38,7 @@ interface JwtPayload {
 router.get('/', jwtMiddleware, async (req: Request, res: Response) => {
   try {
     const users = await db.user.findMany({
-      select: {
-        password: false,
-        id: true,
-        firstName: true,
-        lastName: true,
-        username: true,
-        email: true,
-        university: true,
-        isAdmin: true,
-        emailValidated: true,
-        calendars: true,
-        canReadCalendars: true,
-        canWriteCalendars: true,
-        organizedArticles: true,
-        attended: true,
-        favorites: true,
-        requests: true,
-        feedbacks: true
-      },
+      select: relevantUserFields
     });
     res.status(200).json(users);
   } catch (err) {
@@ -60,25 +61,7 @@ router.get('/me', jwtMiddleware, async (req: Request, res: Response) => {
 
     const user = await db.user.findFirst({
       where: { username },
-      select: {
-        password: false,
-        id: true,
-        firstName: true,
-        lastName: true,
-        username: true,
-        email: true,
-        university: true,
-        isAdmin: true,
-        emailValidated: true,
-        calendars: true,
-        canReadCalendars: true,
-        canWriteCalendars: true,
-        organizedArticles: true,
-        attended: true,
-        favorites: true,
-        requests: true,
-        feedbacks: true
-      },
+      select: relevantUserFields
     });
     if (!user) {
       return res.status(404).send('User not found');
@@ -97,25 +80,7 @@ router.get('/:username', jwtMiddleware, async (req: Request, res: Response) => {
   try {
     const user = await db.user.findFirst({
       where: { username },
-      select: {
-        password: false,
-        id: true,
-        firstName: true,
-        lastName: true,
-        username: true,
-        email: true,
-        university: true,
-        isAdmin: true,
-        emailValidated: true,
-        calendars: true,
-        canReadCalendars: true,
-        canWriteCalendars: true,
-        organizedArticles: true,
-        attended: true,
-        favorites: true,
-        requests: true,
-        feedbacks: true
-      },
+      select: relevantUserFields
     });
     if (!user) {
       return res.status(404).send('User not found');
@@ -140,23 +105,8 @@ router.post('/login', async (req: Request, res: Response) => {
         ]
       },
       select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        username: true,
-        email: true,
-        university: true,
-        isAdmin: true,
-        password: true,
-        emailValidated: true,
-        calendars: true,
-        canReadCalendars: true,
-        canWriteCalendars: true,
-        organizedArticles: true,
-        attended: true,
-        favorites: true,
-        requests: true,
-        feedbacks: true
+        ...relevantUserFields,
+        password: true
       },
     });
 

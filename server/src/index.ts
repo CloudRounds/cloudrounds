@@ -10,6 +10,9 @@ import { feedbackRouter } from './routes/feedbackRouter';
 import { inviteRouter } from './routes/inviteRouter';
 import { requestRouter } from './routes/requestRouter';
 import { userRouter } from './routes/userRouter';
+import scheduleRouter from './routes/scheduleRouter';
+import openaiRouter from './routes/openaiRouter';
+import scheduleEventRouter from './routes/scheduleEventRouter';
 
 dotenv.config();
 const app = express();
@@ -23,6 +26,9 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 app.use('/api/users', userRouter);
+app.use('/api/schedules', scheduleRouter);
+app.use('/api/scheduleEvents', scheduleEventRouter);
+app.use('/api/openai', openaiRouter);
 app.use('/api/articles', articleRouter);
 app.use('/api/requests', requestRouter);
 app.use('/api/feedbacks', feedbackRouter);

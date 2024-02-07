@@ -121,7 +121,7 @@ router.get('/:token', async (req: Request, res: Response) => {
   }
 });
 
-// Delete an invite by token
+// Delete an invitation by token
 router.delete('/:token', async (req: Request, res: Response) => {
   const token = req.params.token;
 

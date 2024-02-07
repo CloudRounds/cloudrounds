@@ -1,4 +1,4 @@
-import { Article, Calendar, Feedback, Request, User } from '@/types';
+import { Article, Calendar, Feedback, Request, Schedule, ScheduleEvent, User } from '@/types';
 import { atom, selector } from 'recoil';
 import { INITIAL_ARTICLE_DATA, INITIAL_CALENDAR_DATA } from './initialStates';
 
@@ -75,6 +75,21 @@ export const favoritesState = atom<Article[] | null>({
 export const attendedState = atom<Article[] | null>({
   key: 'attendedState',
   default: null,
+});
+
+export const schedulesState = atom<Schedule[] | null>({
+  key: 'schedulesState',
+  default: null,
+});
+
+export const scheduleEventsState = atom<ScheduleEvent[] | null>({
+  key: 'scheduleEventsState',
+  default: null,
+});
+
+export const schedulesRefetchTrigger = atom({
+  key: 'schedulesRefetchTrigger',
+  default: 0,
 });
 
 export const canReadCalendarsState = selector({

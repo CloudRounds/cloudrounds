@@ -54,28 +54,90 @@ model Calendar {
 }
 
 model User {
-  id                  String     @id @default(uuid())
-  username            String
+  id       String @id @default(uuid())
+  username String @unique
+  email    String @unique
+
   firstName           String
   lastName            String
   password            String
-  email               String     @unique
   university          String
   isAdmin             Boolean    @default(false)
-  calendars           Calendar[] @relation(name: "UserCalendars")
-  canReadCalendars    Calendar[] @relation("CanReadCalendar")
-  canWriteCalendars   Calendar[] @relation("CanWriteCalendar")
-  organizedArticles   Article[]  @relation("OrganizedArticles")
-  favorites           Article[]  @relation("UserFavorites")
   resetToken          String?
   resetTokenExpiry    DateTime?
   registerToken       String?
   registerTokenExpiry DateTime?
   emailValidated      Boolean    @default(false)
+  createdAt           DateTime   @default(now())
   feedbacks           Feedback[]
   requests            Request[]
+  calendars           Calendar[] @relation("UserCalendars")
+  canReadCalendars    Calendar[] @relation("CanReadCalendar")
+  canWriteCalendars   Calendar[] @relation("CanWriteCalendar")
+  organizedArticles   Article[]  @relation("OrganizedArticles")
+  favorites           Article[]  @relation("UserFavorites")
   attended            Article[]  @relation("ArticleAttendees")
-  createdAt           DateTime   @default(now())
+  schedules           Schedule[] @relation("UserSchedules")
+
+  @@index([username])
+  @@index([email])
+}
+
+model Task {
+  id               String    @id @default(uuid())
+  title            String
+  description      String?
+  taskType         String // workout, reading, coding, learning, writing
+  goal             String?
+  duration         String? // Duration per session, e.g., "1h"
+  frequency        Int? // frequency within the repeat interval
+  repeat           String? // daily, weekly, monthly, null
+  startDate        DateTime?
+  endDate          DateTime?
+  startTime        DateTime?
+  endTime          DateTime?
+  taskLength       String?
+  status           String    @default("pending") // pending, in progress, completed
+  progress         Json?
+  customAttributes Json?
+
+  @@map("tasks")
+}
+
+model Schedule {
+  id          String          @id @default(uuid())
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  description String?
+  userId      String
+  user        User            @relation(name: "UserSchedules", fields: [userId], references: [id])
+  events      ScheduleEvent[]
+  createdAt   DateTime        @default(now())
+  taskId      String?
+
+  @@index([userId])
+}
+
+model ScheduleEvent {
+  id          String    @id @default(uuid())
+  scheduleId  String
+  schedule    Schedule  @relation(fields: [scheduleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  duration    Int
+  isAllDay    Boolean   @default(false)
+  repeat      String?
+  frequency   Int?
+  endDate     DateTime?
+  location    String?
+  userId      String
+
+  createdAt DateTime @default(now())
+
+  @@index([scheduleId, userId])
 }
 
 model Feedback {

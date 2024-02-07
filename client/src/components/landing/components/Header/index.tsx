@@ -48,6 +48,7 @@ const Header = () => {
 
   const getInitials = (user: User | null) => {
     if (!user) return '';
+    if (!user.firstName || !user.lastName) return 'AA';
     return user.firstName[0].toUpperCase() + user.lastName[0].toUpperCase();
   };
 

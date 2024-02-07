@@ -23,7 +23,7 @@ import ArticleCalendar from './calendar/ArticleCalendar';
 import { useUser } from '@/hooks/useUser';
 
 const ArticleList = () => {
-  const user = useUser();
+  const { user } = useUser();
   const setUser = useSetRecoilState(userState);
   const [favorites, setFavorites] = useRecoilState(favoritesState);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);

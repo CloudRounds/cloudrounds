@@ -1,0 +1,28 @@
+.scheduleViewerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90%;
+  padding: 16px;
+  gap: 16px;
+}
+
+.add-schedule-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.grid-container {
+  display: grid;
+  grid-gap: 16px;
+  max-width: 95%;
+  margin: 0 auto;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.grid-container .ant-card {
+  margin: 0;
+}

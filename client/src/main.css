@@ -8,6 +8,7 @@
 @import url('./assets/css/NewArticleForm.css');
 @import url('./assets/css/Navbar.css');
 @import url('./assets/css/Navigation.css');
+@import url('./assets/css/Schedule.css');
 
 @tailwind base;
 @tailwind components;
@@ -204,15 +205,32 @@ select::placeholder {
   margin-bottom: 20px;
 }
 
+.toggle-switch {
+  background-color: #bcb9b9;
+  border-color: #bcb9b9;
+  color: #000;
+}
+
+.primary-button {
+  background-color: #1677ff !important;
+  color: #fff !important;
+  border-color: #1677ff !important;
+}
+
+.primary-button:hover {
+  background-color: #4096ff !important;
+  color: #fff !important;
+  border-color: #4096ff !important;
+}
+
 .submit-blue-button {
   background-color: #5161ce !important;
   color: #fff !important;
   border-color: #5161ce !important;
-  transition: all 0.3s ease-in-out;
 }
 
 .submit-blue-button:hover {
-  background-color: #5161ce !important;
+  background-color: #7d8df2 !important;
   color: #fff !important;
   border-color: #8190f2 !important;
 }

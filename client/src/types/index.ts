@@ -1,5 +1,50 @@
 import { Dayjs } from 'dayjs';
 
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  taskType: string; // e.g., workout, reading, coding, learning, writing
+  goal?: string;
+  duration?: string; // Duration per session, e.g., "1h"
+  frequency?: number; // frequency within the repeat interval
+  repeat?: string; // daily, weekly, monthly, null
+  startDate?: Date;
+  endDate?: Date;
+  taskLength?: string;
+  status: string; // pending, in progress, completed
+  progress?: any; // will define a more specific type based on the JSON structure
+  customAttributes?: any; // same as above for custom attributes
+  startTime: string;
+  endTime: string;
+}
+
+export interface Schedule {
+  id: string;
+  name: string;
+  description?: string;
+  startDate: Date;
+  endDate: Date;
+  userId: string;
+  events: ScheduleEvent[];
+  createdAt: Date;
+}
+
+export interface ScheduleEvent {
+  id: string;
+  scheduleId: string;
+  title: string;
+  description?: string;
+  startTime: string;
+  endTime: string;
+  isAllDay: boolean;
+  repeat?: string;
+  frequency?: number;
+  endDate?: Date;
+  location?: string;
+  createdAt: Date;
+}
+
 export interface User {
   id: string;
   username: string;
